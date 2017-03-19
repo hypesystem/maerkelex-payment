@@ -19,8 +19,8 @@ You see, static sites can easily have forms and frontend javascript building for
 - admin interface overview (done)
 - admin interface send receipt (done)
 - **missing** handle user input errors from braintree
-- **missing** login
-- frontpage redirect to log in
+- login (done)
+- frontpage redirect to log in (done)
 
 ### mærkelex-side
 
