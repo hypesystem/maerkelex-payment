@@ -2,15 +2,15 @@ const express = require("express");
 const Purchases = require("./purchases/index");
 const purchaseApp = require("./purchase/app");
 const adminApp = require("./admin/app");
-var bodyParser = require("body-parser");
-var fs = require("fs");
-var path = require("path");
-var errorView = fs.readFileSync(path.join(__dirname, "_errors/default.html")).toString();
-var badRequestErrorView = fs.readFileSync(path.join(__dirname, "_errors/400.html")).toString();
-var mustache = require("mustache");
+const bodyParser = require("body-parser");
+const fs = require("fs");
+const path = require("path");
+const errorView = fs.readFileSync(path.join(__dirname, "_errors/default.html")).toString();
+const badRequestErrorView = fs.readFileSync(path.join(__dirname, "_errors/400.html")).toString();
+const mustache = require("mustache");
 
 module.exports = (maerkelex, paymentGateway, db, mailer) => {
-    var app = express();
+    let app = express();
 
     let purchases = Purchases(maerkelex, paymentGateway, db, mailer);
     
@@ -22,9 +22,9 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
                 failedAction = message;
                 message = null;
             }
-            var viewModel = { content: message };
+            let viewModel = { content: message };
             if(failedAction) {
-                var fields = [];
+                let fields = [];
                 Object.keys(failedAction).forEach((key) => {
                     fields.push({
                         key: key,
@@ -37,7 +37,7 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
                     fields: fields
                 };
             }
-            var result;
+            let result;
             if(statusCode == 400) {
                 result = mustache.render(badRequestErrorView, viewModel);
             }
