@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <title>Fejl | Køb mærker fra Mærkelex</title>
+        <style type="text/css">
+            @font-face { font-family: "Open Sans"; src: url("http://mærkelex.dk/font/OpenSans-Regular.ttf") format("truetype"); }
+            @font-face { font-family: "Open Sans Light"; src: url("http://mærkelex.dk/font/OpenSans-Light.ttf") format("truetype"); }
+            body {
+                display: flex;
+                font-family: 'Open Sans', sans-serif;
+                font-size: 0.9em;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: 0;
+                background: whitesmoke;
+            }
+            .box {
+                border: 1px solid #32323c;
+                max-width: 500px;
+                margin-bottom: 56px;
+                background: white;
+            }
+            .box-head {
+                background: #32323c;
+                padding: 8px;
+                height: 56px;
+                box-sizing: border-box;
+            }
+            .box-head img {
+                width: 40px;
+            }
+            .box-body {
+                padding: 12px;
+            }
+            h1 {
+                margin: 0;
+                margin-bottom: 10px;
+                font-weight: 200;
+            }
+            p {
+                margin-top: 0;
+                margin-bottom: 1em;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="box">
+            <div class="box-head">
+                <img src="http://mærkelex.dk/img/logo.svg">
+            </div>
+            <div class="box-body">
+                <h1>Der er sket en fejl...</h1>
+                <p>Der er desværre gået noget galt på vores side. Det er en fejl fra vores side og ikke noget du kan gøre noget ved{{ #retryAction }}, men du kan prøve igen, ved at <a href="#" id="retry-link">trykke her</a>{{ /retryAction }}.</p>
+                {{ #retryAction }}
+                <p>Siden her prøver automatisk igen om <span class="countdown">15</span> sekunder.</p>
+                {{ /retryAction }}
+                {{ #content }}
+                <p>{{ &content }}</p>
+                {{ /content }}
+            </div>
+            {{ #retryAction }}
+            <form method="{{ method }}" action="{{ action }}" id="retry-action-form">
+                {{ #retryAction.fields }}
+                <input name="{{ key }}" value="{{ value }}" type="hidden">
+                {{ /retryAction.fields }}
+            </form>
+            <script>
+                var countdown = document.querySelector(".countdown");
+                var retryLink = document.querySelector("#retry-link");
+                var retryActionForm = document.querySelector("#retry-action-form");
+                var pageLoadedAt = + new Date();
+                var interval = setInterval(function() {
+                    var now = + new Date();
+                    var timeLeft = 15 - parseInt((now - pageLoadedAt) / 1000);
+                    if(timeLeft < 0) {
+                        timeLeft = 0;
+                        clearInterval(interval);
+                    }
+                    countdown.innerHTML = timeLeft;
+                }, 1000);
+                function retryAction() {
+                    retryActionForm.submit();
+                }
+                retryLink.addEventListener("click", function() {
+                    retryAction();
+                });
+                setTimeout(function() {
+                    retryAction();
+                }, 15000);
+            </script>
+            {{ /retryAction }}
+        </div>
+    </body>
+</html>

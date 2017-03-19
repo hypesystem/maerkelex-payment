@@ -1,0 +1,17 @@
+Ordrebekræftigelse
+==================
+
+Du bestilte d. {{ date }}, følgende fra Mærkelex (ordrenummer {{ orderNumber }}):
+
+Beskrivelse         | Stykpris    | Pris
+{{ #orderLines }}{{ description }}   | {{ #unitPrice }}{{ unitPrice }} DKK{{ /unitPrice }} | {{ price }} DKK{{ /orderLines }}
+--------------------+-------------+-------------
+Total               |             | {{ total }} DKK
+(Deraf moms)        |             | {{ vat }} DKK
+
+Ordren er nu afsendt og dette er din kvittering.
+
+Hvis du har spørgsmål til ordren, kan du kontakte os ved at svare på denne mail!
+
+Spejderhilsen,
+Mærkelex

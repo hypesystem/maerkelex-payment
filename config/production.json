@@ -1,0 +1,11 @@
+{
+    "postgres": {
+        "host": "postgres"
+    },
+    "braintree": {
+        "environment": "Production"
+    },
+    "maerkelex": {
+        "baseUrl": "http://xn--mrkelex-mxa.dk"
+    }
+}

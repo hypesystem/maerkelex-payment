@@ -1,0 +1,22 @@
+{
+    "postgres": {
+        "host": "localhost",
+        "user": "postgres",
+        "password": "postgres",
+        "database": "postgres"
+    },
+    "braintree": {
+        "environment": "Sandbox",
+        "merchantId": "please-supply-in-env",
+        "publicKey": "please-supply-in-env",
+        "privateKey": "please-supply-in-env"
+    },
+    "mailgun": {
+        "from": "Mærkelex <kontakt@maerkelex.dk>",
+        "domain": "maerkelex.dk",
+        "apiKey": "please-supply-mailgun-apikey-in-env"
+    },
+    "maerkelex": {
+        "baseUrl": "http://localhost:4000"
+    }
+}

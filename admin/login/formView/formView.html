@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <title>Log ind | Mærkelex</title>
+        <style type="text/css">
+            @font-face { font-family: "Open Sans"; src: url("http://mærkelex.dk/font/OpenSans-Regular.ttf") format("truetype"); }
+            @font-face { font-family: "Open Sans Light"; src: url("http://mærkelex.dk/font/OpenSans-Light.ttf") format("truetype"); }
+            
+            body {
+                background: #32323c;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: left;
+                font-family: "Open Sans", sans-serif;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: 0;
+            }
+            label {
+                font-size: 0.9em;
+                color: #2d2d2d;
+                display: block;
+                margin-bottom: 8px;
+            }
+            input {
+                display: block;
+                width: 100%;
+                padding: 8px 4px;
+                font-size: 1.1em;
+                box-sizing: border-box;
+            }
+            .btn {
+                display: block;
+                background: #089fda;
+                padding: 20px;
+                font-weight: bold;
+                border: none;
+                cursor: pointer;
+                text-align: center;
+                text-decoration: none;
+                transition: background 0.2s;
+                box-sizing: border-box;
+                font-size: 1em;
+                color: white;
+                width: 100%;
+                margin-top: 21px;
+            }
+            .btn:hover {
+                background: #056990;
+            }
+            .container {
+                max-width: 300px;
+                width: 100%;
+                padding: 50px 5px;
+            }
+            .container:before {
+                content: ' ';
+                background: whitesmoke;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: calc(50% - 175px);
+                width: 350px;
+                z-index: -1;
+                transform: skewX(-3deg);
+            }
+            .logo {
+                text-align: center;
+                margin-bottom: 17px;
+            }
+            .logo img {
+                width: 35px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="logo">
+                <img src="http://mærkelex.dk/img/logo.svg">
+            </div>
+            <form method="post">
+                <label for="username">
+                    Brugernavn:
+                    <input id="username" name="username" type="text">
+                </label>
+                <label for="password">
+                    Kodeord:
+                    <input id="password" name="password" type="password">
+                </label>
+                <button class="btn">Log ind</button>
+            </form>
+        </div>
+    </body>
+</html>

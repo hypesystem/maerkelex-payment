@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <title>Køb mærker fra Mærkelex</title>
+        <style type="text/css">
+            @font-face { font-family: "Open Sans"; src: url("http://mærkelex.dk/font/OpenSans-Regular.ttf") format("truetype"); }
+            @font-face { font-family: "Open Sans Light"; src: url("http://mærkelex.dk/font/OpenSans-Light.ttf") format("truetype"); }
+            body {
+                display: flex;
+                align-items: stretch;
+                font-family: 'Open Sans', sans-serif;
+                margin: 0;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+            }
+            .logo-bit {
+                background: #32323c;
+                padding: 40px 20px 10px 40px;
+            }
+            .logo-bit img {
+                width: 100px;
+            }
+            .order-bit {
+                background: #32323c;
+                color: white;
+                padding: 40px 40px 10px 20px;
+                font-size: 0.95em;
+                max-height: none;
+                width: 480px;
+            }
+            .order-bit h1 {
+                margin-top: 0;
+                font-family: 'Open Sans Light', sans-serif;
+                font-weight: 100;
+                font-size: 2.8em;
+            }
+            table {
+                border-collapse: collapse;
+                width: 450px;
+                font-size: 0.85em;
+                border-bottom: 1px solid white;
+            }
+            table th {
+                padding: 8px 4px;
+                text-align: center;
+                border-bottom: 2px solid white;
+                border-top: 2px solid white;
+            }
+            table td {
+                padding: 4px 4px;
+            }
+            .total td {
+                border-top: 1px solid white;
+                font-weight: bold;
+            }
+            td.value {
+                text-align: right;
+            }
+            .payment-bit {
+                padding: 40px 20px 10px 40px;
+            }
+            #dropin-container {
+                width: 340px;
+                max-width: 100%;
+                min-height: 100px;
+            }
+            .payment-bit button {
+                width: 100%;
+                background: #089fda;
+                color: white;
+                padding: 16px;
+                font-weight: bold;
+                border: none;
+                font-size: 1.05em;
+                cursor: pointer;
+            }
+            @media (max-width: 1100px) {
+                body {
+                    display: block;
+                    position: static;
+                    margin-bottom: 50px;
+                }
+                .order-bit, .payment-bit {
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+                table {
+                    max-width: 100%;
+                }
+            }
+            @media (max-width: 380px) {
+                body {
+                    font-size: 0.8em;
+                }
+                .logo-bit img {
+                    width: 60px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="logo-bit">
+            <img src="http://mærkelex.dk/img/logo.svg">
+        </div>
+        <div class="order-bit">
+            <h1>Ordreoversigt</h1>
+            <p>Din ordre sendes til <strong>{{ deliveryAddressShort }}</strong> hurtigst muligt.
+            <table>
+                <thead>
+                    <tr>
+                        <th>Beskrivelse</th>
+                        <th>Stykpris</th>
+                        <th>Pris</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ #orderLines }}
+                    <tr>
+                        <td>{{ description }}</td>
+                        <td class="value">{{ #unitPrice }}{{ unitPrice }} DKK{{ /unitPrice }}</td>
+                        <td class="value">{{ price }} DKK</td>
+                    </tr>
+                    {{ /orderLines }}
+                    <tr class="total">
+                        <td>Total</td>
+                        <td></td>
+                        <td class="value">{{ total }} DKK</td>
+                    </tr>
+                    <tr>
+                        <td>(Deraf moms)</td>
+                        <td></td>
+                        <td class="value">{{ vat }} DKK</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Du modtager en ordrebekræftigelse ved betaling og en kvittering, når ordren er afsendt.</p>
+        </div>
+        <div class="payment-bit">
+            <form method="post" action="/complete">
+                <input type="hidden" name="order_number" value="{{ orderNumber }}">
+                <div id="dropin-container"></div>
+                <p>Betalingen foregår over en sikker forbindelse.</p>
+                <button type="submit" style="float: right;">Betal</button>
+            </form>
+            <script src="https://js.braintreegateway.com/js/braintree-2.29.0.min.js"></script>
+            <script>
+                braintree.setup('{{ & clientToken }}', 'dropin', {
+                    container: 'dropin-container'
+                });
+            </script>
+        </div>
+    </body>
+</html>

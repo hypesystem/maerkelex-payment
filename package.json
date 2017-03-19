@@ -1,0 +1,23 @@
+{
+  "name": "maerkelex-payment",
+  "version": "0.0.1",
+  "description": "Payment gateway for buying badges from Maerkelex",
+  "main": "index.js",
+  "scripts": {
+    "start": "node start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Niels Abildgaard <me@hypesystem.dk>",
+  "license": "ISC",
+  "dependencies": {
+    "braintree": "^1.46.0",
+    "config": "^1.24.0",
+    "express": "^4.14.0",
+    "mailgun-mustache-mailer": "0.0.1",
+    "mustache": "^2.3.0",
+    "pg": "^6.1.2",
+    "pg-pool": "^1.6.0",
+    "request": "^2.79.0",
+    "uuid": "^3.0.1"
+  }
+}
