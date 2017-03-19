@@ -59,6 +59,7 @@ function createUser(db, username, password, callback) {
         if(error) {
             return callback(error);
         }
+        salt = salt.toString("hex");
         let user = {
             username: username,
             hashedPassword: hashPassword(password, salt),
@@ -83,9 +84,9 @@ function hashPassword(password, salt) {
 }
 
 function logUserIn(db, username, password, callback) {
-
+    //TODO:
 }
 
 function authenticate(db, token, callback) {
-
+    //TODO:
 }
