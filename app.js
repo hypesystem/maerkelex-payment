@@ -58,6 +58,7 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
     });
 
     app.use("/", purchaseApp(purchases));
+    app.get("/", (req, res) => res.redirect("/admin"));
     app.use("/admin", adminApp(db, purchases));
 
     return app;
