@@ -4,7 +4,6 @@ module.exports = (db) => {
     let app = express();
 
     app.get("/", (req, res) => {
-
         getPostgresStatus(db, (error, postgresStatus) => {
             if(error) {
                 return res.send({
