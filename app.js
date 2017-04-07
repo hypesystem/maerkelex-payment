@@ -2,6 +2,7 @@ const express = require("express");
 const Purchases = require("./purchases/index");
 const purchaseApp = require("./purchase/app");
 const adminApp = require("./admin/app");
+const canaryCheck = require("./canary/app");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const path = require("path");
@@ -56,6 +57,8 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
         };
         next();
     });
+
+    app.use("/canary", canaryCheck(db));
 
     app.use("/", purchaseApp(purchases));
     app.get("/", (req, res) => res.redirect("/admin"));
