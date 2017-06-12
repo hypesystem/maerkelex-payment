@@ -56,6 +56,7 @@ module.exports = (maerkelex, paymentGateway, db, mailer, cookieSession) => {
     app.use("/", purchaseApp(purchases));
     app.get("/", (req, res) => res.redirect("/admin"));
     app.use("/admin", adminApp(db, purchases));
+    app.use("/assets", express.static(path.join(__dirname, "assets"))); //TODO: Could be turned into an hard-memory-loaded middleware thing
 
     return app;
 };
