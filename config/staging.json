@@ -1,0 +1,16 @@
+{
+    "braintree": {
+        "environment": "Sandbox",
+        "merchantId": "byhp6qsjgt7mf3nc",
+        "publicKey": "pf4nypzb3zg8vtv6",
+        "privateKey": "179cce901929c7338802983c3df05b73"
+    },
+    "mailgun": {
+        "from": "Mærkelex <kontakt@sandboxb068142bb38d449db2e22c31ea292cfa.mailgun.org>",
+        "domain": "sandboxb068142bb38d449db2e22c31ea292cfa.mailgun.org",
+        "apiKey": "key-0929005f3eedf0702bcada8851d75864"
+    },
+    "maerkelex": {
+        "baseUrl": "http://localhost:4000"
+    }
+}

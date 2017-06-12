@@ -18,5 +18,6 @@
     },
     "maerkelex": {
         "baseUrl": "http://localhost:4000"
-    }
+    },
+    "sessionTokenSecret": "please-supply-session-token-secret-in-env"
 }
