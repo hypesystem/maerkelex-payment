@@ -15,7 +15,7 @@ var db = new Pool(config.postgres);
 var mailer = new MailgunMustacheMailer(config.mailgun);
 let cookieSessionInstance = cookieSession({
     name: "maerkelex-payment-session-cookie",
-    secret: "abb304c8-4b8e-4668-a744-451770259de0"
+    secret: config.sessionTokenSecret
 });
 
 var app = maerkelexPaymentApp(maerkelex, paymentGateway, db, mailer, cookieSessionInstance);
