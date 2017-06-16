@@ -54,7 +54,7 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
                 badge: badge
             });
         }
-        
+
         paymentGateway.clientToken.generate({}, (error, braintreeResponse) => {
             if(error) {
                 return callback({
@@ -94,7 +94,8 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
                 paymentId: paymentId,
                 total: total,
                 startedAt: new Date().toISOString(),
-                originalRequest: requestBody
+                originalRequest: requestBody,
+                owner: "admin"
             };
 
             insertStartedPurchaseRecord(db, paymentData, (error) => {
@@ -214,7 +215,7 @@ function updatePurchase(db, id, status, data, callback) {
 
 function failPurchase(db, purchaseId, result, callback) {
     console.error("Payment request was unsuccesful", result, result.errors.deepErrors());
-    
+
     db.query("UPDATE purchase SET status = $1::text WHERE id = $2::uuid", [ "failed", purchaseId ], (error) => {
         if(error) {
             return callback({
