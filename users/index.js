@@ -8,7 +8,8 @@ module.exports = (db) => {
         list: (callback) => listUsers(db, callback),
         create: (username, password, callback) => createUser(db, username, password, callback),
         login: (username, password, callback) => logUserIn(db, username, password, callback),
-        authenticate: (token, callback) => authenticateUser(db, token, callback)
+        authenticate: (token, callback) => authenticateUser(db, token, callback),
+        changePassword: (username, newPassword, callback) => changePassword(db, username, newPassword, callback)
     };
 };
 
@@ -55,15 +56,14 @@ function listUsers(db, callback) {
 
 function createUser(db, username, password, callback) {
     let id = uuid.v4();
-    crypto.randomBytes(32, (error, salt) => {
+    saltAndHashPassword(password, (error, salt, hashedPassword) => {
         if(error) {
             return callback(error);
         }
-        salt = salt.toString("hex");
         let user = {
             username: username,
-            hashedPassword: hashPassword(password, salt),
-            salt: salt.toString("hex")
+            hashedPassword: hashedPassword,
+            salt: salt
         };
         db.query("INSERT INTO users (id, data) VALUES ($1::uuid, $2::json)", [ id, user ], (error) => {
             if(error) {
@@ -79,6 +79,16 @@ function createUser(db, username, password, callback) {
     });
 }
 
+function saltAndHashPassword(password, callback) {
+    crypto.randomBytes(32, (error, salt) => {
+        if(error) {
+            return callback(error);
+        }
+        salt = salt.toString("hex");
+        callback(null, salt, hashPassword(password, salt));
+    });
+}
+
 function hashPassword(password, salt) {
     return crypto.createHash("sha256").update(salt).update(password).digest("hex");
 }
@@ -89,4 +99,39 @@ function logUserIn(db, username, password, callback) {
 
 function authenticate(db, token, callback) {
     //TODO:
+}
+
+function changePassword(db, username, newPassword, callback) {
+    db.query("SELECT * FROM users", (error, result) => {
+        if(error) {
+            return callback({
+                trace: new Error("Failed to list error"),
+                previous: error
+            });
+        }
+        let row = result.rows.find(r => r.data.username == username);
+        if(!row) {
+            return callback({
+                trace: new Error("Failed to find user with username " + username + " to change password for.")
+            });
+        }
+        let data = row.data;
+        saltAndHashPassword(newPassword, (error, salt, hashedPassword) => {
+            if(error) {
+                return callback(error);
+            }
+            data.hashedPassword = hashedPassword;
+            data.salt = salt;
+            db.query("UPDATE users SET data=$2::json WHERE id=$1::uuid", [ row.id, data ], (error) => {
+                if(error) {
+                    return callback({
+                        trace: new Error("Failed to update password for " + username),
+                        previous: error,
+                        user: data
+                    });
+                }
+                callback();
+            });
+        });
+    });
 }
