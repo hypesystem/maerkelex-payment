@@ -5,6 +5,7 @@ var pkg = require("./package.json");
 var maerkelexApi = require("./maerkelex/api.js");
 var MailgunMustacheMailer = require("mailgun-mustache-mailer");
 var Pool = require("pg-pool");
+const cookieSession = require("cookie-session");
 
 config.braintree.environment = braintree.Environment[config.braintree.environment];
 
@@ -12,8 +13,12 @@ var maerkelex = maerkelexApi(config.maerkelex);
 var paymentGateway = braintree.connect(config.braintree);
 var db = new Pool(config.postgres);
 var mailer = new MailgunMustacheMailer(config.mailgun);
+let cookieSessionInstance = cookieSession({
+    name: "maerkelex-payment-session-cookie",
+    secret: config.sessionTokenSecret
+});
 
-var app = maerkelexPaymentApp(maerkelex, paymentGateway, db, mailer);
+var app = maerkelexPaymentApp(maerkelex, paymentGateway, db, mailer, cookieSessionInstance);
 
 app.listen(3000);
 

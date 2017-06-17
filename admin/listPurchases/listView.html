@@ -6,7 +6,7 @@
         <style type="text/css">
             @font-face { font-family: "Open Sans"; src: url("http://mærkelex.dk/font/OpenSans-Regular.ttf") format("truetype"); }
             @font-face { font-family: "Open Sans Light"; src: url("http://mærkelex.dk/font/OpenSans-Light.ttf") format("truetype"); }
-            
+
             body {
                 background: whitesmoke;
                 font-family: "Open Sans", sans-serif;
@@ -226,7 +226,7 @@
             <div class="image"></div>
         </div>
         <section class="logo-section">
-            <img src="http://mærkelex.dk/img/logo.svg"><br>
+            <img src="/assets/logo.svg"><br>
             <div class="tagline">salg</div>
         </section>
         <section class="stats-section">
@@ -303,7 +303,7 @@
                 e.preventDefault();
                 options.forEach(function(o) { o.el.classList = "option " + o.cls; });
                 this.classList += " selected";
-                
+
                 renderEntries(entries.filter(option.filter));
 
                 return false;
@@ -379,5 +379,11 @@
         });
         req.send();
         </script>
+        <div>
+            <form method="post" action="/admin/change-password">
+                <input type="password" name="password">
+                <button type="submit">Skift kodeord</button>
+            </form>
+        </div>
     </body>
 </html>

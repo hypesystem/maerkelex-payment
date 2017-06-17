@@ -41,7 +41,7 @@ module.exports = (purchases) => (req, res) => {
 
 function parseCustomerInfo(body, callback) {
     var customer = {};
-    
+
     var email = body["email"];
     if(!email || !/.*@.*/.test(email)) {
         return callback({
@@ -49,7 +49,7 @@ function parseCustomerInfo(body, callback) {
         });
     }
     customer.email = email;
-    
+
     var phoneNumber = body["phone-number"];
     if(!phoneNumber) {
         return callback({
@@ -57,7 +57,7 @@ function parseCustomerInfo(body, callback) {
         });
     }
     customer.phoneNumber = phoneNumber;
-    
+
     parseAddresses(body, (error, invoicingAddress, deliveryAddress) => {
         if(error) {
             return callback(error);
@@ -65,7 +65,7 @@ function parseCustomerInfo(body, callback) {
         customer.invoicingAddress = invoicingAddress;
         customer.deliveryAddress = deliveryAddress;
         customer.name = customer.invoicingAddress.name;
-        
+
         callback(null, customer);
     });
 }
@@ -94,28 +94,28 @@ function parseAddress(body, prefix, callback) {
             message: "Der manglede et navn på en adresse."
         });
     }
-    
+
     var address = body[prefix + "address"];
     if(!address) {
         return callback({
             message: "Der manglede en adresselinje for en adresse."
         });
     }
-    
+
     var postalCode = body[prefix + "postal-code"];
     if(!postalCode) {
         return callback({
             message: "Der manglede et postnummer for en adresse."
         });
     }
-    
+
     var city = body[prefix + "city"];
     if(!city) {
         return callback({
             message: "Der manglede en by for en adresse."
         });
     }
-    
+
     callback(null, {
         name: name,
         address: address,
