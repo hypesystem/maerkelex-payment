@@ -29,14 +29,14 @@ You see, static sites can easily have forms and frontend javascript building for
 - DANGER: pressing s in form starts search ugh (done)
 - **missing** validate form on client side
 
-## Todo v0.2 **missing**
+## Todo v0.2
 
-- Badges should have owning users, log in to that user to see sales
-- Mærkelex staff: manage users
-- Mærkelex staff: see overview of all income, mærkelex profits, users' remainders,
+- **missing** Badges should have owning users, log in to that user to see sales
+- **missing** Mærkelex staff: manage users
+- **missing** Mærkelex staff: see overview of all income, mærkelex profits, users' remainders,
   uncompleted orders, etc... (monitor)
-- fontpage link to overview of all badges sold through Mærkelex
-- google analytics
+- **missing** fontpage link to overview of all badges sold through Mærkelex
+- **missing** google analytics
 
 ## Todo v0.3 **missing**
 
