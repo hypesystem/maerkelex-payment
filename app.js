@@ -9,6 +9,7 @@ const path = require("path");
 const errorView = fs.readFileSync(path.join(__dirname, "_errors/default.html")).toString();
 const badRequestErrorView = fs.readFileSync(path.join(__dirname, "_errors/400.html")).toString();
 const mustache = require("mustache");
+const memoryStaticAssetMiddleware = require("./memoryStaticAssetMiddleware/index");
 
 module.exports = (maerkelex, paymentGateway, db, mailer, cookieSession) => {
     let app = express();
@@ -59,7 +60,7 @@ module.exports = (maerkelex, paymentGateway, db, mailer, cookieSession) => {
     app.use("/", purchaseApp(purchases));
     app.get("/", (req, res) => res.redirect("/admin"));
     app.use("/admin", adminApp(db, purchases));
-    app.use("/assets", express.static(path.join(__dirname, "assets"))); //TODO: Could be turned into an hard-memory-loaded middleware thing
+    app.use("/assets", memoryStaticAssetMiddleware(path.join(__dirname, "assets")));
 
     return app;
 };

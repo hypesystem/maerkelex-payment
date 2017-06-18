@@ -24,6 +24,7 @@ module.exports = (purchases) => (req, res) => {
         }
         purchases.start(req.body, order, customerInfo, (error, purchaseData) => {
             if(error && error.type == "InvalidOrder") {
+                console.log("Invalid order received", error);
                 return res.fail(400, "Der er noget galt med ordren i forespørgslen. Forsøg at udfylde formularen forfra.");
             }
             if(error && error.type == "BadgeNotForSale") {

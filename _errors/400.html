@@ -4,8 +4,8 @@
         <meta charset="utf8">
         <title>Fejl | Køb mærker fra Mærkelex</title>
         <style type="text/css">
-            @font-face { font-family: "Open Sans"; src: url("http://mærkelex.dk/font/OpenSans-Regular.ttf") format("truetype"); }
-            @font-face { font-family: "Open Sans Light"; src: url("http://mærkelex.dk/font/OpenSans-Light.ttf") format("truetype"); }
+            @font-face { font-family: "Open Sans"; src: url("/assets/font/OpenSans-Regular.ttf") format("truetype"); }
+            @font-face { font-family: "Open Sans Light"; src: url("/assets/font/OpenSans-Light.ttf") format("truetype"); }
             body {
                 display: flex;
                 font-family: 'Open Sans', sans-serif;
@@ -52,7 +52,7 @@
     <body>
         <div class="box">
             <div class="box-head">
-                <img src="http://mærkelex.dk/img/logo.svg">
+                <img src="/assets/logo.svg">
             </div>
             <div class="box-body">
                 <h1>Problem med forespørgslen...</h1>
@@ -63,5 +63,15 @@
                 <p>Du kan prøve at <a href="javascript:window.history.back()">gå tilbage</a> og rette fejlen.</p>
             </div>
         </div>
+        <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-57878677-3', 'auto');
+        ga('send', 'pageview');
+
+        </script>
     </body>
 </html>

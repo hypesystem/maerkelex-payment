@@ -7,8 +7,6 @@ module.exports = (db) => {
     return {
         list: (callback) => listUsers(db, callback),
         create: (username, password, callback) => createUser(db, username, password, callback),
-        login: (username, password, callback) => logUserIn(db, username, password, callback),
-        authenticate: (token, callback) => authenticateUser(db, token, callback),
         changePassword: (username, newPassword, callback) => changePassword(db, username, newPassword, callback)
     };
 };
@@ -91,14 +89,6 @@ function saltAndHashPassword(password, callback) {
 
 function hashPassword(password, salt) {
     return crypto.createHash("sha256").update(salt).update(password).digest("hex");
-}
-
-function logUserIn(db, username, password, callback) {
-    //TODO:
-}
-
-function authenticate(db, token, callback) {
-    //TODO:
 }
 
 function changePassword(db, username, newPassword, callback) {
