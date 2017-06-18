@@ -247,7 +247,7 @@ function sendPurchaseReceipt(db, mailer, id, callback) {
         var receiptEmailText = mustache.render(receiptEmailTextLayout, purchase.data.viewModel);
         var recipient = purchase.data.viewModel.customerInfo;
         mailer.send({
-            subject: "Kvittering fra Mærkelex",
+            subject: "Din ordre fra Mærkelex er på vej. Her er din kvittering.",
             html: receiptEmail,
             text: receiptEmailText
         }, recipient, (error) => {
