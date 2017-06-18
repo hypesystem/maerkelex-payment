@@ -296,7 +296,7 @@
             }
         ];
 
-        var entries = [];
+        var entries = null;
 
         options.forEach(function(option) {
             option.el.addEventListener("click", function(e) {
@@ -304,7 +304,12 @@
                 options.forEach(function(o) { o.el.classList = "option " + o.cls; });
                 this.classList += " selected";
 
-                renderEntries(entries.filter(option.filter));
+                if(!entries) {
+                    tbody.innerHTML = "<tr><td colspan='1000'>Fejl ved load af ordrer. Prøver igen automatisk. Alternativt kan du forsøge at opdatere siden (tryk F5).</td></tr>";
+                }
+                else {
+                    renderEntries(entries.filter(option.filter));
+                }
 
                 return false;
             });
@@ -370,14 +375,32 @@
             orderView.setAttribute("style", "display:none;");
         }
 
-        //TODO: handle errors in request
-        var req = new XMLHttpRequest();
-        req.open("GET", "/admin/orders");
-        req.addEventListener("load", function() {
-            entries = JSON.parse(this.responseText);
-            options.find(o => o.cls == "option-new-orders").el.click();
-        });
-        req.send();
+        function loadOrders(backoff) {
+            var req = new XMLHttpRequest();
+            req.open("GET", "/admin/orders");
+            req.setRequestHeader("Content-Type", "application/json");
+            req.onreadystatechange = function() {
+                if(req.readyState != 4) {
+                    return;
+                }
+                if(req.status == 200) {
+                    entries = JSON.parse(this.responseText);
+                    options.find(o => o.cls == "option-new-orders").el.click();
+                    return;
+                }
+                console.error("Response from server on request", {
+                    status: req.statusText,
+                    responseType: req.responseType,
+                    response: req.response
+                });
+                entries = null;
+                options.find(o => o.cls == "option-new-orders").el.click();
+                setTimeout(loadOrders, backoff, backoff * 2);
+            };
+            req.send();
+        }
+
+        loadOrders(200);
         </script>
         <div>
             <form method="post" action="/admin/change-password">
