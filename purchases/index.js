@@ -178,7 +178,17 @@ function completePurchase(paymentGateway, db, mailer, id, nonce, callback) {
                         // missing on launch, or at intervals. Every x time, check for pending emails,
                         // if one isn't on the list, add it.
                     }
-                    callback();
+                    mailer.send({
+                        subject: "Ny ordre til Mærkelex",
+                        html: "Der er kommet en ny ordre.",
+                        text: "Der er kommet en ny ordre."
+                    }, { email: "kontakt@maerkelex.dk" }, (error) => {
+                        if(error) {
+                            console.error("Failed to send new order notification", error);
+                            //TODO: Register this somewhere or add emails to queue or something?
+                        }
+                        callback();
+                    });
                 });
             });
         });

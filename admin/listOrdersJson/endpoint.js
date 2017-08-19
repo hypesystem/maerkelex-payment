@@ -15,6 +15,8 @@ module.exports = (purchases) => (req, res) => {
                     statusChangeDate: prettifyDate(selectLatestStateDate(order.data)),
                     customer: viewModel.customerInfo.name + ", " + viewModel.customerInfo.invoicingAddress.city,
                     address: stringifyAddress(viewModel.customerInfo.deliveryAddress),
+                    email: viewModel.customerInfo.email,
+                    phoneNumber: viewModel.customerInfo.phoneNumber,
                     status: translateOrderStatus(order.status),
                     description: describeOrder(viewModel.orderLines),
                     total: order.data.total

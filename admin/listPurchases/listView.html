@@ -342,7 +342,11 @@
                             </div>`
                         : "") +
                         `<strong>Adresse</strong><br>
-                        ${entry.address.replace(/\n/g, '<br>')}
+                        ${entry.address.replace(/\n/g, '<br>')}<br>
+                        <br>
+                        <strong>Kontaktinformation</strong><br>
+                        Email <a href="mailto:${entry.email}">${entry.email}</a><br>
+                        Telefon <a href="tel:${entry.phoneNumber}">${entry.phoneNumber}</a><br>
                     </td>
                 </tr>`;
             }).join("");
