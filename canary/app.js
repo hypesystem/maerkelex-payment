@@ -1,4 +1,5 @@
 const express = require("express");
+const version = require("../package").version;
 
 module.exports = (db) => {
     let app = express();
@@ -7,11 +8,13 @@ module.exports = (db) => {
         getPostgresStatus(db, (error, postgresStatus) => {
             if(error) {
                 return res.send({
+                    version,
                     status: "NOT OK",
                     postgres: error
                 });
             }
             return res.send({
+                version,
                 status: "OK",
                 postgres: postgresStatus
             });
