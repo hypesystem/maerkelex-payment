@@ -18,7 +18,7 @@ module.exports = (purchases) => (req, res) => {
         let income = orders
                         .map(x => parseFloat(x.data.total || 0))
                         .reduce((acc, val) => acc + val, 0);
-        let profit = income * 0.8 * 0.9; //20% MOMS, 10% Mærkelex fee
+        let profit = income * 0.8 * 0.95 - (orders.length * 3); //20% MOMS, 5% Mærkelex fee, 3kr Mærkelex fee pr transaction
         let viewModel = {
             badgesSold: badgesSold,
             income: Math.round(income),
