@@ -278,6 +278,9 @@
             </table>
         </div>
         <script>
+        let defaultPageTitle = document.title;
+        let unseenOrdersCount = 0;
+
         var options = [
             {
                 cls: "option-all-orders",
@@ -427,28 +430,47 @@
                     let diffCount = orders.length - entries.length;
                     new Notification(`${diffCount} ${diffCount > 1 ? "nye ordrer" : "ny ordre"} til Mærkelex!`);
                     let newOrders = orders.filter(order => !entries.some(entry => entry.id == order.id));
-                    console.log("new orders", newOrders);
-                    renderNewOrders(newOrders);
-                    console.log("entries", entries);
+                    renderNewOrders(newOrders, diffCount);
                     entries = newOrders.concat(entries);
-                    console.log("result", entries);
                 }
             });
         }
 
-        function renderNewOrders(newOrders) {
+        function renderNewOrders(newOrders, diffCount) {
             let html = renderEntries(newOrders);
             let elements = htmlToDomElements(html);
-            Array.prototype.slice.call(elements).reverse().forEach(element => {
-                element.style="background:rgb(230, 126, 34);";
+            elements = Array.prototype.slice.call(elements).reverse();
+            elements.forEach(element => {
+                element.style = "transition: background 20s; background:rgb(230, 126, 34);";
                 tbody.prepend(element);
             });
+
+            if(document.hasFocus()) {
+                setTimeout(() => elements.forEach(element => element.style = "transition: background 20s; background:transparent;"), 0);
+            }
+            else {
+                modifyUnseenOrdersCount(diffCount);
+                document.addEventListener("focus", e => elements.forEach(element => {
+                    element.style = "transition: background 20s; background:transparent;";
+                    modifyUnseenOrdersCount(-diffCount);
+                }));
+            }
         }
 
         function htmlToDomElements(html) {
             let container = document.createElement("table");
             container.innerHTML = `<tbody>${html}</tbody>`;
             return container.firstChild.children;
+        }
+
+        function modifyUnseenOrdersCount(diff) {
+            unseenOrdersCount += diff;
+            if(unseenOrdersCount > 0) {
+                document.title = `(${unseenOrdersCount}) ${defaultPageTitle}`;
+            }
+            else {
+                document.title = defaultPageTitle;
+            }
         }
 
         loadOrders(200);
