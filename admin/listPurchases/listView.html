@@ -396,7 +396,7 @@
                 }
                 entries = orders;
                 options.find(o => o.cls == "option-new-orders").el.click();
-                setInterval(checkForNewOrders, 5000); //TODO: change to 2 mins (2 * 60 * 1000)
+                setInterval(checkForNewOrders, 2 * 60 * 1000); //check every 2 mins
             });
         }
 
