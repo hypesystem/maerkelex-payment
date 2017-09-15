@@ -278,6 +278,9 @@
             </table>
         </div>
         <script>
+        let defaultPageTitle = document.title;
+        let unseenOrdersCount = 0;
+
         var options = [
             {
                 cls: "option-all-orders",
@@ -304,11 +307,11 @@
                 options.forEach(function(o) { o.el.classList = "option " + o.cls; });
                 this.classList += " selected";
 
-                if(!entries) {
+                if(!entries && typeof entries !== "object") {
                     tbody.innerHTML = "<tr><td colspan='1000'>Fejl ved load af ordrer. Prøver igen automatisk. Alternativt kan du forsøge at opdatere siden (tryk F5).</td></tr>";
                 }
                 else {
-                    renderEntries(entries.filter(option.filter));
+                    renderEntriesToList(entries.filter(option.filter));
                 }
 
                 return false;
@@ -317,12 +320,16 @@
 
         var tbody = document.querySelector(".container table tbody");
 
-        function renderEntries(entries) {
+        function renderEntriesToList(entries) {
             if(entries.length < 1) {
                 tbody.innerHTML = "<tr><td colspan='1000'>Ingen ordrer i denne kategori.</td></tr>";
                 return;
             }
-            tbody.innerHTML = entries.map(entry => {
+            tbody.innerHTML = renderEntries(entries);
+        }
+
+        function renderEntries(entries) {
+            return entries.map(entry => {
                 return `<tr id="order-${entry.id}">
                     <td class="date-field">${entry.date.replace(" ","<br>")}</td>
                     <td>${entry.customer}</td>
@@ -380,6 +387,20 @@
         }
 
         function loadOrders(backoff) {
+            requestOrders((error, orders) => {
+                if(error) {
+                    console.error("Failed to load entries", error);
+                    entries = null;
+                    options.find(o => o.cls == "option-new-orders").el.click();
+                    return setTimeout(loadOrders, backoff, backoff * 2);
+                }
+                entries = orders;
+                options.find(o => o.cls == "option-new-orders").el.click();
+                setInterval(checkForNewOrders, 2 * 60 * 1000); //check every 2 mins
+            });
+        }
+
+        function requestOrders(callback) {
             var req = new XMLHttpRequest();
             req.open("GET", "/admin/orders");
             req.setRequestHeader("Content-Type", "application/json");
@@ -388,23 +409,73 @@
                     return;
                 }
                 if(req.status == 200) {
-                    entries = JSON.parse(this.responseText);
-                    options.find(o => o.cls == "option-new-orders").el.click();
-                    return;
+                    return callback(null, JSON.parse(this.responseText));
                 }
-                console.error("Response from server on request", {
+                callback({
+                    trace: new Error("Error response from server on request"),
                     status: req.statusText,
                     responseType: req.responseType,
                     response: req.response
                 });
-                entries = null;
-                options.find(o => o.cls == "option-new-orders").el.click();
-                setTimeout(loadOrders, backoff, backoff * 2);
             };
             req.send();
         }
 
+        function checkForNewOrders() {
+            requestOrders((error, orders) => {
+                if(error) {
+                    return console.error("Failed to poll for updates", error);
+                }
+                if(orders.length > entries.length) {
+                    let diffCount = orders.length - entries.length;
+                    new Notification(`${diffCount} ${diffCount > 1 ? "nye ordrer" : "ny ordre"} til Mærkelex!`);
+                    let newOrders = orders.filter(order => !entries.some(entry => entry.id == order.id));
+                    renderNewOrders(newOrders, diffCount);
+                    entries = newOrders.concat(entries);
+                }
+            });
+        }
+
+        function renderNewOrders(newOrders, diffCount) {
+            let html = renderEntries(newOrders);
+            let elements = htmlToDomElements(html);
+            elements = Array.prototype.slice.call(elements).reverse();
+            elements.forEach(element => {
+                element.style = "transition: background 20s; background:rgb(230, 126, 34);";
+                tbody.prepend(element);
+            });
+
+            if(document.hasFocus()) {
+                setTimeout(() => elements.forEach(element => element.style = "transition: background 20s; background:transparent;"), 0);
+            }
+            else {
+                modifyUnseenOrdersCount(diffCount);
+                document.addEventListener("focus", e => elements.forEach(element => {
+                    element.style = "transition: background 20s; background:transparent;";
+                    modifyUnseenOrdersCount(-diffCount);
+                }));
+            }
+        }
+
+        function htmlToDomElements(html) {
+            let container = document.createElement("table");
+            container.innerHTML = `<tbody>${html}</tbody>`;
+            return container.firstChild.children;
+        }
+
+        function modifyUnseenOrdersCount(diff) {
+            unseenOrdersCount += diff;
+            if(unseenOrdersCount > 0) {
+                document.title = `(${unseenOrdersCount}) ${defaultPageTitle}`;
+            }
+            else {
+                document.title = defaultPageTitle;
+            }
+        }
+
         loadOrders(200);
+
+        Notification.requestPermission();
         </script>
         <div>
             <form method="post" action="/admin/change-password">

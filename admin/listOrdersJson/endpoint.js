@@ -6,7 +6,7 @@ module.exports = (purchases) => (req, res) => {
         }
         let result = orders
             .filter(order => order.status == "completed" || order.status == "dispatched")
-            .sort((a, b) => a.data.completedAt < b.data.completedAt ? -1 : (a.data.completedAt > b.data.completedAt ? 1 : 0))
+            .sort((a, b) => a.data.completedAt < b.data.completedAt ? 1 : (a.data.completedAt > b.data.completedAt ? -1 : 0))
             .map(order => {
                 let viewModel = order.data.viewModel;
                 return {
