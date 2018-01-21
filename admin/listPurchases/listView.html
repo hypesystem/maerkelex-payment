@@ -199,12 +199,12 @@
                 padding-bottom: 20px;
                 border-bottom: 2px solid rgba(0,0,0,0.25);
             }
-            td.more-info .mark-as-sent {
+            td.more-info .mark-as-sent, td.more-info .see-receipt {
                 float: right;
                 max-width: 300px;
                 width: 100%;
             }
-            td.more-info .mark-as-sent div {
+            td.more-info .mark-as-sent div, td.more-info .see-receipt div {
                 padding: 2px 8px 8px;
                 font-size: 0.9em;
             }
@@ -345,6 +345,14 @@
                                 <div>Når du har afsendt ordren til kunden, kan du markere det her, så sendes kvitteringen.</div>
                                 <a class="btn" href="/admin/orders/${entry.id}/mark-dispatched">
                                     Marker som afsendt
+                                </a>
+                            </div>`
+                        : "") +
+                        (entry.status == "dispatched" ?
+                            `<div class="see-receipt">
+                                <div>Her kan du se kvitteringen, som blev sendt til kunden.</div>
+                                <a class="btn" href="/admin/orders/${entry.id}/receipt" target="_blank">
+                                    Se kvittering
                                 </a>
                             </div>`
                         : "") +
