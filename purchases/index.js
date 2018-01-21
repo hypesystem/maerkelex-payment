@@ -17,7 +17,8 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
         start: (requestBody, order, customerInfo, callback) => startPurchase(maerkelex, paymentGateway, db, requestBody, order, customerInfo, callback),
         complete: (id, nonce, callback) => completePurchase(paymentGateway, db, mailer, id, nonce, callback),
         sendReceipt: (id, callback) => sendPurchaseReceipt(db, mailer, id, callback),
-        list: (callback) => listPurchases(db, callback)
+        list: (callback) => listPurchases(db, callback),
+        getHtmlReceipt: (id, callback) => getPurchaseHtmlReceipt(db, id, callback)
     };
 };
 
@@ -253,7 +254,7 @@ function sendPurchaseReceipt(db, mailer, id, callback) {
                 purchase: purchase
             });
         }
-        var receiptEmail = mustache.render(receiptEmailLayout, purchase.data.viewModel);
+        var receiptEmail = renderHtmlReceipt(purchase);
         var receiptEmailText = mustache.render(receiptEmailTextLayout, purchase.data.viewModel);
         var recipient = purchase.data.viewModel.customerInfo;
         mailer.send({
@@ -283,6 +284,10 @@ function sendPurchaseReceipt(db, mailer, id, callback) {
     });
 }
 
+function renderHtmlReceipt(purchase) {
+    return mustache.render(receiptEmailLayout, purchase.data.viewModel);
+}
+
 function listPurchases(db, callback) {
     db.query("SELECT * FROM purchase", (error, result) => {
         if(error) {
@@ -290,5 +295,21 @@ function listPurchases(db, callback) {
             return callback(error);
         }
         callback(null, result.rows);
+    });
+}
+
+function getPurchaseHtmlReceipt(db, id, callback) {
+    getPurchase(db, id, (error, purchase) => {
+        if(error) {
+            return callback(error);
+        }
+        if(purchase.status != "dispatched") {
+            return callback({
+                type: "NoReceiptForPurchaseExists",
+                trace: new Error("Could not get receipt for purchase because it has not yet been dispatched."),
+                purchase: purchase
+            });
+        }
+        callback(null, renderHtmlReceipt(purchase));
     });
 }
