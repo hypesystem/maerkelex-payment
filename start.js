@@ -20,6 +20,6 @@ let cookieSessionInstance = cookieSession({
 
 var app = maerkelexPaymentApp(maerkelex, paymentGateway, db, mailer, cookieSessionInstance);
 
-app.listen(3000);
+app.listen(config.port);
 
-console.log("maerkelex-payment@" + pkg.version + " listening on port 3000");
+console.log("maerkelex-payment@" + pkg.version + " listening on port " + config.port);
