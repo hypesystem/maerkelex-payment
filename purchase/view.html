@@ -2,6 +2,7 @@
 <html>
     <head>
         <meta charset="utf8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Køb mærker fra Mærkelex</title>
         <style type="text/css">
             @font-face { font-family: "Open Sans"; src: url("/assets/font/OpenSans-Regular.ttf") format("truetype"); }
@@ -39,7 +40,8 @@
             }
             table {
                 border-collapse: collapse;
-                width: 450px;
+                width: 100%;
+                max-width: 450px;
                 font-size: 0.85em;
                 border-bottom: 1px solid white;
             }
@@ -86,9 +88,6 @@
                 .order-bit, .payment-bit {
                     width: 100%;
                     box-sizing: border-box;
-                }
-                table {
-                    max-width: 100%;
                 }
             }
             @media (max-width: 380px) {
