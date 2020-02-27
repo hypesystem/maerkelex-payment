@@ -4,7 +4,7 @@
   "description": "Payment gateway for buying badges from Maerkelex",
   "main": "index.js",
   "scripts": {
-    "start": "node start",
+    "start": "nodemon start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "integration-tests": "cucumber-js integrationTests"
   },
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "cucumber": "^2.0.0-rc.9",
+    "nodemon": "^2.0.2",
     "request": "^2.81.0",
     "zombie": "^5.0.5"
   }
