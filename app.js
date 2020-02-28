@@ -1,5 +1,4 @@
 const express = require("express");
-const Purchases = require("./purchases/index");
 const purchaseApp = require("./purchase/app");
 const adminApp = require("./admin/app");
 const canaryCheck = require("./canary/app");
@@ -11,10 +10,8 @@ const badRequestErrorView = fs.readFileSync(path.join(__dirname, "_errors/400.ht
 const mustache = require("mustache");
 const memoryStaticAssetMiddleware = require("./memoryStaticAssetMiddleware/index");
 
-module.exports = (maerkelex, paymentGateway, db, mailer, cookieSession) => {
+module.exports = (purchases, db, cookieSession, billy) => {
     let app = express();
-
-    let purchases = Purchases(maerkelex, paymentGateway, db, mailer, cookieSession);
 
     app.use(bodyParser.urlencoded({
         extended: false
@@ -59,7 +56,7 @@ module.exports = (maerkelex, paymentGateway, db, mailer, cookieSession) => {
 
     app.use("/", purchaseApp(purchases));
     app.get("/", (req, res) => res.redirect("/admin"));
-    app.use("/admin", adminApp(db, purchases));
+    app.use("/admin", adminApp(db, purchases, billy));
     app.use("/assets", memoryStaticAssetMiddleware(path.join(__dirname, "assets")));
 
     return app;

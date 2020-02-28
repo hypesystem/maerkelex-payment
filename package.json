@@ -1,10 +1,10 @@
 {
   "name": "maerkelex-payment",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Payment gateway for buying badges from Maerkelex",
   "main": "index.js",
   "scripts": {
-    "start": "node start",
+    "start": "nodemon start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "integration-tests": "cucumber-js integrationTests"
   },
@@ -12,21 +12,23 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.4.1",
-    "body-parser": "^1.17.1",
+    "body-parser": "^1.19.0",
     "braintree": "^1.46.0",
     "config": "^1.24.0",
-    "cookie-session": "^2.0.0-beta.1",
-    "express": "^4.14.0",
+    "cookie-session": "^2.0.0-rc.1",
+    "express": "^4.17.1",
     "mailgun-mustache-mailer": "0.0.1",
     "mime": "^1.4.1",
     "mustache": "^2.3.0",
     "pg": "^6.1.6",
     "pg-pool": "^1.6.0",
+    "puppeteer": "^2.1.1",
     "request": "^2.79.0",
     "uuid": "^3.0.1"
   },
   "devDependencies": {
     "cucumber": "^2.0.0-rc.9",
+    "nodemon": "^2.0.2",
     "request": "^2.81.0",
     "zombie": "^5.0.5"
   }

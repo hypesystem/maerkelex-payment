@@ -18,7 +18,10 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
         complete: (id, nonce, callback) => completePurchase(paymentGateway, db, mailer, id, nonce, callback),
         sendReceipt: (id, callback) => sendPurchaseReceipt(db, mailer, id, callback),
         list: (callback) => listPurchases(db, callback),
-        getHtmlReceipt: (id, callback) => getPurchaseHtmlReceipt(db, id, callback)
+        get: (id, callback) => getPurchase(db, id, callback),
+        update: (purchase, callback) => updatePurchase(db, purchase.id, purchase.status, purchase.data, callback),
+        getHtmlReceipt: (id, callback) => getPurchaseHtmlReceipt(db, id, callback),
+        markPosted: (id, callback) => markPurchasePosted(db, id, callback),
     };
 };
 
@@ -312,4 +315,32 @@ function getPurchaseHtmlReceipt(db, id, callback) {
         }
         callback(null, renderHtmlReceipt(purchase));
     });
+}
+
+function markPurchasePosted(db, id, callback) {
+    getPurchase(db, id, (error, purchase) => {
+        if(error) {
+            return callback(error);
+        }
+
+        purchase.data.postedToAccounting = true;
+
+        updatePurchaseData(db, id, purchase.data, (error) => {
+            if(error) {
+                return callback({
+                    trace: new Error("Failed to mark purchase as posted"),
+                    previous: error,
+                    purchase
+                });
+            }
+            callback();
+        });
+    })
+}
+
+function updatePurchaseData(db, id, data, callback) {
+    db.query("UPDATE purchase SET data = $1::json WHERE id = $2::uuid", [
+        data,
+        id
+    ], callback);
 }

@@ -6,6 +6,11 @@
         "password": "postgres",
         "database": "postgres"
     },
+    "billy": {
+        "baseUrl": "https://api.billysbilling.com/v2",
+        "apiKey": "please-supply-in-env",
+        "organizationId": "CfTNaks3QH2yjRoV3WHbww"
+    },
     "braintree": {
         "environment": "Sandbox",
         "merchantId": "please-supply-in-env",

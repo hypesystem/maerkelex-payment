@@ -14,19 +14,19 @@
         {{ #orderLines }}
         <tr>
             <td style="padding: 4px 7px;">{{ description }}</td>
-            <td style="padding: 4px 7px;">{{ #unitPrice }}{{ unitPrice }} DKK{{ /unitPrice }}</td>
-            <td style="padding: 4px 7px;">{{ price }} DKK</td>
+            <td style="padding: 4px 7px; text-align: right;">{{ #unitPrice }}{{ unitPrice }} DKK{{ /unitPrice }}</td>
+            <td style="padding: 4px 7px; text-align: right;">{{ price }} DKK</td>
         </tr>
         {{ /orderLines }}
         <tr style="font-weight: bold;">
             <td style="padding: 4px 7px; border-top: 1px solid black;">Total</td>
             <td style="border-top: 1px solid black;"></td>
-            <td style="padding: 4px 7px; border-top: 1px solid black;">{{ total }} DKK</td>
+            <td style="padding: 4px 7px; border-top: 1px solid black; text-align: right;">{{ total }} DKK</td>
         </tr>
         <tr>
             <td style="padding: 4px 7px;">(Deraf moms)</td>
             <td></td>
-            <td style="padding: 4px 7px;">{{ vat }} DKK</td>
+            <td style="padding: 4px 7px; text-align: right;">{{ vat }} DKK</td>
         </tr>
     </tbody>
 </table>
