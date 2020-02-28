@@ -18,6 +18,8 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
         complete: (id, nonce, callback) => completePurchase(paymentGateway, db, mailer, id, nonce, callback),
         sendReceipt: (id, callback) => sendPurchaseReceipt(db, mailer, id, callback),
         list: (callback) => listPurchases(db, callback),
+        get: (id, callback) => getPurchase(db, id, callback),
+        update: (purchase, callback) => updatePurchase(db, purchase.id, purchase.status, purchase.data, callback),
         getHtmlReceipt: (id, callback) => getPurchaseHtmlReceipt(db, id, callback),
         markPosted: (id, callback) => markPurchasePosted(db, id, callback),
     };

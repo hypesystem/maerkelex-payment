@@ -7,10 +7,11 @@ const markDispatchedEndpoint = require("./markDispatched/endpoint");
 const viewReceiptEndpoint = require("./viewReceipt/endpoint");
 const accountingOverviewEndpoint = require("./accounting/overview/endpoint");
 const markOrderPostedEndpoint = require("./accounting/mark-posted/endpoint");
+const postOrderToAccountingEndpoint = require("./accounting/post/endpoint");
 const loginApp = require("./login/app");
 const changePasswordEndpoint = require("./change-password/endpoint");
 
-module.exports = (db, purchases) => {
+module.exports = (db, purchases, billy) => {
     let app = express();
 
     let users = Users(db);
@@ -21,6 +22,7 @@ module.exports = (db, purchases) => {
     app.get("/orders/:id/receipt", authenticate(users), viewReceiptEndpoint(purchases));
     app.get("/accounting", authenticate(users), accountingOverviewEndpoint(purchases));
     app.post("/orders/:id/mark-posted", authenticate(users), markOrderPostedEndpoint(purchases));
+    app.post("/orders/:id/post", authenticate(users), postOrderToAccountingEndpoint(billy));
     app.post("/change-password", authenticate(users), changePasswordEndpoint(users));
     app.use("/login", loginApp(users));
 

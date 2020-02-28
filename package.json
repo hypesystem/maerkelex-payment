@@ -1,6 +1,6 @@
 {
   "name": "maerkelex-payment",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Payment gateway for buying badges from Maerkelex",
   "main": "index.js",
   "scripts": {
@@ -22,6 +22,7 @@
     "mustache": "^2.3.0",
     "pg": "^6.1.6",
     "pg-pool": "^1.6.0",
+    "puppeteer": "^2.1.1",
     "request": "^2.79.0",
     "uuid": "^3.0.1"
   },
