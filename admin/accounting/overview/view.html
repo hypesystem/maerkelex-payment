@@ -218,6 +218,11 @@
                 display: block;
                 text-decoration: none;
                 text-align: center;
+                cursor: pointer;
+            }
+            .btn:disabled {
+                background: #5099b5;
+                cursor: default;
             }
             .table-date {
                 text-align: center;
@@ -230,14 +235,20 @@
             .accounting-action {
                 cursor: pointer;
                 text-decoration: none;
-                color: #089fda;
                 border: 1px solid #089fda;
                 text-align: center;
                 padding: 5px;
             }
-            .accounting-action-auto-post {
-                background: #089fda;
-                color: white;
+            .btn.accounting-action:disabled {
+                border-color: #5099b5;
+            }
+            .accounting-action-mark-as-posted {
+                background: transparent;
+                color: #089fda;
+            }
+            .btn.accounting-action-mark-as-posted:disabled {
+                background: transparent;
+                color: #5099b5;
             }
             @keyframes rotate {
                 from { transform: rotate(10deg); }
@@ -253,6 +264,16 @@
             }
             .hidden {
                 display: none;
+            }
+
+            .multiaction-output {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+            }
+            .multiaction-output-feed {
+                font-size: 0.75em;
+                margin-left: 1em;
             }
         </style>
     </head>
@@ -282,10 +303,27 @@
             </div>
         </section>
         <div class="container">
-            <div>
-                - marker bogført t.o.m. dato
-                - autobogfør alle knap
-                - liste over ikke bogførte, autobogfør enkelt
+            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px; padding: 20px;">
+                <div class="multiaction multiaction-mark-posted-until">
+                    Markér ordrer afsendt t.o.m. d. <input type="text" placeholder="YYYY-MM-DD" style="width: 90px;"> som bogført.
+                    <div class="multiaction-output">
+                        <button
+                            class="btn multiaction-run-button multiaction-mark-posted-until-run-button"
+                            {{ ^ unaccountedOrders.length }}disa--bled{{ / unaccountedOrders.length }}
+                        >Kør</button>
+                        <span class="multiaction-output-feed"></span>
+                    </div>
+                </div>
+                <div class="multiaction multiaction-post-all">
+                    Auto-bogfør alle resterende ordrer
+                    <div class="multiaction-output">
+                        <button
+                            class="btn multiaction-run-button multiaction-post-all-run-button"
+                            {{ ^ unaccountedOrders.length }}disabled{{ / unaccountedOrders.length }}
+                        >Kør</button>
+                        <span class="multiaction-output-feed"></span>
+                    </div>
+                </div>
             </div>
             <table>
                 <thead>
@@ -305,8 +343,8 @@
                             {{ &description }}
                         </td>
                         <td class="accounting-actions">
-                            <a class="accounting-action accounting-action-mark-as-posted">Markér som bogført</a>
-                            <a class="accounting-action accounting-action-auto-post">Auto-bogfør</a>
+                            <button class="btn accounting-action accounting-action-mark-as-posted">Markér som bogført</button>
+                            <button class="btn accounting-action accounting-action-auto-post">Auto-bogfør</button>
                             <div class="spinner hidden"></div>
                         </td>
                     </tr>
@@ -319,18 +357,18 @@
             let manuallyAccountedOrdersField = document.querySelector(".stat-manually-accounted .value");
             let autoAccountedOrdersField = document.querySelector(".stat-auto-accounted .value");
 
-            function handleAccountingAction(buttonPressed, endpoint, statsUpdater) {
-                var row = buttonPressed.parentNode.parentNode;
+            async function handleAccountingAction(row, endpoint, statsUpdater) {
                 var orderId = row.dataset.id;
-                var buttons = buttonPressed.parentNode.querySelectorAll(".accounting-action");
+                var buttons = row.querySelectorAll(".accounting-action");
                 buttons.forEach((btn) => btn.classList.add("hidden"));
-                var spinner = buttonPressed.parentNode.querySelector(".spinner");
+                var spinner = row.querySelector(".spinner");
                 spinner.classList.remove("hidden");
 
-                fetch("/admin/orders/" + orderId + "/" + endpoint, {
-                    method: "post"
-                })
-                .then((response) => {
+                try {
+                    let response = await fetch("/admin/orders/" + orderId + "/" + endpoint, {
+                        method: "post"
+                    });
+
                     if(response.status != 200) {
                         throw {
                             type: "failure",
@@ -338,10 +376,9 @@
                             response
                         };
                     }
-                    return response.json();
-                })
-                .then((data) => row.classList.add("hidden"))
-                .then(() => {
+
+                    row.parentNode.removeChild(row);
+
                     let stats = {
                         unaccounted: parseInt(unaccountedOrdersField.innerText),
                         autoAccounted: parseInt(autoAccountedOrdersField.innerText),
@@ -353,21 +390,21 @@
                     unaccountedOrdersField.innerText = stats.unaccounted;
                     autoAccountedOrdersField.innerText = stats.autoAccounted;
                     manuallyAccountedOrdersField.innerText = stats.manuallyAccounted;
-                })
-                .catch((error) => {
+                }
+                catch(error) {
                     if(error.type == "failure") {
                         buttons.forEach((btn) => btn.classList.remove("hidden"));
                         spinner.classList.add("hidden");
                         console.log("failed to mark as posted", error);
                     }
                     console.error("unknown error", error);
-                });
+                }
             }
 
             document.querySelectorAll(".accounting-action-mark-as-posted").forEach(function(btn) {
                 btn.addEventListener("click", function(event) {
                     event.preventDefault();
-                    handleAccountingAction(this, "mark-posted", (stats) => {
+                    handleAccountingAction(this.parentNode.parentNode, "mark-posted", (stats) => {
                         stats.unaccounted--;
                         stats.manuallyAccounted++;
                     });
@@ -377,11 +414,105 @@
             document.querySelectorAll(".accounting-action-auto-post").forEach(function(btn) {
                 btn.addEventListener("click", function(event) {
                     event.preventDefault();
-                    handleAccountingAction(this, "post", (stats) => {
+                    handleAccountingAction(this.parentNode.parentNode, "post", (stats) => {
                         stats.unaccounted--;
                         stats.autoAccounted++;
                     });
                 });
+            });
+
+            function disableAllActions() {
+                document.querySelectorAll(".multiaction-run-button").forEach((btn) => btn.setAttribute("disabled", true));
+                document.querySelectorAll(".accounting-action").forEach((btn) => btn.setAttribute("disabled", true));
+            }
+
+            function enableAllActions() {
+                document.querySelectorAll(".multiaction-run-button").forEach((btn) => btn.removeAttribute("disabled"));
+                document.querySelectorAll(".accounting-action").forEach((btn) => btn.removeAttribute("disabled"));
+            }
+
+            document.querySelector(".multiaction-mark-posted-until-run-button").addEventListener("click", async function(event) {
+                let untilDateField = this.parentNode.parentNode.querySelector("input");
+                let isValidDate = (val) => /[0-9]{4}\-[0-9]{2}\-[0-9]{2}/.test(val);
+                if(!untilDateField.value || !isValidDate(untilDateField.value)) {
+                    return alert("Need to fill in value in format YYYY-MM-DD");
+                }
+
+                let untilDate = new Date(untilDateField.value);
+                if(("" + untilDate) == "Invalid Date" || Number.isNaN(untilDate)) {
+                    return alert("Invalid date.");
+                }
+
+                untilDate.setHours(23);
+                untilDate.setMinutes(59);
+                untilDate.setSeconds(59);
+                untilDate.setMilliseconds(999);
+
+                console.log("MARKING AS POSTED ALL UNTIL", untilDate);
+
+                disableAllActions();
+
+                let outputField = document.querySelector(".multiaction-mark-posted-until .multiaction-output-feed");
+
+                let rows = document.querySelectorAll(".unaccounted-order-row");
+                let rowsToUpdate = Array.prototype.filter.call(rows, (row) => {
+                    let dateString = row.querySelector(".table-date").innerText;
+                    let match = dateString.match(/([0-9]+)\/([0-9]+) ([0-9]+)/);
+                    let date = new Date(`${match[3]}-${match[2]}-${match[1]}`);
+                    return date <= untilDate;
+                });
+
+                if(rowsToUpdate.length == 0) {
+                    return alert("No matching rows to mark posted");
+                }
+
+                let row;
+                for(let i = 0; row = rowsToUpdate[i]; i++) {
+                    try {
+                        await handleAccountingAction(row, "mark-posted", (stats) => {
+                            stats.unaccounted--;
+                            stats.manuallyAccounted++;
+                        });
+                    }
+                    catch(error) {
+                        console.error("Failed to mark as posted", error);
+                        return alert("Failed to mark as posted until date -- one call failed.");
+                    }
+                    outputField.innerText = `${i + 1}/${rowsToUpdate.length} markeret.`;
+                }
+
+                enableAllActions();
+            });
+
+            document.querySelector(".multiaction-post-all-run-button").addEventListener("click", async function(event) {
+                console.log("POSTING ALL TO ACCOUNTING");
+
+                disableAllActions();
+
+                let outputField = document.querySelector(".multiaction-post-all .multiaction-output-feed");
+                
+                let rows = document.querySelectorAll(".unaccounted-order-row");
+
+                if(rows.length == 0) {
+                    return alert("No rows to post");
+                }
+
+                let row;
+                for(let i = 0; row = rows[i]; i++) {
+                    try {
+                        await handleAccountingAction(row, "post", (stats) => {
+                            stats.unaccounted--;
+                            stats.autoAccounted++;
+                        });
+                    }
+                    catch(error) {
+                        console.error("Failed to post", error);
+                        return alert("Failed to post -- one call failed.");
+                    }
+                    outputField.innerText = `${i + 1}/${rows.length} bogført.`;
+                }
+
+                enableAllActions();
             });
         </script>
         <!-- Fathom - simple website analytics - https://github.com/usefathom/fathom -->
