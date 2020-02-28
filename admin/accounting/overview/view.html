@@ -398,6 +398,7 @@
                         console.log("failed to mark as posted", error);
                     }
                     console.error("unknown error", error);
+                    throw error;
                 }
             }
 
