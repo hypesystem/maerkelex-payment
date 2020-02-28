@@ -5,6 +5,7 @@ You see, static sites can easily have forms and frontend javascript building for
 
 ## Todo v0.1
 
+- integration tests of accounting
 - get mærkelex data (done)
 - find badge and price and delivery cost (done)
 - get delivery and invoicing data (done)
