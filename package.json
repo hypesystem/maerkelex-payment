@@ -1,6 +1,6 @@
 {
   "name": "maerkelex-payment",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Payment gateway for buying badges from Maerkelex",
   "main": "index.js",
   "scripts": {
