@@ -12,14 +12,22 @@ module.exports = (purchases) => (req, res) => {
 
         let unaccountedOrders = orders
             .filter(x => x.data.dispatchedAt && !x.data.postedToAccounting)
+            .sort((a, b) => {
+                if(a.data.dispatchedAt < b.data.dispatchedAt) {
+                    return -1;
+                }
+                if(a.data.dispatchedAt > b.data.dispatchedAt) {
+                    return 1;
+                }
+                return 0;
+            })
             .map((o) => {
                 return {
                     id: o.id,
                     paidAt: prettifyDate(o.data.dispatchedAt),
                     description: `${o.data.viewModel.customerInfo.name}<br>${o.data.viewModel.orderLines.map((l) => l.description).join("; ")}<br>${o.data.total} DKK`
                 };
-            })
-            .sort((a, b) => (a.paidAt < b.paidAt) ? -1 : ((a.paidAt > b.paidAt) ? 1 : 0));
+            });
 
         let accountedOrders = orders.filter(x => x.data.postedToAccounting);
         let autoAccountedOrderCount = accountedOrders.filter(x => x.data.autoAccounted).length;
