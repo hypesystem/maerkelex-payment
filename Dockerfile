@@ -1,4 +1,4 @@
-FROM node:slim
+FROM node:12.16.1-alpine
 MAINTAINER Asbjørn Thegler <devops@deranged.dk>
 
 # Create app directory
