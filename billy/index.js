@@ -4,8 +4,14 @@ const Puppeteer = require("puppeteer");
 
 module.exports = (config, purchases) => {
     let state = {};
+    let billyRequest = request.defaults({
+        baseUrl: config.baseUrl,
+        headers: {
+            'X-Access-Token': config.apiKey,
+        },
+    });
 
-    getRelevantAccounts(config, (error, accounts) => {
+    getRelevantAccounts(billyRequest, (error, accounts) => {
         if(error) {
             return console.error("failed to get accounts - billy integration will be unusable!", error);
         }
@@ -14,11 +20,11 @@ module.exports = (config, purchases) => {
     });
 
     return {
-        createOrderTransaction: (id, callback) => createOrderTransaction(purchases, config, state, id, callback)
+        createOrderTransaction: (id, callback) => createOrderTransaction(purchases, config, billyRequest, state, id, callback)
     };
 };
 
-function createOrderTransaction(purchases, config, state, id, callback) {
+function createOrderTransaction(purchases, config, billyRequest, state, id, callback) {
     purchases.get(id, (error, purchase) => {
         if(error) {
             return callback(error);
@@ -37,9 +43,8 @@ function createOrderTransaction(purchases, config, state, id, callback) {
                     .then(() => page.pdf({ printBackground: true }));
             })
             .then((pdfReceiptBuffer) => {
-                request.post(`${config.baseUrl}/files`, {
+                billyRequest.post(`/files`, {
                     headers: {
-                        'X-Access-Token': config.apiKey,
                         'Content-Type': 'application/pdf',
                         'X-Filename': 'kvittering.pdf',
                     },
@@ -98,10 +103,7 @@ function createOrderTransaction(purchases, config, state, id, callback) {
                     let { salesAccount, salesVatAccount, owedByPartnersAccount } = state.accounts;
 
                     // Create transaction + postings matching purchase in Billy, incl attachments
-                    request.post(`${config.baseUrl}/daybookTransactions`, {
-                        headers: {
-                            "X-Access-Token": config.apiKey
-                        },
+                    billyRequest.post(`/daybookTransactions`, {
                         json: {
                             daybookTransaction: {
                                 organizationId: config.organizationId,
@@ -198,13 +200,9 @@ function createOrderTransaction(purchases, config, state, id, callback) {
     });
 }
 
-function getRelevantAccounts(config, callback) {
+function getRelevantAccounts(billyRequest, callback) {
     async.map([ 1110, 7250, 5820 ], function(accountNo, callback) {
-        request.get(`${config.baseUrl}/accounts?accountNo=${accountNo}`, {
-            headers: {
-                'X-Access-Token': config.apiKey,
-            }
-        }, (error, response) => {
+        billyRequest.get(`/accounts?accountNo=${accountNo}`, (error, response) => {
             if(error) {
                 return callback(error);
             }
