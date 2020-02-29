@@ -11,6 +11,17 @@ module.exports = (config, purchases) => {
         },
     });
 
+    Puppeteer.launch({
+        //DANGERZONE: adding --no-sandbox because the docker container is running as root,
+        //            and chromium cannot run without --no-sandbox when running as root.
+        //            So here we are. This disables the sandbox. A better solution might
+        //            be to change the Dockerfile, but I'm not sure about the consequences
+        //            of that atm.
+        args: [ "--no-sandbox" ]
+    })
+    .then((newBrowser) => state.browser = newBrowser)
+    .then(() => console.log("[billy] created chromium instance to use for pdf generation"));
+
     getRelevantAccounts(billyRequest, (error, accounts) => {
         if(error) {
             return console.error("failed to get accounts - billy integration will be unusable!", error);
@@ -36,18 +47,14 @@ function createOrderTransaction(purchases, config, billyRequest, state, id, call
             }
 
             // Create and upload pdf receipt to Billy
-            Puppeteer.launch({
-                //DANGERZONE: adding --no-sandbox because the docker container is running as root,
-                //            and chromium cannot run without --no-sandbox when running as root.
-                //            So here we are. This disables the sandbox. A better solution might
-                //            be to change the Dockerfile, but I'm not sure about the consequences
-                //            of that atm.
-                args: [ "--no-sandbox" ]
-            })
-            .then((browser) => browser.newPage())
+            state.browser.newPage()
             .then((page) => {
                 return page.setContent(htmlReceipt)
-                    .then(() => page.pdf({ printBackground: true }));
+                    .then(() => page.pdf({ printBackground: true })
+                    .then((pdf) => {
+                        page.close();
+                        return pdf;
+                    }));
             })
             .then((pdfReceiptBuffer) => {
                 billyRequest.post(`/files`, {
