@@ -36,7 +36,14 @@ function createOrderTransaction(purchases, config, billyRequest, state, id, call
             }
 
             // Create and upload pdf receipt to Billy
-            Puppeteer.launch()
+            Puppeteer.launch({
+                //DANGERZONE: adding --no-sandbox because the docker container is running as root,
+                //            and chromium cannot run without --no-sandbox when running as root.
+                //            So here we are. This disables the sandbox. A better solution might
+                //            be to change the Dockerfile, but I'm not sure about the consequences
+                //            of that atm.
+                args: [ "--no-sandbox" ]
+            })
             .then((browser) => browser.newPage())
             .then((page) => {
                 return page.setContent(htmlReceipt)
