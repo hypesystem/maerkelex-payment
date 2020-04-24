@@ -209,15 +209,44 @@
                 font-size: 0.9em;
             }
             .btn {
-                border: none;
                 color: white;
                 font-weight: bold;
                 font-family: 'Open Sans', sans-serif;
-                padding: 6px 5px;
+                padding: 5px 4px;
+                border: 1px solid #089fda;
                 background: #089fda;
-                display: block;
+                display: inline-block;
                 text-decoration: none;
                 text-align: center;
+                cursor: pointer;
+            }
+            .btn-unimp {
+                color: #089fda;
+                background: transparent;
+            }
+            .btn-big {
+                display: block;
+                padding: 8px 6px;
+            }
+            .edit-info-form {
+                display: flex;
+                flex-direction: column;
+                background: rgba(0,0,0,0.05);
+                padding: 15px;
+            }
+            .edit-info-form-hidden {
+                display: none;
+            }
+            .edit-info-form label {
+                margin-bottom: 1em;
+            }
+            .edit-info-form label > span {
+                display: block;
+                font-weight: bold;
+            }
+            .edit-info-form input, .edit-info-form textarea {
+                font-family: inherit;
+                font-size: inherit;
             }
         </style>
     </head>
@@ -326,6 +355,10 @@
                 return;
             }
             tbody.innerHTML = renderEntries(entries);
+
+            Array.prototype.forEach.call(tbody.querySelectorAll(".edit-info-form"), function(editInfoForm) {
+                editInfoForm.addEventListener("submit", saveOrderInfo);
+            });
         }
 
         function renderEntries(entries) {
@@ -343,7 +376,7 @@
                         (entry.status == "pending" ?
                             `<div class="mark-as-sent">
                                 <div>Når du har afsendt ordren til kunden, kan du markere det her, så sendes kvitteringen.</div>
-                                <a class="btn" href="/admin/orders/${entry.id}/mark-dispatched">
+                                <a class="btn btn-big" href="/admin/orders/${entry.id}/mark-dispatched">
                                     Marker som afsendt
                                 </a>
                             </div>`
@@ -351,17 +384,40 @@
                         (entry.status == "dispatched" ?
                             `<div class="see-receipt">
                                 <div>Her kan du se kvitteringen, som blev sendt til kunden.</div>
-                                <a class="btn" href="/admin/orders/${entry.id}/receipt" target="_blank">
+                                <a class="btn btn-big btn-unimp" href="/admin/orders/${entry.id}/receipt" target="_blank">
                                     Se kvittering
                                 </a>
                             </div>`
                         : "") +
-                        `<strong>Adresse</strong><br>
-                        ${entry.address.replace(/\n/g, '<br>')}<br>
+                        `<div class="info-container">
+                            <strong>Adresse</strong><br>
+                            ${entry.address.replace(/\n/g, '<br>')}<br>
+                            <br>
+                            <strong>Kontaktinformation</strong><br>
+                            Email <a href="mailto:${entry.email}">${entry.email}</a><br>
+                            Telefon <a href="tel:${entry.phoneNumber}">${entry.phoneNumber}</a><br>
+                        </div>
                         <br>
-                        <strong>Kontaktinformation</strong><br>
-                        Email <a href="mailto:${entry.email}">${entry.email}</a><br>
-                        Telefon <a href="tel:${entry.phoneNumber}">${entry.phoneNumber}</a><br>
+                        <form class="edit-info-form edit-info-form-hidden">
+                            <input type="hidden" name="id" value="${entry.id}">
+                            <label for="address">
+                                <span>Adresse</span>
+                                <textarea name="address">${entry.address}</textarea>
+                            </label>
+                            <label for="Email">
+                                <span>Email</span>
+                                <input type="email" name="email" value="${entry.email}">
+                            </label>
+                            <label for="phone-number">
+                                <span>Telefonnummer</span>
+                                <input type="text" name="phone-number" value="${entry.phoneNumber}">
+                            </label>
+                            <div>
+                                <button type="submit" class="btn">Gem</button>
+                                <a href="javascript:cancelOrderInfoEdit('${entry.id}');" class="btn btn-unimp">Fortryd</a>
+                            </div>
+                        </form>
+                        <a href="javascript:editOrderInfo('${entry.id}');" class="btn btn-unimp edit-info-btn">Ret info</a><br>
                     </td>
                 </tr>`;
             }).join("");
@@ -392,6 +448,57 @@
             linkField.innerHTML = '<a href="javascript:openOrder(\'' + entry.id + '\');">Åbn ordre</a>';
             var orderView = document.querySelector(".more-info-" + id);
             orderView.setAttribute("style", "display:none;");
+        }
+
+        function editOrderInfo(id) {
+            var form = document.querySelector(".more-info-" + id + " .edit-info-form");
+            var editButton = document.querySelector(".more-info-" + id + " .edit-info-btn");
+
+            form.classList.remove("edit-info-form-hidden");
+            editButton.setAttribute("style", "display:none;");
+        }
+
+        function cancelOrderInfoEdit(id) {
+            var form = document.querySelector(".more-info-" + id + " .edit-info-form");
+            var editButton = document.querySelector(".more-info-" + id + " .edit-info-btn");
+
+            form.classList.add("edit-info-form-hidden");
+            editButton.removeAttribute("style");
+        }
+
+        async function saveOrderInfo(event) {
+            event.preventDefault();
+
+            Array.prototype.forEach.call(this.elements, (element) => element.setAttribute("disabled", true));
+
+            const response = await fetch("/admin/orders/" + this.id.value, {
+                method: "PUT",
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    address: this.address.value,
+                    email: this.email.value,
+                    phoneNumber: this["phone-number"].value
+                })
+            });
+
+            Array.prototype.forEach.call(this.elements, (element) => element.removeAttribute("disabled"));
+
+            if(response.status !== 200) {
+                alert("Failed to save");
+                return;
+            }
+
+            this.parentElement.querySelector(".info-container").innerHTML = `
+                <strong>Adresse</strong><br>
+                ${this.address.value.replace(/\n/g, '<br>')}<br>
+                <br>
+                <strong>Kontaktinformation</strong><br>
+                Email <a href="mailto:${this.email.value}">${this.email.value}</a><br>
+                Telefon <a href="tel:${this["phone-number"].value}">${this["phone-number"].value}</a><br>
+            `;
         }
 
         function loadOrders(backoff) {
