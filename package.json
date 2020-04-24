@@ -5,7 +5,7 @@
   "description": "Payment gateway for buying badges from Maerkelex",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon start",
+    "start": "nodemon -e js,html,css,json start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "integration-tests": "cucumber-js integrationTests"
   },
