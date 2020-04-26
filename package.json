@@ -1,6 +1,6 @@
 {
   "name": "maerkelex-payment",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "repository": "https://github.com/hypesystem/maerkelex-payment",
   "description": "Payment gateway for buying badges from Maerkelex",
   "main": "index.js",
@@ -14,7 +14,7 @@
   "dependencies": {
     "async": "^2.4.1",
     "body-parser": "^1.19.0",
-    "braintree": "^1.46.0",
+    "braintree": "^2.22.0",
     "config": "^1.24.0",
     "cookie-session": "^2.0.0-rc.1",
     "express": "^4.17.1",
@@ -24,13 +24,12 @@
     "pg": "^6.1.6",
     "pg-pool": "^1.6.0",
     "puppeteer": "^2.1.1",
-    "request": "^2.79.0",
+    "request": "^2.88.2",
     "uuid": "^3.0.1"
   },
   "devDependencies": {
     "cucumber": "^2.0.0-rc.9",
     "nodemon": "^2.0.2",
-    "request": "^2.81.0",
-    "zombie": "^5.0.5"
+    "zombie": "^6.1.4"
   }
 }
