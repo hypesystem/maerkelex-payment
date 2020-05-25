@@ -184,6 +184,7 @@
                 }, function(error, instance) {
                     if(error) {
                         console.error("Failed to set up dropin", error);
+                        logFailedPayment("{{ orderNumber }}", null, error);
                         alert("Der gik noget galt med opsætningen af betaling, prøv igen.");
                         return;
                     }
@@ -198,11 +199,12 @@
 
                     this.querySelector("button[type=submit]").setAttribute("disabled", true);
 
-                    dropinInstance.requestPaymentMethod({ threeDSecure }, function(error, payload) {
+                    dropinInstance.requestPaymentMethod(/*{ threeDSecure }*/ "hello", function(error, payload) {
                         if(error) {
                             console.error("Failed to request payment method", error);
+                            logFailedPayment("{{ orderNumber }}", threeDSecure, error);
                             alert("Der gik noget galt med verificeringen af betalingsmetode, prøv igen!");
-                            this.querySelector("button[type=submit]").removeAttribute("disabled");
+                            dropInForm.querySelector("button[type=submit]").removeAttribute("disabled");
                             return;
                         }
 
@@ -210,6 +212,20 @@
                         dropInForm.payment_method_nonce.value = payload.nonce;
 
                         dropInForm.submit();
+                    });
+                }
+
+                function logFailedPayment(orderNumber, threeDSecureData, error) {
+                    fetch("/log-purchase-error", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            orderNumber,
+                            threeDSecureData,
+                            error: error.toString(),
+                        })
                     });
                 }
             </script>

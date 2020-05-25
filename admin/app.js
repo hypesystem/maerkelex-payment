@@ -6,6 +6,7 @@ const listOrdersJsonEndpoint = require("./listOrdersJson/endpoint");
 const markDispatchedEndpoint = require("./markDispatched/endpoint");
 const viewReceiptEndpoint = require("./viewReceipt/endpoint");
 const accountingOverviewEndpoint = require("./accounting/overview/endpoint");
+const failedOrdersOverviewEndpoint = require("./failures/overview/endpoint");
 const markOrderPostedEndpoint = require("./accounting/mark-posted/endpoint");
 const postOrderToAccountingEndpoint = require("./accounting/post/endpoint");
 const loginApp = require("./login/app");
@@ -22,6 +23,7 @@ module.exports = (db, purchases, billy) => {
     app.get("/orders/:id/mark-dispatched", authenticate(users), markDispatchedEndpoint(purchases));
     app.get("/orders/:id/receipt", authenticate(users), viewReceiptEndpoint(purchases));
     app.get("/accounting", authenticate(users), accountingOverviewEndpoint(purchases));
+    app.get("/failures", authenticate(users), failedOrdersOverviewEndpoint(purchases));
     app.put("/orders/:id", authenticate(users), express.json(), updateOrderInfoEndpoint(purchases));
     app.post("/orders/:id/mark-posted", authenticate(users), markOrderPostedEndpoint(purchases));
     app.post("/orders/:id/post", authenticate(users), postOrderToAccountingEndpoint(billy));
