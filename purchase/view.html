@@ -199,7 +199,7 @@
 
                     this.querySelector("button[type=submit]").setAttribute("disabled", true);
 
-                    dropinInstance.requestPaymentMethod(/*{ threeDSecure }*/ "hello", function(error, payload) {
+                    dropinInstance.requestPaymentMethod({ threeDSecure }, function(error, payload) {
                         if(error) {
                             console.error("Failed to request payment method", error);
                             logFailedPayment("{{ orderNumber }}", threeDSecure, error);
