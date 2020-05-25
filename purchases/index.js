@@ -157,7 +157,7 @@ function completePurchase(paymentGateway, db, mailer, id, nonce, callback) {
                 });
             }
             if(!result.success) {
-                return failPurchase(db, id, result, callback);
+                return failPurchase(db, purchase, result, callback);
             }
             purchase.data.completedAt = new Date().toISOString();
             updatePurchase(db, id, "completed", purchase.data, (error) => {
@@ -227,15 +227,26 @@ function updatePurchase(db, id, status, data, callback) {
     ], callback);
 }
 
-function failPurchase(db, purchaseId, result, callback) {
+function failPurchase(db, purchase, result, callback) {
     console.error("Payment request was unsuccesful", result, result.errors.deepErrors());
 
-    db.query("UPDATE purchase SET status = $1::text WHERE id = $2::uuid", [ "failed", purchaseId ], (error) => {
+    if(!purchase.data.errors) {
+        purchase.data.errors = [];
+    }
+
+    purchase.data.errors.push({
+        at: (new Date).toISOString(),
+        data: result,
+        description: "Payment request unsuccesful",
+    });
+
+    updatePurchase(db, purchase.id, "failed", purchase.data, (error) => {
         if(error) {
             return callback({
                 trace: new Error("Failed to set purchase as failed"),
                 previous: error,
-                purchaseId: purchaseId
+                purchaseId: purchase.id,
+                result,
             });
         }
         callback({
