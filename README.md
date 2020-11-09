@@ -28,7 +28,7 @@ You see, static sites can easily have forms and frontend javascript building for
 - expose price and shipping price in api (done)
 - show form if mærke can be sold (done)
 - DANGER: pressing s in form starts search ugh (done)
-- **missing** validate form on client side (done)
+- validate form on client side (done)
 
 ## Todo v0.2
 
@@ -39,7 +39,6 @@ You see, static sites can easily have forms and frontend javascript building for
 - **missing** Mærkelex staff: see overview of all income, mærkelex profits, users' remainders,
   uncompleted orders, etc... (monitor)
 - **missing** fontpage link to overview of all badges sold through Mærkelex
-- **missing** google analytics
 
 ## Todo v0.3 **missing**
 
