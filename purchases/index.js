@@ -16,7 +16,7 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
     return {
         start: (requestBody, order, customerInfo, callback) => startPurchase(maerkelex, paymentGateway, db, requestBody, order, customerInfo, callback),
         complete: (id, nonce, callback) => completePurchase(paymentGateway, db, mailer, id, nonce, callback),
-        sendReceipt: (id, callback) => sendPurchaseReceipt(db, mailer, id, callback),
+        sendReceipt: (id, callback) => sendPurchaseReceipt(paymentGateway, db, mailer, id, callback),
         list: (callback) => listPurchases(db, callback),
         get: (id, callback) => getPurchase(db, id, callback),
         update: (purchase, callback) => updatePurchase(db, purchase.id, purchase.status, purchase.data, callback),
@@ -69,10 +69,12 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
 
             var priceForBadges = badge.price * order.count;
             var total = (badge.shippingPrice + priceForBadges).toFixed(2);
+            const isPreorder = badge.preorder;
 
             var paymentId = uuid.v4();
             var viewModel = {
                 date: new Date().toISOString().substring(0, 10),
+                isPreorder,
                 orderLines: [
                     {
                         description: badge.name + " mærke, " + order.count + " stk.",
@@ -96,6 +98,7 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
             var paymentData = {
                 viewModel: viewModel,
                 paymentId: paymentId,
+                isPreorder,
                 total: total,
                 startedAt: new Date().toISOString(),
                 originalRequest: requestBody,
@@ -142,24 +145,10 @@ function completePurchase(paymentGateway, db, mailer, id, nonce, callback) {
                 purchase: purchase
             });
         }
-        paymentGateway.transaction.sale({
-            amount: purchase.data.total,
-            paymentMethodNonce: nonce,
-            options: {
-                submitForSettlement: true
-            }
-        }, (error, result) => {
+        chargeForPreorderOrSaveCreditCardForPurchase(paymentGateway, nonce, purchase, (error) => {
             if(error) {
-                return callback({
-                    trace: new Error("Payment completion failed"),
-                    previous: error,
-                    purchase: purchase
-                });
+                return callback(error);
             }
-            if(!result.success) {
-                return failPurchase(db, purchase, result, callback);
-            }
-            purchase.data.completedAt = new Date().toISOString();
             updatePurchase(db, id, "completed", purchase.data, (error) => {
                 if(error) {
                     return callback({
@@ -196,6 +185,58 @@ function completePurchase(paymentGateway, db, mailer, id, nonce, callback) {
                 });
             });
         });
+    });
+}
+
+function chargeForPreorderOrSaveCreditCardForPurchase(paymentGateway, paymentMethodNonce, purchase, callback) {
+    if(purchase.data.isPreorder) {
+        paymentGateway.transaction.sale({
+            amount: purchase.data.total,
+            paymentMethodNonce,
+            options: {
+                submitForSettlement: true
+            }
+        }, (error, result) => {
+            if(error) {
+                return callback({
+                    trace: new Error("Payment completion failed"),
+                    previous: error,
+                    purchase: purchase
+                });
+            }
+            if(!result.success) {
+                return failPurchase(db, purchase, result, callback);
+            }
+            purchase.data.completedAt = new Date().toISOString();
+            callback();
+        });
+        return;
+    }
+
+    paymentGateway.customer.create({
+        paymentMethodNonce,
+        creditCard: {
+            options: {
+                verifyCard: true,
+                verificationAmount: purchase.data.total,
+            },
+        },
+        //TODO: deviceData? for advanced fraud management?
+    }, (error, result) => {
+        if(error) {
+            return callback({
+                trace: new Error("Failed to validate credit card and save in Braintree Vault"),
+                previous: error,
+                purchase,
+            });
+        }
+        if(!result.success) {
+            return failPurchase(db, purchase, result, callback);
+        }
+        purchase.data.customerId = result.customer.id;
+        purchase.data.paymentMethodToken = result.customer.paymentMethods[0].token;
+        purchase.data.completedAt = new Date().toISOString();
+        callback();
     });
 }
 
@@ -256,7 +297,7 @@ function failPurchase(db, purchase, result, callback) {
     });
 }
 
-function sendPurchaseReceipt(db, mailer, id, callback) {
+function sendPurchaseReceipt(paymentGateway, db, mailer, id, callback) {
     getPurchase(db, id, (error, purchase) => {
         if(error) {
             return callback(error);
@@ -268,6 +309,10 @@ function sendPurchaseReceipt(db, mailer, id, callback) {
                 purchase: purchase
             });
         }
+        ensureCustomerHasBeenCharged(paymentGateway, purchase, (error) => {
+            if(error) {
+                return callback(error);
+            }
         var receiptEmail = renderHtmlReceipt(purchase);
         var receiptEmailText = mustache.render(receiptEmailTextLayout, purchase.data.viewModel);
         var recipient = purchase.data.viewModel.customerInfo;
@@ -294,6 +339,45 @@ function sendPurchaseReceipt(db, mailer, id, callback) {
                 }
                 callback();
             });
+        });
+        });
+    });
+}
+
+function ensureCustomerHasBeenCharged(paymentGateway, purchase, callback) {
+    //If a paymentMethodToken does not exist, we have already taken the money
+    if(!purchase.data.paymentMethodToken) {
+        return callback();
+    }
+
+    paymentGateway.transaction.sale({
+        paymentMethodToken: purchase.data.paymentMethodToken,
+        amount: purchase.data.total,
+        options: {
+            submitForSettlement: true,
+        },
+    }, (error, result) => {
+        if(error) {
+            return callback({
+                trace: new Error("Failed to charge customer with saved card info"),
+                previous: error,
+                purchase,
+            });
+        }
+        if(!result.success) {
+            return failPurchase(db, purchase, result, callback);
+        }
+        paymentGateway.customer.delete(purchase.data.customerId, (error) => {
+            if(error) {
+                //We don't want to fail hard because that might lead to doublecharging
+                console.error({
+                    trace: new Error("Failed to clean up customer (deleting credit card info) after charging."),
+                    previous: error,
+                    purchase,
+                });
+                return callback();
+            }
+            callback();
         });
     });
 }
