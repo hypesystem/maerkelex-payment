@@ -1,6 +1,6 @@
 {
   "name": "maerkelex-payment",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "repository": "https://github.com/hypesystem/maerkelex-payment",
   "description": "Payment gateway for buying badges from Maerkelex",
   "main": "index.js",
