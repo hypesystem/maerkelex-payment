@@ -367,7 +367,7 @@
                     <td class="date-field">${entry.date.replace(" ","<br>")}</td>
                     <td>${entry.customer}</td>
                     <td class="status">${translateStatus(entry.status)}<br><span class="status-date">${entry.statusChangeDate || "?"}</span></td>
-                    <td>${entry.description}</td>
+                    <td>${entry.isPreorder ? 'PRE: ' : ''}${entry.description}</td>
                     <td class="income">${entry.total}</td>
                     <td class="actions"><a href="javascript:openOrder('${entry.id}');">Åbn ordre</a></td>
                 </tr>

@@ -12,6 +12,7 @@ module.exports = (purchases) => (req, res) => {
                 return {
                     id: order.id,
                     date: prettifyDate(order.data.completedAt),
+                    isPreorder: order.data.isPreorder || false,
                     statusChangeDate: prettifyDate(selectLatestStateDate(order.data)),
                     customer: viewModel.customerInfo.name + ", " + viewModel.customerInfo.invoicingAddress.city,
                     address: stringifyAddress(viewModel.customerInfo.deliveryAddress),
