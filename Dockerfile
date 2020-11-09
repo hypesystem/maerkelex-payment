@@ -1,5 +1,4 @@
 FROM node:12.16.1-alpine
-MAINTAINER Asbjørn Thegler <devops@deranged.dk>
 
 # Make chromium available and used in Puppeteer
 # (based on https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-puppeteer-in-docker)
