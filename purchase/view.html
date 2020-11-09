@@ -111,7 +111,10 @@
         </div>
         <div class="order-bit">
             <h1>Ordreoversigt</h1>
-            <p>Din ordre sendes til <strong>{{ deliveryAddressShort }}</strong> hurtigst muligt.
+            <p>Din ordre sendes til <strong>{{ deliveryAddressShort }}</strong> hurtigst muligt.</p>
+            {{ #isPreorder }}
+                <p>Din bestilling er en forudbestilling, så pengene trækkes med det samme, og ordren sendes når lageret er ankommet.</p>
+            {{ /isPreorder }}
             <table>
                 <thead>
                     <tr>
@@ -167,8 +170,6 @@
                         countryCodeAlpha2: "DK"
                     },
                     additionalInformation: {
-                        shippingGivenName: "{{ customerInfo.deliveryAddress.name }}".split(" ")[0],
-                        shippingSurname: "{{ customerInfo.deliveryAddress.name }}".split(" ").slice(1).join(" "),
                         shippingAddress: {
                             streetAddress: "{{ customerInfo.deliveryAddress.address }}",
                             postalCode: "{{ customerInfo.deliveryAddress.postalCode }}",
