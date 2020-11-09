@@ -313,33 +313,33 @@ function sendPurchaseReceipt(paymentGateway, db, mailer, id, callback) {
             if(error) {
                 return callback(error);
             }
-        var receiptEmail = renderHtmlReceipt(purchase);
-        var receiptEmailText = mustache.render(receiptEmailTextLayout, purchase.data.viewModel);
-        var recipient = purchase.data.viewModel.customerInfo;
-        mailer.send({
-            subject: "Din ordre fra Mærkelex er på vej. Her er din kvittering.",
-            html: receiptEmail,
-            text: receiptEmailText
-        }, recipient, (error) => {
-            if(error) {
-                return callback({
-                    trace: new Error("Failed to send receipt email"),
-                    previous: error,
-                    purchase: purchase
-                });
-            }
-            purchase.data.dispatchedAt = new Date().toISOString();
-            updatePurchase(db, id, "dispatched", purchase.data, (error) => {
+            var receiptEmail = renderHtmlReceipt(purchase);
+            var receiptEmailText = mustache.render(receiptEmailTextLayout, purchase.data.viewModel);
+            var recipient = purchase.data.viewModel.customerInfo;
+            mailer.send({
+                subject: "Din ordre fra Mærkelex er på vej. Her er din kvittering.",
+                html: receiptEmail,
+                text: receiptEmailText
+            }, recipient, (error) => {
                 if(error) {
                     return callback({
-                        trace: new Error("Failed to set purchase as dispatched"),
+                        trace: new Error("Failed to send receipt email"),
                         previous: error,
                         purchase: purchase
                     });
                 }
-                callback();
+                purchase.data.dispatchedAt = new Date().toISOString();
+                updatePurchase(db, id, "dispatched", purchase.data, (error) => {
+                    if(error) {
+                        return callback({
+                            trace: new Error("Failed to set purchase as dispatched"),
+                            previous: error,
+                            purchase: purchase
+                        });
+                    }
+                    callback();
+                });
             });
-        });
         });
     });
 }
