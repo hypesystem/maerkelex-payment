@@ -169,13 +169,13 @@
                         postalCode: "{{ customerInfo.invoicingAddress.postalCode }}",
                         countryCodeAlpha2: "DK"
                     },
-                    additionalInformation: {
+                    /*additionalInformation: {
                         shippingAddress: {
                             streetAddress: "{{ customerInfo.deliveryAddress.address }}",
                             postalCode: "{{ customerInfo.deliveryAddress.postalCode }}",
                             countryCodeAlpha: "DK"
                         }
-                    }
+                    }*/
                 };
 
                 braintree.dropin.create({
