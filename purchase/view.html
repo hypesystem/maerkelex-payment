@@ -226,6 +226,7 @@
                             orderNumber,
                             threeDSecureData,
                             error: error.toString(),
+                            errorObject: JSON.parse(JSON.stringify(error)),
                         })
                     });
                 }

@@ -1,5 +1,5 @@
 module.exports = (purchases) => (req, res) => {
-    const { orderNumber, threeDSecureData, error: purchaseError } = req.body;
+    const { orderNumber, threeDSecureData, error: purchaseError, errorObject } = req.body;
     
     if(!orderNumber || !purchaseError) {
         console.error("Error in logging statement: missing order number or error.", { orderNumber, threeDSecureData, purchaseError });
@@ -18,7 +18,10 @@ module.exports = (purchases) => (req, res) => {
 
         purchase.data.errors.push({
             at: (new Date).toISOString(),
-            data: threeDSecureData,
+            data: {
+                "3DS": threeDSecureData,
+                errorObject,
+            },
             description: purchaseError,
         });
 
