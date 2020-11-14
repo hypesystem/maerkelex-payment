@@ -27,7 +27,7 @@ module.exports = (purchases) => (req, res) => {
                 return {
                     id: o.id,
                     latestErrorAt: prettifyDate(o.data.errors[o.data.errors.length - 1].at),
-                    errors: o.data.errors.map((error) => {
+                    errors: o.data.errors.reverse().map((error) => {
                         return {
                             at: prettifyDate(error.at),
                             data: error.data && JSON.stringify(error.data, null, 4),
