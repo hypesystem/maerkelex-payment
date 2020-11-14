@@ -158,25 +158,38 @@
                 var dropInForm = document.getElementById("dropin-form");
                 var dropinInstance = null;
 
-                var threeDSecure = {
+                var minimalThreeDSecure = {
                     amount: "{{ total }}",
                     email: "{{ customerInfo.email }}",
+                };
+
+                var invoicingName = "{{ customerInfo.invoicingAddress.name }}"
+                    .replace("æ", "ae")
+                    .replace("ø", "oe")
+                    .replace("å", "aa");
+
+                var threeDSecure = {
                     billingAddress: {
-                        givenName: "{{ customerInfo.invoicingAddress.name }}".split(" ")[0],
-                        surname: "{{ customerInfo.invoicingAddress.name }}".split(" ").slice(1).join(" "),
+                        givenName: invoicingName.split(" ")[0],
+                        surname: invoicingName.split(" ").slice(1).join(" "),
                         phoneNumber: "{{ customerInfo.phoneNumber }}",
                         streetAddress: "{{ customerInfo.invoicingAddress.address }}",
                         postalCode: "{{ customerInfo.invoicingAddress.postalCode }}",
                         countryCodeAlpha2: "DK"
                     },
-                    /*additionalInformation: {
+                    additionalInformation: {
                         shippingAddress: {
                             streetAddress: "{{ customerInfo.deliveryAddress.address }}",
                             postalCode: "{{ customerInfo.deliveryAddress.postalCode }}",
                             countryCodeAlpha: "DK"
                         }
-                    }*/
+                    }
                 };
+
+                //Copy minimal keys to expanded list (avoid duplication)
+                Object.keys(minimalThreeDSecure).forEach(function(key) {
+                    threeDSecure[key] = minimalThreeDSecure[key];
+                })
 
                 braintree.dropin.create({
                     authorization: '{{ &clientToken }}',
@@ -200,10 +213,14 @@
 
                     this.querySelector("button[type=submit]").setAttribute("disabled", true);
 
-                    dropinInstance.requestPaymentMethod({ threeDSecure }, function(error, payload) {
+                    performThreeDSecureCheck(function(error, payload) {
                         if(error) {
                             console.error("Failed to request payment method", error);
-                            logFailedPayment("{{ orderNumber }}", threeDSecure, error);
+                            var threeDSecureData = {
+                                full: threeDSecure,
+                                minimal: minimalThreeDSecure
+                            };
+                            logFailedPayment("{{ orderNumber }}", threeDSecureData, error);
                             alert("Der gik noget galt med verificeringen af betalingsmetode, prøv igen!");
                             dropInForm.querySelector("button[type=submit]").removeAttribute("disabled");
                             return;
@@ -213,6 +230,24 @@
                         dropInForm.payment_method_nonce.value = payload.nonce;
 
                         dropInForm.submit();
+                    });
+                }
+
+                function performThreeDSecureCheck(callback) {
+                    dropinInstance.requestPaymentMethod({ threeDSecure }, function(error, payload) {
+                        if(error) {
+                            dropinInstance.requestPaymentMethod({ threeDSecure: minimalThreeDSecure }, function(error2, payload) {
+                                if(error2) {
+                                    var resultingError = new Error("Failed 3ds check with both full and minimal data");
+                                    resultingError.firstError = error1;
+                                    resultingError.secondError = error2;
+                                    return callback(null, resultingError);
+                                }
+                                callback(null, payload);
+                            });
+                            return;
+                        }
+                        callback(null, payload);
                     });
                 }
 
