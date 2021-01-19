@@ -101,7 +101,7 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
                 paymentId: paymentId,
                 isPreorder,
                 total: total,
-                startedAt: new Date().toISOString(),
+                startedAt: new Date().toISOString(), //TODO: duplicate, also inserted on creation
                 originalRequest: requestBody,
                 owner: "admin"
             };
