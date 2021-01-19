@@ -96,6 +96,7 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
             };
 
             var paymentData = {
+                badgeId: order.badgeId,
                 viewModel: viewModel,
                 paymentId: paymentId,
                 isPreorder,
