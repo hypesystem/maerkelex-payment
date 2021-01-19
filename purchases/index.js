@@ -310,7 +310,7 @@ function sendPurchaseReceipt(paymentGateway, db, mailer, id, callback) {
                 purchase: purchase
             });
         }
-        ensureCustomerHasBeenCharged(paymentGateway, purchase, (error) => {
+        ensureCustomerHasBeenCharged(paymentGateway, db, purchase, (error) => {
             if(error) {
                 return callback(error);
             }
@@ -345,7 +345,7 @@ function sendPurchaseReceipt(paymentGateway, db, mailer, id, callback) {
     });
 }
 
-function ensureCustomerHasBeenCharged(paymentGateway, purchase, callback) {
+function ensureCustomerHasBeenCharged(paymentGateway, db, purchase, callback) {
     //If a paymentMethodToken does not exist, we have already taken the money
     if(!purchase.data.paymentMethodToken) {
         return callback();
