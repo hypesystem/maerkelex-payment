@@ -241,7 +241,7 @@
                                     var resultingError = new Error("Failed 3ds check with both full and minimal data");
                                     resultingError.firstError = error1;
                                     resultingError.secondError = error2;
-                                    return callback(null, resultingError);
+                                    return callback(resultingError);
                                 }
                                 callback(null, payload);
                             });
