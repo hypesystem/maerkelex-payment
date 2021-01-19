@@ -11,8 +11,15 @@ module.exports = (purchases) => (req, res) => {
         }
 
         let failedOrders = orders
-            .filter(x => x.data.errors && x.data.errors.length)
+            .filter(x => x.status == "failed" || (x.data.errors && x.data.errors.length))
             .sort((a, b) => {
+                if(!a.data.errors || !a.data.errors.length) {
+                    return -1;
+                }
+                if(!b.data.errors || !b.data.errors.length) {
+                    return 1;
+                }
+
                 const aLatest = a.data.errors[a.data.errors.length - 1];
                 const bLatest = b.data.errors[b.data.errors.length - 1];
                 if(aLatest < bLatest) {
@@ -24,10 +31,11 @@ module.exports = (purchases) => (req, res) => {
                 return 0;
             })
             .map((o) => {
+                const latestError = o.data.errors && o.data.errors.length && o.data.errors[o.data.errors.length - 1];
                 return {
                     id: o.id,
-                    latestErrorAt: prettifyDate(o.data.errors[o.data.errors.length - 1].at),
-                    errors: o.data.errors.reverse().map((error) => {
+                    latestErrorAt: latestError && prettifyDate(latestError.at),
+                    errors: !latestError ? [] : o.data.errors.reverse().map((error) => {
                         return {
                             at: prettifyDate(error.at),
                             data: error.data && JSON.stringify(error.data, null, 4),
