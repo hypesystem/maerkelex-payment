@@ -304,7 +304,13 @@
                             {{ &description }}
                         </td>
                         <td class="failure-actions">
-                            <button class="btn">Vis data</button>
+                            <button class="btn" data-action-show-data>Vis data</button>
+                            <br><br>
+                            <select data-input-status>
+                                <option value="completed">Køb gennemført</option>
+                                <option value="dispatched">Afsendt</option>
+                            </select>
+                            <button class="btn" data-action-set-status>Gem status</button>
                         </td>
                     </tr>
                     <tr class="failure-data hidden" data-id="{{ id }}">
@@ -324,14 +330,38 @@
             </table>
         </div>
         <script>
-            let failureActionsBtns = document.querySelectorAll(".failure-actions .btn");
+            const failureActionsBtns = document.querySelectorAll(".failure-actions [data-action-show-data]");
             Array.prototype.forEach.call(failureActionsBtns, (btn) => {
                 btn.addEventListener("click", function(e) {
-                    console.log("click", this, this.parentNode.parentNode.dataset);
-                    let id = this.parentNode.parentNode.dataset.id;
-                    let dataSection = document.querySelector(`.failure-data[data-id='${id}']`);
+                    const id = this.parentNode.parentNode.dataset.id;
+                    const dataSection = document.querySelector(`.failure-data[data-id='${id}']`);
 
                     dataSection.classList.remove("hidden");
+                });
+            });
+
+            const statusChangeButtons = document.querySelectorAll(".failure-actions [data-action-set-status]");
+            Array.prototype.forEach.call(statusChangeButtons, (btn) => {
+                btn.addEventListener("click", async function(e) {
+                    const row = this.parentNode.parentNode;
+                    const id = row.dataset.id;
+                    const status = row.querySelector(`[data-input-status]`).value;
+
+                    const response = await fetch("/admin/orders/" + id, {
+                        method: "put",
+                        body: JSON.stringify({ status }),
+                        headers: { 'content-type': 'application/json' },
+                    });
+
+                    if(response.status != 200) {
+                        throw {
+                            type: "failure",
+                            trace: new Error("Bad response"),
+                            response
+                        };
+                    }
+
+                    row.classList.add("hidden");
                 });
             });
         </script>
