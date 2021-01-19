@@ -412,6 +412,14 @@
                                 <span>Telefonnummer</span>
                                 <input type="text" name="phone-number" value="${entry.phoneNumber}">
                             </label>
+                            <label for="status">
+                                <span>Status</span>
+                                <select name="status" value="${entry.status === "pending" ? "completed" : (entry.status === "error" ? "failed" : entry.status)}">
+                                    <option value="completed">Køb gennemført</option>
+                                    <option value="dispatched">Afsendt</option>
+                                    <option value="failed">Fejlslagen</option>
+                                </select>
+                            </label>
                             <div>
                                 <button type="submit" class="btn">Gem</button>
                                 <a href="javascript:cancelOrderInfoEdit('${entry.id}');" class="btn btn-unimp">Fortryd</a>
@@ -480,7 +488,8 @@
                 body: JSON.stringify({
                     address: this.address.value,
                     email: this.email.value,
-                    phoneNumber: this["phone-number"].value
+                    phoneNumber: this["phone-number"].value,
+                    status: this.status.value
                 })
             });
 
