@@ -282,7 +282,9 @@ function failPurchase(db, purchase, result, callback) {
         description: "Payment request unsuccesful",
     });
 
-    updatePurchase(db, purchase.id, "failed", purchase.data, (error) => {
+    const newStatus = purchases.status == "completed" ? "completed" : "failed";
+
+    updatePurchase(db, purchase.id, newStatus, purchase.data, (error) => {
         if(error) {
             return callback({
                 trace: new Error("Failed to set purchase as failed"),
