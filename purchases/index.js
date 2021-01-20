@@ -356,6 +356,7 @@ function ensureCustomerHasBeenCharged(paymentGateway, db, purchase, callback) {
     paymentGateway.transaction.sale({
         paymentMethodToken: purchase.data.paymentMethodToken,
         amount: purchase.data.total,
+        transactionSource: 'unscheduled',
         options: {
             submitForSettlement: true,
         },
