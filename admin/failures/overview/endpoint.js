@@ -22,10 +22,10 @@ module.exports = (purchases) => (req, res) => {
 
                 const aLatest = a.data.errors[a.data.errors.length - 1];
                 const bLatest = b.data.errors[b.data.errors.length - 1];
-                if(aLatest < bLatest) {
+                if(aLatest.at < bLatest.at) {
                     return -1;
                 }
-                if(aLatest > bLatest) {
+                if(aLatest.at > bLatest.at) {
                     return 1;
                 }
                 return 0;
