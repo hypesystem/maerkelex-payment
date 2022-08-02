@@ -21,8 +21,7 @@
     "mailgun-mustache-mailer": "0.0.1",
     "mime": "^1.4.1",
     "mustache": "^2.3.0",
-    "pg": "^6.1.6",
-    "pg-pool": "^1.6.0",
+    "pg": "^8.7.3",
     "puppeteer": "^2.1.1",
     "request": "^2.88.2",
     "uuid": "^3.0.1"
