@@ -67,6 +67,10 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
                 });
             }
 
+            if(customerInfo.deliveryAddress.country != "Danmark") {
+                badge.shippingPrice = badge.internationalShippingPrice;
+            }
+
             var priceForBadges = badge.price * order.count;
             var total = (badge.shippingPrice + priceForBadges).toFixed(2);
             const isPreorder = badge.preorder;
@@ -90,7 +94,7 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
                 total: total,
                 vat: (total * 0.2).toFixed(2),
                 customerInfo: customerInfo,
-                deliveryAddressShort: customerInfo.deliveryAddress.address + ", " + customerInfo.deliveryAddress.postalCode + " " + customerInfo.deliveryAddress.city,
+                deliveryAddressShort: customerInfo.deliveryAddress.address + ", " + customerInfo.deliveryAddress.postalCode + " " + customerInfo.deliveryAddress.city + ", " + customerInfo.deliveryAddress.country,
                 clientToken: braintreeResponse.clientToken,
                 orderNumber: paymentId
             };
