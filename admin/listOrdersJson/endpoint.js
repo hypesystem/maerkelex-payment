@@ -38,7 +38,7 @@ function selectLatestStateDate(data) {
 }
 
 function stringifyAddress(address) {
-    return [ address.name, address.address, address.postalCode + " " + address.city ].join("\n");
+    return [ address.name, address.address, address.postalCode + " " + address.city, address.country ].join("\n");
 }
 
 function translateOrderStatus(status) {
