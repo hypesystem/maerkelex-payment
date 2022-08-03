@@ -117,10 +117,18 @@ function parseAddress(body, prefix, callback) {
         });
     }
 
+    var country = body[prefix + "country"];
+    if(!country) {
+        return callback({
+            message: "Der manglede et land på en adresse."
+        });
+    }
+
     callback(null, {
         name: name,
         address: address,
         postalCode: postalCode,
-        city: city
+        city: city,
+        country: country,
     });
 }

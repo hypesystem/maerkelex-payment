@@ -21,6 +21,9 @@ function get(baseUrl, badgeId, callback) {
         if(!badge.shippingPrice) {
             badge.shippingPrice = data.defaultShippingPrice;
         }
+        if(!badge.internationalShippingPrice) {
+            badge.internationalShippingPrice = data.internationalShippingPrice;
+        }
         callback(null, badge);
     });
 }
