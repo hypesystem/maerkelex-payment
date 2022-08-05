@@ -1,0 +1,57 @@
+name: Build and Deploy to GKE
+
+on:
+  push:
+    branches:
+      - 'master'
+
+env:
+  GKE_PROJECT: maerkelex-payment
+  IMAGE: maerkelex-payment
+  CLUSTER_NAME: deranged-eu-1
+  ZONE: europe-west3
+  CONTAINER_REGISTRY: eu.gcr.io
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Setup gcloud
+      uses: google-github-actions/setup-gcloud@v0.2.0
+      with:
+        service_account_key: ${{ secrets.GKE_SA_KEY }}
+        project_id: ${{ env.GKE_PROJECT }}
+
+    - name: Setup docker
+      run: gcloud --quiet auth configure-docker $CONTAINER_REGISTRY
+
+
+    - name: Setup kubectl
+      uses: google-github-actions/get-gke-credentials@v0.2.1
+      with:
+        credentials: ${{ secrets.GKE_SA_KEY }}
+        cluster_name: ${{ env.CLUSTER_NAME }}
+        location: ${{ env.ZONE }}
+
+    - name: Build image
+      run: |-
+        docker build \
+          --tag "$CONTAINER_REGISTRY/$GKE_PROJECT/$IMAGE:$GITHUB_SHA" \
+          --tag "$CONTAINER_REGISTRY/$GKE_PROJECT/$IMAGE:`git describe --always --tags --dirty`" \
+          --tag "$CONTAINER_REGISTRY/$GKE_PROJECT/$IMAGE:latest" \
+          .
+    - name: Publish docker image
+      if: ${{ github.ref == 'refs/heads/master' }}
+      run: |-
+        docker push "$CONTAINER_REGISTRY/$GKE_PROJECT/$IMAGE" --all-tags
+    - name: Deploy to production
+      if: ${{ github.ref == 'refs/heads/master' }}
+      run: |-
+        kubectl -n maerkelex set env deployment/maerkelex-payment DEPLOYED_AT="`date`"
