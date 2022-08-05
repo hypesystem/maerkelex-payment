@@ -6,7 +6,7 @@ on:
       - 'master'
 
 env:
-  GKE_PROJECT: maerkelex-payment
+  GKE_PROJECT: deranged-k8s
   IMAGE: maerkelex-payment
   CLUSTER_NAME: deranged-eu-1
   ZONE: europe-west3
