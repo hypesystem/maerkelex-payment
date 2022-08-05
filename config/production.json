@@ -1,6 +1,6 @@
 {
     "postgres": {
-        "host": "maerkelex-payment-pods"
+        "host": "postgres"
     },
     "braintree": {
         "environment": "Production"
