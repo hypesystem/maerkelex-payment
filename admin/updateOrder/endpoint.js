@@ -12,7 +12,7 @@ module.exports = (purchases) => (req, res) => {
         }
 
         if(address) {
-            if(address.split("\n").length != 3) {
+            if(address.split("\n").length < 3) {
                 return res.status(400).send({ error: "Too few lines in addess" });
             }
 
