@@ -1,4 +1,12 @@
 {
+    "postgres": {
+        "connectionString": "POSTGRES_URI",
+        "ssl": {
+            "ca": "POSTGRES_SSL_CA",
+            "cert": "POSTGRES_SSL_CERT",
+            "key": "POSTGRES_SSL_KEY"
+        }
+    },
     "mailgun": {
         "apiKey": "MAILGUN_APIKEY"
     },
