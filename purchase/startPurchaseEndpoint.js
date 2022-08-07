@@ -5,24 +5,32 @@ var view = fs.readFileSync(path.join(__dirname, "view.html")).toString();
 var mustache = require("mustache");
 
 module.exports = (purchases) => (req, res) => {
-    var badgeId = req.body.badge;
-    if(!badgeId || badgeId.length == 0) {
+    //TODO v1: remove support for `badge` field and top level `count`
+    let { badge, badges, count } = req.body;
+
+    if(!badge && !badges) {
         return res.fail(400, "Forespørgslen specificerede ikke noget mærke.");
     }
-    var count = req.body.count;
-    if(!count || count < 1) {
-        return res.fail(400, "Forespørgslen specificerede ikke et antal af mærker.");
+    if(badge && badges) {
+        return res.fail(400, "Forespørgslen specificerede mærker på flere måder der ikke kan forenes.");
     }
-    var order = {
-        badgeId : badgeId,
-        count: count
-    };
+    if(badges && (badges.length == 0 || badges.some((badge) => !badge.id || badge.length == 0 || !badge.count || badge.count < 1))) {
+        return res.fail(400, "Forespørgslen specificerede ingen mærker -- eller specificerede et mærke med et tomt ID-felt eller unden noget antal");
+    }
+    if(badge) {
+        if(!count || count < 1) {
+            return res.fail(400, "Forespørgslen specificerede ikke et antal af mærker.");
+        }
+        badges = [ { id: badge, count } ];
+    }
+
     parseCustomerInfo(req.body, (error, customerInfo) => {
         if(error) {
             console.error("Failed to parse customer info", error, req.body);
             return res.fail(400, "Forespørgslen indeholdt ikke den påkrævede kundeinformation: " + error.message);
         }
-        purchases.start(req.body, order, customerInfo, (error, purchaseData) => {
+
+        purchases.start(req.body, badges, customerInfo, (error, purchaseData) => {
             if(error && error.type == "InvalidOrder") {
                 console.log("Invalid order received", error);
                 return res.fail(400, "Der er noget galt med ordren i forespørgslen. Forsøg at udfylde formularen forfra.");

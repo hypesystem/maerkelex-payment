@@ -33,12 +33,12 @@ function ensurePurchasesDbExists(db) {
     });
 }
 
-function startPurchase(maerkelex, paymentGateway, db, requestBody, order, customerInfo, callback) {
-    maerkelex.get(order.badgeId, (error, badge) => {
+function startPurchase(maerkelex, paymentGateway, db, requestBody, badgeOrder, customerInfo, callback) {
+    maerkelex.get(badgeOrder.map((badge) => badge.id), (error, badgeInfos, shipping) => {
         if(error && error.type == "NotFound") {
             return callback({
                 type: "InvalidOrder",
-                trace: new Error("Trying to start purchase for badge that does not exist."),
+                trace: new Error("Trying to start purchase for badges that do not exist."),
                 previous: error
             });
         }
@@ -48,15 +48,9 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
                 previous: error
             });
         }
-        if(!badge.price && badge.price !== 0) {
-            return calback({ type: "BadgeNotForSale", badge: badge });
-        }
-        if(!badge.shippingPrice && badge.shippingPrice !== 0) {
-            return callback({
-                trace: new Error("Could not find shipping price for badge"),
-                previous: error,
-                badge: badge
-            });
+        const badgesNotForSale = badgeInfos.filter((badge) => !badge.price && badge.price !== 0);
+        if(badgesNotForSale.length) {
+            return calback({ type: "BadgesNotForSale", badges: badgesNotForSale });
         }
 
         paymentGateway.clientToken.generate({}, (error, braintreeResponse) => {
@@ -67,31 +61,44 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
                 });
             }
 
-            if(customerInfo.deliveryAddress.country != "Danmark") {
-                badge.shippingPrice = badge.internationalShippingPrice;
-            }
+            const shippingPrice = customerInfo.deliveryAddress.country == "Danmark" ? shipping.domestic : shipping.international;
 
-            var priceForBadges = badge.price * order.count;
-            var total = (badge.shippingPrice + priceForBadges).toFixed(2);
-            const isPreorder = badge.preorder;
+            const badgeOrderLines = badgeOrder
+                .map((badge) => {
+                    const badgeInfo = badgeInfos.find((info) => info.id == badge.id);
+                    return {
+                        ...badgeInfo,
+                        ...badge,
+                        lineTotal: badgeInfo.price * badge.count,
+                    };
+                });
+
+            var priceForBadges = badgeOrderLines
+                .map((line) => line.lineTotal)
+                .reduce((a, b) => a + b, 0);
+
+            var total = (shippingPrice + priceForBadges).toFixed(2);
+            const isPreorder = badgeInfos.some((badge) => badge.preorder);
 
             var paymentId = uuid.v4();
             var viewModel = {
                 date: new Date().toISOString().substring(0, 10),
                 isPreorder,
                 orderLines: [
-                    {
-                        description: badge.name + " mærke, " + order.count + " stk.",
-                        count: order.count,
-                        unitPrice: badge.price.toFixed(2),
-                        price: priceForBadges.toFixed(2)
-                    },
+                    ...badgeOrderLines.map(({ name, count, price, lineTotal }) => {
+                        return {
+                            description: name + " mærke, " + count + " stk.",
+                            count,
+                            unitPrice: price.toFixed(2),
+                            price: lineTotal.toFixed(2)
+                        };
+                    }),
                     {
                         description: "Forsendelse",
-                        price: badge.shippingPrice.toFixed(2)
-                    }
+                        price: shippingPrice.toFixed(2)
+                    },
                 ],
-                total: total,
+                total,
                 vat: (total * 0.2).toFixed(2),
                 customerInfo: customerInfo,
                 deliveryAddressShort: customerInfo.deliveryAddress.address + ", " + customerInfo.deliveryAddress.postalCode + " " + customerInfo.deliveryAddress.city + ", " + customerInfo.deliveryAddress.country,
@@ -100,11 +107,11 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, order, custom
             };
 
             var paymentData = {
-                badgeId: order.badgeId,
-                viewModel: viewModel,
-                paymentId: paymentId,
+                badgeIds: badgeOrder.map((badge) => badge.id),
+                viewModel,
+                paymentId,
                 isPreorder,
-                total: total,
+                total,
                 startedAt: new Date().toISOString(), //TODO: duplicate, also inserted on creation
                 originalRequest: requestBody,
                 owner: "admin"

@@ -6,25 +6,23 @@ function MaerkelexApi(config) {
     };
 }
 
-function get(baseUrl, badgeId, callback) {
+function get(baseUrl, badgeIds, callback) {
     getData(baseUrl, (error, data) => {
         if(error) {
             return callback(error);
         }
-        var badge = data.m.find(m => m.id == badgeId);
-        if(!badge) {
+        var badges = data.m.filter(m => badgeIds.includes(m.id));
+        if(!badges.length || badges.length != badgeIds.length) {
             return callback({
                 type: "NotFound",
-                trace: new Error("Requested badgeId " + badgeId + " wasnt found.")
+                trace: new Error("Some requested badge IDs were not found."),
+                badgeIds: badgeIds.filter((id) => !data.m.some(m => m.id == id)),
             });
         }
-        if(!badge.shippingPrice) {
-            badge.shippingPrice = data.defaultShippingPrice;
-        }
-        if(!badge.internationalShippingPrice) {
-            badge.internationalShippingPrice = data.internationalShippingPrice;
-        }
-        callback(null, badge);
+        callback(null, badges, {
+            domestic: data.defaultShippingPrice,
+            international: data.internationalShippingPrice,
+        });
     });
 }
 
