@@ -1,4 +1,3 @@
-var uuid = require("uuid");
 var fs = require("fs");
 var path = require("path");
 var view = fs.readFileSync(path.join(__dirname, "view.html")).toString();
