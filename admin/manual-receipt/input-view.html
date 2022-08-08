@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Create manual receipt</title>
+    </head>
+    <body>
+        <h1>Create manual receipt</h1>
+        <form name="manualReceipt" method="post">
+            Dato: <input type="text" name="date" placeholder="YYYY-MM-DD">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produkt</th>
+                        <th>Antal</th>
+                        <th>Stykpris</th>
+                        <th>Totalpris</th>
+                    </tr>
+                </thead>
+                <tbody data-product-lines>
+                </tbody>
+                <tbody data-delivery-line>
+                    <tr>
+                        <td colspan="3">
+                            Fragt: 
+                            <select name="delivery">
+                                <option value="domestic" selected>Danmark</option>
+                                <option value="international">Udland</option>
+                                <option value="none">Ingen</option>
+                            </select>
+                        </td>
+                        <td><span data-delivery-cost></span> DKK</td>
+                    </tr>
+                </tbody>
+                <thead>
+                    <tr>
+                        <th colspan="3"></th>
+                        <th><span data-total-cost></span> DKK</th>
+                    </tr>
+                </thead>
+            </table>
+            <button type="submit" name="submit">Opret</button>
+        </form>
+        <script>
+            (function() {
+                const form = document.forms.manualReceipt;
+                const deliverySelect = form.delivery;
+                const deliveryCost = document.querySelector('[data-delivery-cost]');
+                const totalCost = document.querySelector('[data-total-cost]');
+                const productLines = document.querySelector('[data-product-lines]');
+                const model = {
+                    cost: {{ defaultShippingPrice }},
+                    lines: [],
+                };
+
+                form.date.value = (new Date()).toISOString().substring(0, 10);
+
+                deliverySelect.addEventListener('change', (e) => {
+                    if(deliverySelect.value === 'domestic') {
+                        model.cost = {{ defaultShippingPrice }};
+                        onPriceUpdated();
+                        return;
+                    }
+                    if(deliverySelect.value === 'international') {
+                        model.cost = {{ internationalShippingPrice }};
+                        onPriceUpdated();
+                        return;
+                    }
+                    model.cost = 0;
+                    onPriceUpdated();
+                    return;
+                });
+
+                function onPriceUpdated() {
+                    const total = model.cost;
+                    deliveryCost.innerText = model.cost.toFixed(2);
+                    totalCost.innerText = total.toFixed(2);
+                }
+
+                function addLine() {
+                    const line = document.createElement('tr');
+                    line.innerHTML = `
+                        <td>
+                            <select name="badges[${model.lines.length}][id]" data-badge-id>
+                                <option value="">&mdash;</option>
+                                {{ #m }}
+                                    <option value="{{ id }}" data-badge-price="{{ price }}">{{ &name }}</option>
+                                {{ /m }}
+                            </select>
+                        </td>
+                        <td><input type="number" name="badges[${model.lines.length}][count]" data-badge-count value="0"></td>
+                        <td><span data-price>0.00</span> DKK</td>
+                        <td><span data-line-price>0.00</span> DKK</td>
+                    `;
+                    productLines.appendChild(line);
+
+                    const lineModel = { id: "", count: 0, price: 0, totalPrice: 0 };
+                    model.lines.push(lineModel);
+
+                    let firstChange = true;
+                    const badgeSelect = line.querySelector('[data-badge-id]');
+                    const badgeCount = line.querySelector('[data-badge-count]');
+                    const price = line.querySelector('[data-price]');
+                    const linePrice = line.querySelector('[data-line-price]');
+
+                    badgeSelect.addEventListener('change', (e) => {
+                        if(firstChange) {
+                            addLine();
+                            firstChange = false;
+                        }
+
+                        lineModel.id = badgeSelect.value;
+                        lineModel.price = parseFloat(badgeSelect[badgeSelect.selectedIndex].dataset.badgePrice);
+                        lineModel.totalPrice = lineModel.price * lineModel.count;
+                        onLinePriceUpdated();
+                        onPriceUpdated();
+                    });
+
+                    badgeCount.addEventListener('input', (e) => {
+                        lineModel.count = parseInt(badgeCount.value);
+                        lineModel.totalPrice = lineModel.price * lineModel.count;
+                        onLinePriceUpdated();
+                        onPriceUpdated();
+                    });
+
+                    function onLinePriceUpdated() {
+                        console.log("updating lin", lineModel, price, linePrice);
+                        price.innerText = lineModel.price.toFixed(2);
+                        linePrice.innerText = lineModel.totalPrice.toFixed(2);
+                    }
+                }
+
+                addLine();
+                onPriceUpdated();
+
+                form.submit.addEventListener('click', (e) => {
+
+                });
+            })();
+        </script>
+    </body>
+</html>
