@@ -1,8 +1,12 @@
 var request = require("request");
 
+// Bind context to function using `b`
+const b = (fn, ...args) => fn.bind(null, ...args);
+
 function MaerkelexApi(config) {
     return {
-        get: get.bind(this, config.baseUrl)
+        get: b(get, config.baseUrl),
+        getData: b(getData, config.baseUrl),
     };
 }
 
