@@ -22,7 +22,7 @@ let cookieSessionInstance = cookieSession({
 let purchases = Purchases(maerkelex, paymentGateway, db, mailer, cookieSessionInstance);
 var billy = billyApi(config.billy, purchases);
 
-var app = maerkelexPaymentApp(purchases, db, cookieSessionInstance, billy);
+var app = maerkelexPaymentApp(purchases, db, cookieSessionInstance, billy, maerkelex);
 
 app.listen(config.port);
 

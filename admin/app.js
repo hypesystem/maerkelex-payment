@@ -12,13 +12,19 @@ const postOrderToAccountingEndpoint = require("./accounting/post/endpoint");
 const loginApp = require("./login/app");
 const changePasswordEndpoint = require("./change-password/endpoint");
 const updateOrderInfoEndpoint = require("./updateOrder/endpoint");
+const inputManualReceiptEndpoint = require("./manual-receipt/input-endpoint");
+const createManualReceiptEndpoint = require("./manual-receipt/create-endpoint");
 
-module.exports = (db, purchases, billy) => {
+module.exports = (db, purchases, billy, maerkelex) => {
     let app = express();
 
     let users = Users(db);
 
     app.get("/", authenticate(users), listPurchasesEndpoint(purchases));
+
+    app.get("/manual-receipt", authenticate(users), inputManualReceiptEndpoint(maerkelex));
+    app.post("/manual-receipt", authenticate(users), createManualReceiptEndpoint(purchases));
+
     app.get("/orders", authenticate(users), listOrdersJsonEndpoint(purchases));
     app.get("/orders/:id/mark-dispatched", authenticate(users), markDispatchedEndpoint(purchases));
     app.get("/orders/:id/receipt", authenticate(users), viewReceiptEndpoint(purchases));

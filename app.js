@@ -10,7 +10,7 @@ const badRequestErrorView = fs.readFileSync(path.join(__dirname, "_errors/400.ht
 const mustache = require("mustache");
 const memoryStaticAssetMiddleware = require("./memoryStaticAssetMiddleware/index");
 
-module.exports = (purchases, db, cookieSession, billy) => {
+module.exports = (purchases, db, cookieSession, billy, maerkelex) => {
     let app = express();
 
     app.use(bodyParser.urlencoded({
@@ -56,7 +56,7 @@ module.exports = (purchases, db, cookieSession, billy) => {
 
     app.use("/", purchaseApp(purchases));
     app.get("/", (req, res) => res.redirect("/admin"));
-    app.use("/admin", adminApp(db, purchases, billy));
+    app.use("/admin", adminApp(db, purchases, billy, maerkelex));
     app.use("/assets", memoryStaticAssetMiddleware(path.join(__dirname, "assets")));
 
     return app;
