@@ -22,6 +22,7 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
         update: (purchase, callback) => updatePurchase(db, purchase.id, purchase.status, purchase.data, callback),
         getHtmlReceipt: (id, callback) => getPurchaseHtmlReceipt(db, id, callback),
         markPosted: (id, callback) => markPurchasePosted(db, id, callback),
+        createManualReceipt: (requestBody, callback) => createManualReceipt(maerkelex, db, requestBody, callback),
     };
 };
 
@@ -30,6 +31,101 @@ function ensurePurchasesDbExists(db) {
         if(error) {
             console.error("Failed to ensure purchase database. May see erratic behaviour.", error);
         }
+    });
+}
+
+function createManualReceipt(maerkelex, db, requestBody, callback) {
+    const badgeOrder = requestBody.badges
+        .map(({ id, count }) => {
+            return { id, count: parseInt(count) };
+        })
+        .filter(({ id, count }) => id && count);
+
+    const shippingCategory = requestBody.delivery;
+    const date = requestBody.date;
+
+    maerkelex.get(badgeOrder.map((badge) => badge.id), (error, badgeInfos, shipping) => {
+        if(error && error.type == "NotFound") {
+            return callback({
+                type: "InvalidOrder",
+                trace: new Error("Trying to start purchase for badges that do not exist."),
+                previous: error
+            });
+        }
+        if(error) {
+            return callback({
+                trace: new Error("Failed to get maerkelex.dk data"),
+                previous: error
+            });
+        }
+        const badgesNotForSale = badgeInfos.filter((badge) => !badge.price && badge.price !== 0);
+        if(badgesNotForSale.length) {
+            return calback({ type: "BadgesNotForSale", badges: badgesNotForSale });
+        }
+
+        const shippingPrice = shipping[shippingCategory] || 0;
+
+        const badgeOrderLines = badgeOrder
+            .map((badge) => {
+                const badgeInfo = badgeInfos.find((info) => info.id == badge.id);
+                return {
+                    ...badgeInfo,
+                    ...badge,
+                    lineTotal: badgeInfo.price * badge.count,
+                };
+            });
+
+        var priceForBadges = badgeOrderLines
+            .map((line) => line.lineTotal)
+            .reduce((a, b) => a + b, 0);
+
+        var total = (shippingPrice + priceForBadges).toFixed(2);
+        const isPreorder = badgeInfos.some((badge) => badge.preorder);
+
+        var paymentId = uuid.v4();
+        var viewModel = {
+            date,
+            isPreorder,
+            orderLines: [
+                ...badgeOrderLines.map(({ name, count, price, lineTotal }) => {
+                    return {
+                        description: name + " mærke, " + count + " stk.",
+                        count,
+                        unitPrice: price.toFixed(2),
+                        price: lineTotal.toFixed(2)
+                    };
+                }),
+                {
+                    description: "Forsendelse",
+                    price: shippingPrice.toFixed(2)
+                },
+            ],
+            total,
+            vat: (total * 0.2).toFixed(2),
+            customerInfo: {},
+            deliveryAddressShort: "N/A",
+            orderNumber: paymentId
+        };
+
+        var paymentData = {
+            badgeIds: badgeOrder.map((badge) => badge.id),
+            viewModel,
+            paymentId,
+            isPreorder,
+            total,
+            startedAt: new Date().toISOString(), //TODO: duplicate, also inserted on creation
+            completedAt: date,
+            dispatchedAt: date,
+            originalRequest: requestBody,
+            owner: "admin"
+        };
+
+        insertPurchaseRecord(db, "dispatched", paymentData, (error) => {
+            if(error) {
+                return callback(error);
+            }
+            callback(null, paymentData);
+        });
     });
 }
 
@@ -128,9 +224,13 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, badgeOrder, c
 }
 
 function insertStartedPurchaseRecord(db, paymentData, callback) {
+    insertPurchaseRecord(db, "started", paymentData, callback);
+}
+
+function insertPurchaseRecord(db, state, paymentData, callback) {
     db.query("INSERT INTO purchase (id, status, data, started_at) VALUES ($1::uuid, $2::text, $3::json, $4::timestamp)", [
         paymentData.paymentId,
-        "started",
+        state,
         paymentData,
         new Date().toISOString()
     ], (error) => {
