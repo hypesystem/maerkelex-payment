@@ -14,7 +14,7 @@ module.exports = (purchases, db, cookieSession, billy) => {
     let app = express();
 
     app.use(bodyParser.urlencoded({
-        extended: false
+        extended: true,
     }));
 
     app.use(cookieSession);
