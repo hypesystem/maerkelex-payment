@@ -362,7 +362,7 @@
             return entries.map(entry => {
                 return `<tr id="order-${entry.id}">
                     <td class="date-field">${entry.date.replace(" ","<br>")}</td>
-                    <td>${entry.customer}</td>
+                    <td>${entry.customer || 'En kunde'}</td>
                     <td class="status">${translateStatus(entry.status)}<br><span class="status-date">${entry.statusChangeDate || "?"}</span></td>
                     <td>${entry.isPreorder ? 'PRE: ' : ''}${entry.description}</td>
                     <td class="income">${entry.total}</td>
@@ -388,7 +388,7 @@
                         : "") +
                         `<div class="info-container">
                             <strong>Adresse</strong><br>
-                            ${entry.address.replace(/\n/g, '<br>')}<br>
+                            ${entry.address ? entry.address.replace(/\n/g, '<br>') : '-'}<br>
                             <br>
                             <strong>Kontaktinformation</strong><br>
                             Email <a href="mailto:${entry.email}">${entry.email}</a><br>

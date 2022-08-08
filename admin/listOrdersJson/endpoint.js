@@ -8,16 +8,26 @@ module.exports = (purchases) => (req, res) => {
             .filter(order => order.status == "completed" || order.status == "dispatched")
             .sort((a, b) => a.data.completedAt < b.data.completedAt ? 1 : (a.data.completedAt > b.data.completedAt ? -1 : 0))
             .map(order => {
-                let viewModel = order.data.viewModel;
+                const viewModel = order.data.viewModel;
+                let customerInfo = {};
+                if(viewModel.customerInfo) {
+                    customerInfo.email = viewModel.customerInfo.email;
+                    customerInfo.phoneNumber = viewModel.customerInfo.phoneNumber;
+
+                    if(viewModel.customerInfo.name && viewModel.customerInfo.invoicingAddress) {
+                        customerInfo.customer = viewModel.customerInfo.name + ", " + viewModel.customerInfo.invoicingAddress.city;
+                    }
+                    if(viewModel.customerInfo.deliveryAddress) {
+                        customerInfo.address = stringifyAddress(viewModel.customerInfo.deliveryAddress);
+                    }
+                }
+
                 return {
                     id: order.id,
                     date: prettifyDate(order.data.completedAt),
                     isPreorder: order.data.isPreorder || false,
                     statusChangeDate: prettifyDate(selectLatestStateDate(order.data)),
-                    customer: viewModel.customerInfo.name + ", " + viewModel.customerInfo.invoicingAddress.city,
-                    address: stringifyAddress(viewModel.customerInfo.deliveryAddress),
-                    email: viewModel.customerInfo.email,
-                    phoneNumber: viewModel.customerInfo.phoneNumber,
+                    ...customerInfo,
                     status: translateOrderStatus(order.status),
                     description: describeOrder(viewModel.orderLines),
                     total: order.data.total
