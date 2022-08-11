@@ -1,7 +1,9 @@
 const fs = require("fs");
 const path = require("path");
-const view = fs.readFileSync(path.join(__dirname, "view.html")).toString();
 const mustache = require("mustache");
+const overviewLayout = fs.readFileSync(path.join(__dirname, "..", "..", "overviewLayout.html"), "utf8");
+const viewFragment = fs.readFileSync(path.join(__dirname, "view.html"), "utf8");
+const view = mustache.render(overviewLayout, { content: viewFragment });
 
 module.exports = (purchases) => (req, res) => {
     purchases.list((error, orders) => {
