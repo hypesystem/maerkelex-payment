@@ -1,0 +1,111 @@
+<div class="container container--wide">
+    <style type="text/css" scoped>
+        .floating-button {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            padding: 10px;
+            font-size: 1.1rem;
+            z-index: 200;
+        }
+        .small-input {
+            width: 65px;
+        }
+    </style>
+    <button class="btn floating-button btn--success" disabled data-save-button>Save current state</button>
+    <table class="data-table">
+        <thead>
+            <th>Mærke</th>
+            <th>Lager-<br>antal</th>
+            <th>Styk-<br>pris</th>
+            <th>Total<br>værdi</th>
+            <th>Licens-<br>udgift</th>
+            <th>Salgspris<br>m.moms</th>
+            <th>Salgspris<br>u.moms</th>
+            <th>Salgsværdi<br>pr. stk</th>
+            <th>Total<br>salgsværdi</th>
+            <th>Styk<br>profit</th>
+            <th>Total<br>profit</th>
+        </thead>
+        <tbody>
+            {{ #badges }}
+            <tr data-badge-id="{{ id }}">
+                <td>{{ &name }}</td>
+                <td><input type="number" name="count" value="{{ count }}" class="small-input"></td>
+                <td><input type="text" name="productionCost" value="{{ productionCost }}" class="currency-input small-input"> DKK</td>
+                <td><span data-total-value>0.00</span> DKK</td>
+                <td><input type="text" name="licenseCost" value="{{ licenseCost }}" class="currency-input small-input"> DKK</td>
+                <td data-price-vat-included="{{ price }}">{{ pricePretty }} DKK</td>
+                <td data-price-vat-excluded="{{ priceNoVat }}">{{ priceNoVatPretty }} DKK</td>
+                <td><span data-sales-value>0.00</span> DKK</td>
+                <td><span data-total-sales-value>0.00</span> DKK</td>
+                <td><span data-profit>0.00</span> DKK</td>
+                <td><span data-total-profit>0.00</span> DKK</td>
+            </tr>
+            {{ /badges }}
+            <!-- TODO: sums! including changes from previous state that must be booked -->
+        </tbody>
+    </table>
+    <script>
+        const rows = [];
+
+        document.querySelectorAll("[data-badge-id]").forEach((row) => {
+            const countInput = row.querySelector("input[name=count]");
+            const productionCostInput = row.querySelector("input[name=productionCost]");
+            const licenseCostInput = row.querySelector("input[name=licenseCost]");
+
+            const model = {
+                id: row.dataset.badgeId,
+                count: countInput.value,
+                productionCost: productionCostInput.value,
+                licenseCost: licenseCostInput.value,
+            };
+            rows.push(model);
+
+            const totalValueField = row.querySelector("[data-total-value]");
+            const salesValueField = row.querySelector("[data-sales-value]");
+            const totalSalesValueField = row.querySelector("[data-total-sales-value]");
+            const profitField = row.querySelector("[data-profit]");
+            const totalProfitField = row.querySelector("[data-total-profit]");
+
+            const priceString = row.querySelector("[data-price-vat-included]").dataset.priceVatIncluded;
+            const price = parseFloat(priceString);
+            const priceNoVatString = row.querySelector("[data-price-vat-excluded]").dataset.priceVatExcluded;
+            const priceNoVat = parseFloat(priceNoVatString);
+
+            countInput.addEventListener('change', (e) => {
+                model.count = countInput.value;
+                somethingChanged = true;
+                updateNumbers();
+            });
+
+            productionCostInput.addEventListener('change', (e) => {
+                model.productionCost = productionCostInput.value;
+                somethingChanged = true;
+                updateNumbers();
+            });
+
+            licenseCostInput.addEventListener('change', (e) => {
+                model.licenseCost = licenseCostInput.value;
+                somethingChanged = true;
+                updateNumbers();
+            });
+
+            updateNumbers();
+
+            function updateNumbers() {
+                totalValueField.innerText = (model.count * model.productionCost).toFixed(2);
+
+                const salesValue = priceNoVat - model.licenseCost;
+                salesValueField.innerText = salesValue.toFixed(2);
+                totalSalesValueField.innerText = (salesValue * model.count).toFixed(2);
+
+                const profit = salesValue - model.productionCost;
+                profitField.innerText = profit.toFixed(2);
+                totalProfitField.innerText = (profit * model.count).toFixed(2);
+            }
+        });
+
+        console.log("rows", rows);
+    </script>
+</div>
