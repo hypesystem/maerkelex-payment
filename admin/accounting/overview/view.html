@@ -1,231 +1,231 @@
-        <section class="stats-section">
-            <div class="stat stat-unaccounted">
-                <span class="label">Ikke-bogførte</span>
-                <span class="value">{{ unaccountedOrders.length }}</span>
-                <span class="description">Ordrer der endnu ikke er bogført i Billy</span>
+<section class="stats-section">
+    <div class="stat stat-unaccounted">
+        <span class="label">Ikke-bogførte</span>
+        <span class="value">{{ unaccountedOrders.length }}</span>
+        <span class="description">Ordrer der endnu ikke er bogført i Billy</span>
+    </div>
+    <div class="stat stat-auto-accounted">
+        <span class="label">Auto-bogførte</span>
+        <span class="value">{{ autoAccountedOrderCount }}</span>
+        <span class="description">Ordrer automatisk bogført fra Mærkelex Salg</span>
+    </div>
+    <div class="stat stat-manually-accounted">
+        <span class="label">Manuelt bogførte</span>
+        <span class="value">{{ manuallyAccountedOrdercount }}</span>
+        <span class="description">Ordrer markeret som bogført manuelt</span>
+    </div>
+</section>
+<div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px; padding: 20px;">
+        <div class="multiaction multiaction-mark-posted-until">
+            Markér ordrer afsendt t.o.m. d. <input type="text" placeholder="YYYY-MM-DD" style="width: 90px;"> som bogført.
+            <div class="multiaction-output">
+                <button
+                    class="btn multiaction-run-button multiaction-mark-posted-until-run-button"
+                    {{ ^ unaccountedOrders.length }}disa--bled{{ / unaccountedOrders.length }}
+                >Kør</button>
+                <span class="multiaction-output-feed"></span>
             </div>
-            <div class="stat stat-auto-accounted">
-                <span class="label">Auto-bogførte</span>
-                <span class="value">{{ autoAccountedOrderCount }}</span>
-                <span class="description">Ordrer automatisk bogført fra Mærkelex Salg</span>
-            </div>
-            <div class="stat stat-manually-accounted">
-                <span class="label">Manuelt bogførte</span>
-                <span class="value">{{ manuallyAccountedOrdercount }}</span>
-                <span class="description">Ordrer markeret som bogført manuelt</span>
-            </div>
-        </section>
-        <div class="container">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px; padding: 20px;">
-                <div class="multiaction multiaction-mark-posted-until">
-                    Markér ordrer afsendt t.o.m. d. <input type="text" placeholder="YYYY-MM-DD" style="width: 90px;"> som bogført.
-                    <div class="multiaction-output">
-                        <button
-                            class="btn multiaction-run-button multiaction-mark-posted-until-run-button"
-                            {{ ^ unaccountedOrders.length }}disa--bled{{ / unaccountedOrders.length }}
-                        >Kør</button>
-                        <span class="multiaction-output-feed"></span>
-                    </div>
-                </div>
-                <div class="multiaction multiaction-post-all">
-                    Auto-bogfør alle resterende ordrer
-                    <div class="multiaction-output">
-                        <button
-                            class="btn multiaction-run-button multiaction-post-all-run-button"
-                            {{ ^ unaccountedOrders.length }}disabled{{ / unaccountedOrders.length }}
-                        >Kør</button>
-                        <span class="multiaction-output-feed"></span>
-                    </div>
-                </div>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th title="Oprettelsesdato for ordren">Betal.dato</th>
-                        <th>Beskrivelse</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{ # unaccountedOrders }}
-                    <tr class="unaccounted-order-row" data-id="{{ id }}">
-                        <td class="table-date">
-                            {{ paidAt }}
-                        </td>
-                        <td>
-                            {{ &description }}
-                        </td>
-                        <td class="accounting-actions">
-                            <button class="btn accounting-action accounting-action-mark-as-posted">Markér som bogført</button>
-                            <button class="btn accounting-action accounting-action-auto-post">Auto-bogfør</button>
-                            <div class="spinner hidden"></div>
-                        </td>
-                    </tr>
-                    {{ / unaccountedOrders }}
-                </tbody>
-            </table>
         </div>
-        <script>
-            let unaccountedOrdersField = document.querySelector(".stat-unaccounted .value");
-            let manuallyAccountedOrdersField = document.querySelector(".stat-manually-accounted .value");
-            let autoAccountedOrdersField = document.querySelector(".stat-auto-accounted .value");
+        <div class="multiaction multiaction-post-all">
+            Auto-bogfør alle resterende ordrer
+            <div class="multiaction-output">
+                <button
+                    class="btn multiaction-run-button multiaction-post-all-run-button"
+                    {{ ^ unaccountedOrders.length }}disabled{{ / unaccountedOrders.length }}
+                >Kør</button>
+                <span class="multiaction-output-feed"></span>
+            </div>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th title="Oprettelsesdato for ordren">Betal.dato</th>
+                <th>Beskrivelse</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ # unaccountedOrders }}
+            <tr class="unaccounted-order-row" data-id="{{ id }}">
+                <td class="table-date">
+                    {{ paidAt }}
+                </td>
+                <td>
+                    {{ &description }}
+                </td>
+                <td class="accounting-actions">
+                    <button class="btn accounting-action accounting-action-mark-as-posted">Markér som bogført</button>
+                    <button class="btn accounting-action accounting-action-auto-post">Auto-bogfør</button>
+                    <div class="spinner hidden"></div>
+                </td>
+            </tr>
+            {{ / unaccountedOrders }}
+        </tbody>
+    </table>
+</div>
+<script>
+    let unaccountedOrdersField = document.querySelector(".stat-unaccounted .value");
+    let manuallyAccountedOrdersField = document.querySelector(".stat-manually-accounted .value");
+    let autoAccountedOrdersField = document.querySelector(".stat-auto-accounted .value");
 
-            async function handleAccountingAction(row, endpoint, statsUpdater) {
-                var orderId = row.dataset.id;
-                var buttons = row.querySelectorAll(".accounting-action");
-                buttons.forEach((btn) => btn.classList.add("hidden"));
-                var spinner = row.querySelector(".spinner");
-                spinner.classList.remove("hidden");
+    async function handleAccountingAction(row, endpoint, statsUpdater) {
+        var orderId = row.dataset.id;
+        var buttons = row.querySelectorAll(".accounting-action");
+        buttons.forEach((btn) => btn.classList.add("hidden"));
+        var spinner = row.querySelector(".spinner");
+        spinner.classList.remove("hidden");
 
-                try {
-                    let response = await fetch("/admin/orders/" + orderId + "/" + endpoint, {
-                        method: "post"
-                    });
+        try {
+            let response = await fetch("/admin/orders/" + orderId + "/" + endpoint, {
+                method: "post"
+            });
 
-                    if(response.status != 200) {
-                        throw {
-                            type: "failure",
-                            trace: new Error("Bad response"),
-                            response
-                        };
-                    }
-
-                    row.parentNode.removeChild(row);
-
-                    let stats = {
-                        unaccounted: parseInt(unaccountedOrdersField.innerText),
-                        autoAccounted: parseInt(autoAccountedOrdersField.innerText),
-                        manuallyAccounted: parseInt(manuallyAccountedOrdersField.innerText),
-                    };
-
-                    statsUpdater(stats);
-                    
-                    unaccountedOrdersField.innerText = stats.unaccounted;
-                    autoAccountedOrdersField.innerText = stats.autoAccounted;
-                    manuallyAccountedOrdersField.innerText = stats.manuallyAccounted;
-                }
-                catch(error) {
-                    if(error.type == "failure") {
-                        buttons.forEach((btn) => btn.classList.remove("hidden"));
-                        spinner.classList.add("hidden");
-                        console.log("failed to mark as posted", error);
-                    }
-                    console.error("unknown error", error);
-                    throw error;
-                }
+            if(response.status != 200) {
+                throw {
+                    type: "failure",
+                    trace: new Error("Bad response"),
+                    response
+                };
             }
 
-            document.querySelectorAll(".accounting-action-mark-as-posted").forEach(function(btn) {
-                btn.addEventListener("click", function(event) {
-                    event.preventDefault();
-                    handleAccountingAction(this.parentNode.parentNode, "mark-posted", (stats) => {
-                        stats.unaccounted--;
-                        stats.manuallyAccounted++;
-                    });
-                });
-            });
+            row.parentNode.removeChild(row);
 
-            document.querySelectorAll(".accounting-action-auto-post").forEach(function(btn) {
-                btn.addEventListener("click", function(event) {
-                    event.preventDefault();
-                    handleAccountingAction(this.parentNode.parentNode, "post", (stats) => {
-                        stats.unaccounted--;
-                        stats.autoAccounted++;
-                    });
-                });
-            });
+            let stats = {
+                unaccounted: parseInt(unaccountedOrdersField.innerText),
+                autoAccounted: parseInt(autoAccountedOrdersField.innerText),
+                manuallyAccounted: parseInt(manuallyAccountedOrdersField.innerText),
+            };
 
-            function disableAllActions() {
-                document.querySelectorAll(".multiaction-run-button").forEach((btn) => btn.setAttribute("disabled", true));
-                document.querySelectorAll(".accounting-action").forEach((btn) => btn.setAttribute("disabled", true));
+            statsUpdater(stats);
+            
+            unaccountedOrdersField.innerText = stats.unaccounted;
+            autoAccountedOrdersField.innerText = stats.autoAccounted;
+            manuallyAccountedOrdersField.innerText = stats.manuallyAccounted;
+        }
+        catch(error) {
+            if(error.type == "failure") {
+                buttons.forEach((btn) => btn.classList.remove("hidden"));
+                spinner.classList.add("hidden");
+                console.log("failed to mark as posted", error);
             }
+            console.error("unknown error", error);
+            throw error;
+        }
+    }
 
-            function enableAllActions() {
-                document.querySelectorAll(".multiaction-run-button").forEach((btn) => btn.removeAttribute("disabled"));
-                document.querySelectorAll(".accounting-action").forEach((btn) => btn.removeAttribute("disabled"));
-            }
+    document.querySelectorAll(".accounting-action-mark-as-posted").forEach(function(btn) {
+        btn.addEventListener("click", function(event) {
+            event.preventDefault();
+            handleAccountingAction(this.parentNode.parentNode, "mark-posted", (stats) => {
+                stats.unaccounted--;
+                stats.manuallyAccounted++;
+            });
+        });
+    });
 
-            document.querySelector(".multiaction-mark-posted-until-run-button").addEventListener("click", async function(event) {
-                let untilDateField = this.parentNode.parentNode.querySelector("input");
-                let isValidDate = (val) => /[0-9]{4}\-[0-9]{2}\-[0-9]{2}/.test(val);
-                if(!untilDateField.value || !isValidDate(untilDateField.value)) {
-                    return alert("Need to fill in value in format YYYY-MM-DD");
-                }
+    document.querySelectorAll(".accounting-action-auto-post").forEach(function(btn) {
+        btn.addEventListener("click", function(event) {
+            event.preventDefault();
+            handleAccountingAction(this.parentNode.parentNode, "post", (stats) => {
+                stats.unaccounted--;
+                stats.autoAccounted++;
+            });
+        });
+    });
 
-                let untilDate = new Date(untilDateField.value);
-                if(("" + untilDate) == "Invalid Date" || Number.isNaN(untilDate)) {
-                    return alert("Invalid date.");
-                }
+    function disableAllActions() {
+        document.querySelectorAll(".multiaction-run-button").forEach((btn) => btn.setAttribute("disabled", true));
+        document.querySelectorAll(".accounting-action").forEach((btn) => btn.setAttribute("disabled", true));
+    }
 
-                untilDate.setHours(23);
-                untilDate.setMinutes(59);
-                untilDate.setSeconds(59);
-                untilDate.setMilliseconds(999);
+    function enableAllActions() {
+        document.querySelectorAll(".multiaction-run-button").forEach((btn) => btn.removeAttribute("disabled"));
+        document.querySelectorAll(".accounting-action").forEach((btn) => btn.removeAttribute("disabled"));
+    }
 
-                console.log("MARKING AS POSTED ALL UNTIL", untilDate);
+    document.querySelector(".multiaction-mark-posted-until-run-button").addEventListener("click", async function(event) {
+        let untilDateField = this.parentNode.parentNode.querySelector("input");
+        let isValidDate = (val) => /[0-9]{4}\-[0-9]{2}\-[0-9]{2}/.test(val);
+        if(!untilDateField.value || !isValidDate(untilDateField.value)) {
+            return alert("Need to fill in value in format YYYY-MM-DD");
+        }
 
-                disableAllActions();
+        let untilDate = new Date(untilDateField.value);
+        if(("" + untilDate) == "Invalid Date" || Number.isNaN(untilDate)) {
+            return alert("Invalid date.");
+        }
 
-                let outputField = document.querySelector(".multiaction-mark-posted-until .multiaction-output-feed");
+        untilDate.setHours(23);
+        untilDate.setMinutes(59);
+        untilDate.setSeconds(59);
+        untilDate.setMilliseconds(999);
 
-                let rows = document.querySelectorAll(".unaccounted-order-row");
-                let rowsToUpdate = Array.prototype.filter.call(rows, (row) => {
-                    let dateString = row.querySelector(".table-date").innerText;
-                    let match = dateString.match(/([0-9]+)\/([0-9]+) ([0-9]+)/);
-                    let date = new Date(`${match[3]}-${match[2]}-${match[1]}`);
-                    return date <= untilDate;
+        console.log("MARKING AS POSTED ALL UNTIL", untilDate);
+
+        disableAllActions();
+
+        let outputField = document.querySelector(".multiaction-mark-posted-until .multiaction-output-feed");
+
+        let rows = document.querySelectorAll(".unaccounted-order-row");
+        let rowsToUpdate = Array.prototype.filter.call(rows, (row) => {
+            let dateString = row.querySelector(".table-date").innerText;
+            let match = dateString.match(/([0-9]+)\/([0-9]+) ([0-9]+)/);
+            let date = new Date(`${match[3]}-${match[2]}-${match[1]}`);
+            return date <= untilDate;
+        });
+
+        if(rowsToUpdate.length == 0) {
+            return alert("No matching rows to mark posted");
+        }
+
+        let row;
+        for(let i = 0; row = rowsToUpdate[i]; i++) {
+            try {
+                await handleAccountingAction(row, "mark-posted", (stats) => {
+                    stats.unaccounted--;
+                    stats.manuallyAccounted++;
                 });
+            }
+            catch(error) {
+                console.error("Failed to mark as posted", error);
+                return alert("Failed to mark as posted until date -- one call failed.");
+            }
+            outputField.innerText = `${i + 1}/${rowsToUpdate.length} markeret.`;
+        }
 
-                if(rowsToUpdate.length == 0) {
-                    return alert("No matching rows to mark posted");
-                }
+        enableAllActions();
+    });
 
-                let row;
-                for(let i = 0; row = rowsToUpdate[i]; i++) {
-                    try {
-                        await handleAccountingAction(row, "mark-posted", (stats) => {
-                            stats.unaccounted--;
-                            stats.manuallyAccounted++;
-                        });
-                    }
-                    catch(error) {
-                        console.error("Failed to mark as posted", error);
-                        return alert("Failed to mark as posted until date -- one call failed.");
-                    }
-                    outputField.innerText = `${i + 1}/${rowsToUpdate.length} markeret.`;
-                }
+    document.querySelector(".multiaction-post-all-run-button").addEventListener("click", async function(event) {
+        console.log("POSTING ALL TO ACCOUNTING");
 
-                enableAllActions();
-            });
+        disableAllActions();
 
-            document.querySelector(".multiaction-post-all-run-button").addEventListener("click", async function(event) {
-                console.log("POSTING ALL TO ACCOUNTING");
+        let outputField = document.querySelector(".multiaction-post-all .multiaction-output-feed");
+        
+        let rows = document.querySelectorAll(".unaccounted-order-row");
 
-                disableAllActions();
+        if(rows.length == 0) {
+            return alert("No rows to post");
+        }
 
-                let outputField = document.querySelector(".multiaction-post-all .multiaction-output-feed");
-                
-                let rows = document.querySelectorAll(".unaccounted-order-row");
+        let row;
+        for(let i = 0; row = rows[i]; i++) {
+            try {
+                await handleAccountingAction(row, "post", (stats) => {
+                    stats.unaccounted--;
+                    stats.autoAccounted++;
+                });
+            }
+            catch(error) {
+                console.error("Failed to post", error);
+                return alert("Failed to post -- one call failed.");
+            }
+            outputField.innerText = `${i + 1}/${rows.length} bogført.`;
+        }
 
-                if(rows.length == 0) {
-                    return alert("No rows to post");
-                }
-
-                let row;
-                for(let i = 0; row = rows[i]; i++) {
-                    try {
-                        await handleAccountingAction(row, "post", (stats) => {
-                            stats.unaccounted--;
-                            stats.autoAccounted++;
-                        });
-                    }
-                    catch(error) {
-                        console.error("Failed to post", error);
-                        return alert("Failed to post -- one call failed.");
-                    }
-                    outputField.innerText = `${i + 1}/${rows.length} bogført.`;
-                }
-
-                enableAllActions();
-            });
-        </script>
+        enableAllActions();
+    });
+</script>
