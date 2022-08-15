@@ -44,7 +44,7 @@ function createManualReceipt(maerkelex, db, requestBody, callback) {
     const shippingCategory = requestBody.delivery;
     const date = requestBody.date;
 
-    maerkelex.get(badgeOrder.map((badge) => badge.id), (error, badgeInfos, shipping) => {
+    maerkelex.get(badgeOrder.map((badge) => badge.id), (error, { badges: badgeInfos, shipping }) => {
         if(error && error.type == "NotFound") {
             return callback({
                 type: "InvalidOrder",
@@ -133,7 +133,7 @@ function createManualReceipt(maerkelex, db, requestBody, callback) {
 }
 
 function startPurchase(maerkelex, paymentGateway, db, requestBody, badgeOrder, customerInfo, callback) {
-    maerkelex.get(badgeOrder.map((badge) => badge.id), (error, badgeInfos, shipping) => {
+    maerkelex.get(badgeOrder.map((badge) => badge.id), (error, { badges: badgeInfos, shipping }) => {
         if(error && error.type == "NotFound") {
             return callback({
                 type: "InvalidOrder",
