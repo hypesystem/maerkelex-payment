@@ -105,3 +105,9 @@ async function getBadgeCosts(db, badgeId) {
         count: info.count,
     };
 }
+
+async function reduceStockForBadge(db, badgeId, count) {
+    const badgeStockResult = await db.query("UPDATE stock SET count = count - $2::int WHERE badge_id = $1::text RETURNING *", [ badgeId, count ]);
+
+    return badgeStockResult.rows[0];
+}

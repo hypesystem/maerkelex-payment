@@ -2,7 +2,7 @@ const request = require("request");
 const async = require("async");
 const Puppeteer = require("puppeteer");
 
-module.exports = (config, purchases) => {
+module.exports = (config, purchases, stock) => {
     let state = {};
     let billyRequest = request.defaults({
         baseUrl: config.baseUrl,
@@ -31,11 +31,11 @@ module.exports = (config, purchases) => {
     });
 
     return {
-        createOrderTransaction: (id, callback) => createOrderTransaction(purchases, config, billyRequest, state, id, callback)
+        createOrderTransaction: (id, callback) => createOrderTransaction(purchases, config, billyRequest, stock, state, id, callback)
     };
 };
 
-function createOrderTransaction(purchases, config, billyRequest, state, id, callback) {
+function createOrderTransaction(purchases, config, billyRequest, stock, state, id, callback) {
     purchases.get(id, (error, purchase) => {
         if(error) {
             return callback(error);
@@ -114,7 +114,23 @@ function createOrderTransaction(purchases, config, billyRequest, state, id, call
                         });
                     }
 
-                    let { salesAccount, salesVatAccount, owedByPartnersAccount } = state.accounts;
+                    const badgeOrderLines = purchase.data.viewModel.orderLines
+                        .filter(({ id }) => id);
+
+                    // TODO: optimizable db call?
+                    Promise.all(badgeOrderLines.map(({ id }) => stock.getBadgeCosts(id)))
+                        .then((badgeCosts) => {
+                            const badgeCostsById = {};
+                            badgeOrderLines.forEach(({ id }, i) => badgeCostsById[id] = badgeCosts[i]);
+
+                            let stockCost = 0;
+                            badgeOrderLines
+                                .forEach((line) => {
+                                    const badgeCost = badgeCostsById[line.id];
+                                    stockCost += badgeCost.productionCost * line.count;
+                                });
+
+                    let { salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount } = state.accounts;
 
                     // Create transaction + postings matching purchase in Billy, incl attachments
                     billyRequest.post(`/daybookTransactions`, {
@@ -142,6 +158,18 @@ function createOrderTransaction(purchases, config, billyRequest, state, id, call
                                         amount: totalAmount,
                                         side: "debit",
                                         priority: 3,
+                                    },
+                                    {
+                                        accountId: stockValueAccount.id,
+                                        amount: stockCost,
+                                        side: "credit",
+                                        priority: 4,
+                                    },
+                                    {
+                                        accountId: stockSpendAccount.id,
+                                        amount: stockCost,
+                                        side: "debit",
+                                        priority: 5,
                                     },
                                 ],
                                 attachments: [
@@ -184,6 +212,9 @@ function createOrderTransaction(purchases, config, billyRequest, state, id, call
                             });
                         }
 
+                        Promise.all(badgeOrderLines.map(async ({ id, count }) => stock.reduceStockForBadge(id, count)))
+                            .then(() => {
+
                         // Save billy transaction ID in purchase.data.autoAccounted field, and save
                         let { id, createdTime } = transactionCreateJson;
 
@@ -200,7 +231,23 @@ function createOrderTransaction(purchases, config, billyRequest, state, id, call
 
                             callback();
                         });
+                            })
+                            .catch((error) => {
+                                callback({
+                                    trace: new Error("Failed to reduce stock count for at least some order lines"),
+                                    badgeOrderLines,
+                                    previous: error,
+                                });
+                            });
                     });
+                        })
+                        .catch((error) => {
+                            callback({
+                                trace: new Error("Failed to get badge costs for at least some badge ID"),
+                                badgeOrderLines,
+                                previous: error,
+                            });
+                        });
                 });
             })
             .catch((error) => {
@@ -215,7 +262,7 @@ function createOrderTransaction(purchases, config, billyRequest, state, id, call
 }
 
 function getRelevantAccounts(billyRequest, callback) {
-    async.map([ 1110, 7250, 5820 ], function(accountNo, callback) {
+    async.map([ 1110, 7250, 5820, 5830, 1210 ], function(accountNo, callback) {
         billyRequest.get(`/accounts?accountNo=${accountNo}`, (error, response) => {
             if(error) {
                 return callback(error);
@@ -242,8 +289,8 @@ function getRelevantAccounts(billyRequest, callback) {
         if(error) {
             return callback(error);
         }
-        let [ salesAccount, salesVatAccount, owedByPartnersAccount ] = accounts;
-        callback(null, { salesAccount, salesVatAccount, owedByPartnersAccount });
+        let [ salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount ] = accounts;
+        callback(null, { salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount });
     });
 }
 
