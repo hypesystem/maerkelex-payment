@@ -15,8 +15,9 @@ const updateOrderInfoEndpoint = require("./updateOrder/endpoint");
 const inputManualReceiptEndpoint = require("./manual-receipt/input-endpoint");
 const createManualReceiptEndpoint = require("./manual-receipt/create-endpoint");
 const viewStockEndpoint = require("./accounting/stock/viewEndpoint");
+const saveStockEndpoint = require("./accounting/stock/saveEndpoint");
 
-module.exports = (db, purchases, billy, maerkelex) => {
+module.exports = (db, purchases, billy, maerkelex, stock) => {
     let app = express();
 
     let users = Users(db);
@@ -36,7 +37,8 @@ module.exports = (db, purchases, billy, maerkelex) => {
     app.post("/orders/:id/post", authenticate(users), postOrderToAccountingEndpoint(billy));
     app.post("/change-password", authenticate(users), changePasswordEndpoint(users));
 
-    app.get("/accounting/stock", authenticate(users), viewStockEndpoint(maerkelex));
+    app.get("/accounting/stock", authenticate(users), viewStockEndpoint(stock));
+    app.post("/accounting/stock", authenticate(users), express.json(), saveStockEndpoint(stock));
 
     app.use("/login", loginApp(users));
 
