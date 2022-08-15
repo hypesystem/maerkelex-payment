@@ -22,7 +22,7 @@ let cookieSessionInstance = cookieSession({
 });
 const stock = Stock(db, maerkelex);
 let purchases = Purchases(maerkelex, paymentGateway, db, mailer, cookieSessionInstance, stock);
-var billy = billyApi(config.billy, purchases);
+var billy = billyApi(config.billy, purchases, stock);
 
 var app = maerkelexPaymentApp(purchases, db, cookieSessionInstance, billy, maerkelex, stock);
 

@@ -181,12 +181,13 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, badgeOrder, c
                 date: new Date().toISOString().substring(0, 10),
                 isPreorder,
                 orderLines: [
-                    ...badgeOrderLines.map(({ name, count, price, lineTotal }) => {
+                    ...badgeOrderLines.map(({ id, name, count, price, lineTotal }) => {
                         return {
+                            id,
                             description: name + " mærke, " + count + " stk.",
                             count,
                             unitPrice: price.toFixed(2),
-                            price: lineTotal.toFixed(2)
+                            price: lineTotal.toFixed(2),
                         };
                     }),
                     {
