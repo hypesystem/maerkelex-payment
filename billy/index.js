@@ -86,93 +86,93 @@ function createOrderTransaction(purchases, config, billyAxios, stock, state, id,
 
                     // Create transaction + postings matching purchase in Billy, incl attachments
                     billyAxios.post(`/daybookTransactions`, {
-                            daybookTransaction: {
-                                organizationId: config.organizationId,
-                                entryDate: billifyDate(purchase.data.dispatchedAt),
-                                description: "Online salg",
-                                state: "approved",
-                                lines: [
-                                    {
-                                        accountId: salesAccount.id,
-                                        amount: excludingVatAmount,
-                                        side: "credit",
-                                        priority: 1,
-                                    },
-                                    {
-                                        accountId: salesVatAccount.id,
-                                        amount: vatAmount,
-                                        side: "credit",
-                                        priority: 2,
-                                    },
-                                    {
-                                        accountId: owedByPartnersAccount.id,
-                                        amount: totalAmount,
-                                        side: "debit",
-                                        priority: 3,
-                                    },
-                                    {
-                                        accountId: stockValueAccount.id,
-                                        amount: stockCost,
-                                        side: "credit",
-                                        priority: 4,
-                                    },
-                                    {
-                                        accountId: stockSpendAccount.id,
-                                        amount: stockCost,
-                                        side: "debit",
-                                        priority: 5,
-                                    },
-                                ],
-                                attachments: [
-                                    {
-                                        organizationId: config.organizationId,
-                                        fileId: pdfReceiptJson.id,
-                                        priority: 1,
-                                    }
-                                ],
-                            }
+                        daybookTransaction: {
+                            organizationId: config.organizationId,
+                            entryDate: billifyDate(purchase.data.dispatchedAt),
+                            description: "Online salg",
+                            state: "approved",
+                            lines: [
+                                {
+                                    accountId: salesAccount.id,
+                                    amount: excludingVatAmount,
+                                    side: "credit",
+                                    priority: 1,
+                                },
+                                {
+                                    accountId: salesVatAccount.id,
+                                    amount: vatAmount,
+                                    side: "credit",
+                                    priority: 2,
+                                },
+                                {
+                                    accountId: owedByPartnersAccount.id,
+                                    amount: totalAmount,
+                                    side: "debit",
+                                    priority: 3,
+                                },
+                                {
+                                    accountId: stockValueAccount.id,
+                                    amount: stockCost,
+                                    side: "credit",
+                                    priority: 4,
+                                },
+                                {
+                                    accountId: stockSpendAccount.id,
+                                    amount: stockCost,
+                                    side: "debit",
+                                    priority: 5,
+                                },
+                            ],
+                            attachments: [
+                                {
+                                    organizationId: config.organizationId,
+                                    fileId: pdfReceiptJson.id,
+                                    priority: 1,
+                                }
+                            ],
+                        }
                     })
                         .then((response) => {
-                        let transactionCreateJson;
-                        try {
-                            //Already in JSON format, becasue we post using the `json` field above.
-                            transactionCreateJson = response.data.daybookTransactions[0];
-                        }
-                        catch(error) {
-                            return callback({
-                                trace: new Error("Failed to read transaction creation response"),
-                                previous: error,
-                                body: response.data,
-                            });
-                        }
-
-                        Promise.all(badgeOrderLines.map(async ({ id, count }) => stock.reduceStockForBadge(id, count)))
-                            .then(() => {
-
-                                // Save billy transaction ID in purchase.data.autoAccounted field, and save
-                                let { id, createdTime } = transactionCreateJson;
-
-                                purchase.data.postedToAccounting = true;
-                                purchase.data.autoAccounted = {
-                                    transactionId: id,
-                                    createdTime,
-                                };
-
-                                purchases.update(purchase, (error) => {
-                                    if(error) {
-                                        return callback(error);
-                                    }
-
-                                    callback();
-                                });
-                            })
-                            .catch((error) => {
-                                callback({
-                                    trace: new Error("Failed to reduce stock count for at least some order lines"),
-                                    badgeOrderLines,
+                            let transactionCreateJson;
+                            try {
+                                //Already in JSON format, becasue we post using the `json` field above.
+                                transactionCreateJson = response.data.daybookTransactions[0];
+                            }
+                            catch(error) {
+                                return callback({
+                                    trace: new Error("Failed to read transaction creation response"),
                                     previous: error,
+                                    body: response.data,
                                 });
-                            });
+                            }
+
+                            Promise.all(badgeOrderLines.map(async ({ id, count }) => stock.reduceStockForBadge(id, count)))
+                                .then(() => {
+
+                                    // Save billy transaction ID in purchase.data.autoAccounted field, and save
+                                    let { id, createdTime } = transactionCreateJson;
+
+                                    purchase.data.postedToAccounting = true;
+                                    purchase.data.autoAccounted = {
+                                        transactionId: id,
+                                        createdTime,
+                                    };
+
+                                    purchases.update(purchase, (error) => {
+                                        if(error) {
+                                            return callback(error);
+                                        }
+
+                                        callback();
+                                    });
+                                })
+                                .catch((error) => {
+                                    callback({
+                                        trace: new Error("Failed to reduce stock count for at least some order lines"),
+                                        badgeOrderLines,
+                                        previous: error,
+                                    });
+                                });
                         })
                         .catch((error) => callback({
                             type: "FailedToCreateTransactions",
