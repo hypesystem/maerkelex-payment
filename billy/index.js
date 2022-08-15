@@ -1,15 +1,8 @@
-const request = require("request");
 const axios = require("axios");
 const Puppeteer = require("puppeteer");
 
 module.exports = (config, purchases, stock) => {
     let state = {};
-    let billyRequest = request.defaults({
-        baseUrl: config.baseUrl,
-        headers: {
-            'X-Access-Token': config.apiKey,
-        },
-    });
 
     const billyAxios = axios.create({
         baseURL: config.baseUrl,
@@ -37,11 +30,11 @@ module.exports = (config, purchases, stock) => {
         .catch((error) => console.error("failed to get accounts - billy integration will be unusable!", error));
 
     return {
-        createOrderTransaction: (id, callback) => createOrderTransaction(purchases, config, billyRequest, billyAxios, stock, state, id, callback)
+        createOrderTransaction: (id, callback) => createOrderTransaction(purchases, config, billyAxios, stock, state, id, callback)
     };
 };
 
-function createOrderTransaction(purchases, config, billyRequest, billyAxios, stock, state, id, callback) {
+function createOrderTransaction(purchases, config, billyAxios, stock, state, id, callback) {
     purchases.get(id, (error, purchase) => {
         if(error) {
             return callback(error);
@@ -92,8 +85,7 @@ function createOrderTransaction(purchases, config, billyRequest, billyAxios, sto
                     let { salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount } = state.accounts;
 
                     // Create transaction + postings matching purchase in Billy, incl attachments
-                    billyRequest.post(`/daybookTransactions`, {
-                        json: {
+                    billyAxios.post(`/daybookTransactions`, {
                             daybookTransaction: {
                                 organizationId: config.organizationId,
                                 entryDate: billifyDate(purchase.data.dispatchedAt),
@@ -139,35 +131,18 @@ function createOrderTransaction(purchases, config, billyRequest, billyAxios, sto
                                     }
                                 ],
                             }
-                        }
-                    }, (error, response) => {
-                        if(error) {
-                            return callback({
-                                type: "FailedToCreateTransactions",
-                                trace: new Error("Failed to create transactions to Billy"),
-                                previous: error,
-                            });
-                        }
-
-                        if(response.statusCode !== 200) {
-                            return callback({
-                                type: "FailedToCreateTransactions",
-                                trace: new Error("Failed to create transactions to Billy"),
-                                status: response.statusCode,
-                                body: response.body,
-                            });
-                        }
-
+                    })
+                        .then((response) => {
                         let transactionCreateJson;
                         try {
                             //Already in JSON format, becasue we post using the `json` field above.
-                            transactionCreateJson = response.body.daybookTransactions[0];
+                            transactionCreateJson = response.data.daybookTransactions[0];
                         }
                         catch(error) {
                             return callback({
                                 trace: new Error("Failed to read transaction creation response"),
                                 previous: error,
-                                body: response.body,
+                                body: response.data,
                             });
                         }
 
@@ -198,7 +173,12 @@ function createOrderTransaction(purchases, config, billyRequest, billyAxios, sto
                                     previous: error,
                                 });
                             });
-                    });
+                        })
+                        .catch((error) => callback({
+                            type: "FailedToCreateTransactions",
+                            trace: new Error("Failed to create transactions to Billy"),
+                            previous: error,
+                        }));
                 })
                 .catch((error) => {
                     callback({
