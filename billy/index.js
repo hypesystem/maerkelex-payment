@@ -1,11 +1,18 @@
 const request = require("request");
-const async = require("async");
+const axios = require("axios");
 const Puppeteer = require("puppeteer");
 
 module.exports = (config, purchases, stock) => {
     let state = {};
     let billyRequest = request.defaults({
         baseUrl: config.baseUrl,
+        headers: {
+            'X-Access-Token': config.apiKey,
+        },
+    });
+
+    const billyAxios = axios.create({
+        baseURL: config.baseUrl,
         headers: {
             'X-Access-Token': config.apiKey,
         },
@@ -22,13 +29,12 @@ module.exports = (config, purchases, stock) => {
     .then((newBrowser) => state.browser = newBrowser)
     .then(() => console.log("[billy] created chromium instance to use for pdf generation"));
 
-    getRelevantAccounts(billyRequest, (error, accounts) => {
-        if(error) {
-            return console.error("failed to get accounts - billy integration will be unusable!", error);
-        }
-        console.log("[billy] loaded account info", Object.keys(accounts).map((key) => accounts[key].name));
-        state.accounts = accounts;
-    });
+    getRelevantAccounts(billyAxios)
+        .then((accounts) => {
+            console.log("[billy] loaded account info", Object.keys(accounts).map((key) => accounts[key].name));
+            state.accounts = accounts;
+        })
+        .catch((error) => console.error("failed to get accounts - billy integration will be unusable!", error));
 
     return {
         createOrderTransaction: (id, callback) => createOrderTransaction(purchases, config, billyRequest, stock, state, id, callback)
@@ -271,37 +277,22 @@ function uploadReceiptAttachment(purchases, billyRequest, state, id, callback) {
     });
 }
 
-function getRelevantAccounts(billyRequest, callback) {
-    async.map([ 1110, 7250, 5820, 5830, 1210 ], function(accountNo, callback) {
-        billyRequest.get(`/accounts?accountNo=${accountNo}`, (error, response) => {
-            if(error) {
-                return callback(error);
-            }
-            if(response.statusCode !== 200) {
-                return callback({
-                    type: "AccountLoadingFailed",
-                    trace: new Error("Failed to load account information for account " + accountNo),
-                    response
-                });
-            }
-
-            var json;
-            try {
-                json = JSON.parse(response.body);
-            }
-            catch(e) {
-                return callback(e);
-            }
-
-            callback(null, json.accounts[0]);
-        });
-    }, function(error, accounts) {
-        if(error) {
-            return callback(error);
+async function getRelevantAccounts(billyAxios) {
+    const accounts = await Promise.all([ 1110, 7250, 5820, 5830, 1210 ].map(async (accountNo) => {
+        const response = await billyAxios.get(`/accounts?accountNo=${accountNo}`);
+        if(response.status !== 200) {
+            throw {
+                type: "AccountLoadingFailed",
+                trace: new Error("Failed to load account information for account " + accountNo),
+                response,
+            };
         }
-        let [ salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount ] = accounts;
-        callback(null, { salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount });
-    });
+
+        return response.data.accounts[0];
+    }));
+
+    const [ salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount ] = accounts;
+    return { salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount };
 }
 
 function billifyDate(date) {
