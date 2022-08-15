@@ -37,17 +37,17 @@ module.exports = (config, purchases, stock) => {
         .catch((error) => console.error("failed to get accounts - billy integration will be unusable!", error));
 
     return {
-        createOrderTransaction: (id, callback) => createOrderTransaction(purchases, config, billyRequest, stock, state, id, callback)
+        createOrderTransaction: (id, callback) => createOrderTransaction(purchases, config, billyRequest, billyAxios, stock, state, id, callback)
     };
 };
 
-function createOrderTransaction(purchases, config, billyRequest, stock, state, id, callback) {
+function createOrderTransaction(purchases, config, billyRequest, billyAxios, stock, state, id, callback) {
     purchases.get(id, (error, purchase) => {
         if(error) {
             return callback(error);
         }
 
-        uploadReceiptAttachment(purchases, billyRequest, state, id, (error, pdfReceiptJson) => {
+        uploadReceiptAttachment(purchases, billyAxios, state, id, (error, pdfReceiptJson) => {
             if(error) {
                 return callback(error);
             }
@@ -211,7 +211,7 @@ function createOrderTransaction(purchases, config, billyRequest, stock, state, i
     });
 }
 
-function uploadReceiptAttachment(purchases, billyRequest, state, id, callback) {
+function uploadReceiptAttachment(purchases, billyAxios, state, id, callback) {
     purchases.getHtmlReceipt(id, (error, htmlReceipt) => {
         if(error) {
             return callback(error);
@@ -227,45 +227,25 @@ function uploadReceiptAttachment(purchases, billyRequest, state, id, callback) {
                     return pdf;
                 }));
         })
-        .then((pdfReceiptBuffer) => {
-            billyRequest.post(`/files`, {
-                headers: {
-                    'Content-Type': 'application/pdf',
-                    'X-Filename': 'kvittering.pdf',
-                },
-                body: pdfReceiptBuffer,
-            }, (error, response) => {
-                if(error) {
-                    return callback({
-                        type: "FailedToUploadReceipt",
-                        trace: new Error("Failed to upload receipt to Billy"),
-                        previous: error,
-                    });
-                }
+        .then(async (pdfReceiptBuffer) => {
+            let response;
+            try {
+                response = await billyAxios.post(`/files`, pdfReceiptBuffer, {
+                    headers: {
+                        'Content-Type': 'application/pdf',
+                        'X-Filename': 'kvittering.pdf',
+                    },
+                });
+            }
+            catch(error) {
+                throw {
+                    type: "FailedToUploadReceipt",
+                    trace: new Error("Failed to upload receipt to Billy"),
+                    previous: error,
+                };
+            }
 
-                if(response.statusCode !== 200) {
-                    return callback({
-                        type: "FailedToUploadReceipt",
-                        trace: new Error("Failed to upload receipt to Billy"),
-                        status: response.statusCode,
-                        body: response.body,
-                    });
-                }
-
-                let pdfReceiptJson;
-                try {
-                    pdfReceiptJson = JSON.parse(response.body).files[0];
-                }
-                catch(error) {
-                    return callback({
-                        trace: new Error("Failed to read receipt upload response"),
-                        previous: error,
-                        body: response.body,
-                    });
-                }
-
-                callback(null, pdfReceiptJson);
-            });
+            callback(null, response.data.files[0]);
         })
         .catch((error) => {
             callback({
