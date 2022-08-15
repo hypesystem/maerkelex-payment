@@ -49,6 +49,8 @@
     <script>
         const rows = [];
 
+        const saveButton = document.querySelector("[data-save-button]");
+
         document.querySelectorAll("[data-badge-id]").forEach((row) => {
             const countInput = row.querySelector("input[name=count]");
             const productionCostInput = row.querySelector("input[name=productionCost]");
@@ -75,20 +77,17 @@
 
             countInput.addEventListener('change', (e) => {
                 model.count = countInput.value;
-                somethingChanged = true;
-                updateNumbers();
+                onChange();
             });
 
             productionCostInput.addEventListener('change', (e) => {
                 model.productionCost = productionCostInput.value;
-                somethingChanged = true;
-                updateNumbers();
+                onChange();
             });
 
             licenseCostInput.addEventListener('change', (e) => {
                 model.licenseCost = licenseCostInput.value;
-                somethingChanged = true;
-                updateNumbers();
+                onChange();
             });
 
             updateNumbers();
@@ -104,8 +103,33 @@
                 profitField.innerText = profit.toFixed(2);
                 totalProfitField.innerText = (profit * model.count).toFixed(2);
             }
+
+            function onChange() {
+                saveButton.removeAttribute("disabled");
+                updateNumbers();
+            }
         });
 
-        console.log("rows", rows);
+        saveButton.addEventListener("click", async (e) => {
+            saveButton.setAttribute("disabled", "disabled");
+
+            try {
+                let response = await fetch("/admin/accounting/stock", {
+                    method: "post",
+                    body: JSON.stringify(rows),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if(response.status != 200) {
+                    console.error("Invalid status code", await response.text());
+                }
+            }
+            catch(error) {
+                console.error("Something went wrong", error);
+                saveButton.removeAttribute("disabled");
+            }
+        });
     </script>
 </div>

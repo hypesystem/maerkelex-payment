@@ -5,6 +5,7 @@ var pkg = require("./package.json");
 var maerkelexApi = require("./maerkelex/api.js");
 var MailgunMustacheMailer = require("mailgun-mustache-mailer");
 const { Pool } = require("pg");
+const Stock = require("./stock");
 const Purchases = require("./purchases/index");
 const cookieSession = require("cookie-session");
 const billyApi = require("./billy");
@@ -19,10 +20,11 @@ let cookieSessionInstance = cookieSession({
     name: "maerkelex-payment-session-cookie",
     secret: config.sessionTokenSecret
 });
-let purchases = Purchases(maerkelex, paymentGateway, db, mailer, cookieSessionInstance);
+const stock = Stock(db, maerkelex);
+let purchases = Purchases(maerkelex, paymentGateway, db, mailer, cookieSessionInstance, stock);
 var billy = billyApi(config.billy, purchases);
 
-var app = maerkelexPaymentApp(purchases, db, cookieSessionInstance, billy, maerkelex);
+var app = maerkelexPaymentApp(purchases, db, cookieSessionInstance, billy, maerkelex, stock);
 
 app.listen(config.port);
 
