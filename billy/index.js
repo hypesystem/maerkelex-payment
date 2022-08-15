@@ -41,57 +41,10 @@ function createOrderTransaction(purchases, config, billyRequest, stock, state, i
             return callback(error);
         }
 
-        purchases.getHtmlReceipt(id, (error, htmlReceipt) => {
+        uploadReceiptAttachment(purchases, billyRequest, state, id, (error, pdfReceiptJson) => {
             if(error) {
                 return callback(error);
             }
-
-            // Create and upload pdf receipt to Billy
-            state.browser.newPage()
-            .then((page) => {
-                return page.setContent(htmlReceipt)
-                    .then(() => page.pdf({ printBackground: true })
-                    .then((pdf) => {
-                        page.close();
-                        return pdf;
-                    }));
-            })
-            .then((pdfReceiptBuffer) => {
-                billyRequest.post(`/files`, {
-                    headers: {
-                        'Content-Type': 'application/pdf',
-                        'X-Filename': 'kvittering.pdf',
-                    },
-                    body: pdfReceiptBuffer,
-                }, (error, response) => {
-                    if(error) {
-                        return callback({
-                            type: "FailedToUploadReceipt",
-                            trace: new Error("Failed to upload receipt to Billy"),
-                            previous: error,
-                        });
-                    }
-
-                    if(response.statusCode !== 200) {
-                        return callback({
-                            type: "FailedToUploadReceipt",
-                            trace: new Error("Failed to upload receipt to Billy"),
-                            status: response.statusCode,
-                            body: response.body,
-                        });
-                    }
-
-                    let pdfReceiptJson;
-                    try {
-                        pdfReceiptJson = JSON.parse(response.body).files[0];
-                    }
-                    catch(error) {
-                        return callback({
-                            trace: new Error("Failed to read receipt upload response"),
-                            previous: error,
-                            body: response.body,
-                        });
-                    }
 
                     let totalAmount = purchase.data.total;
                     let excludingVatAmount = parseFloat((totalAmount * 0.8).toFixed(2));
@@ -249,13 +202,70 @@ function createOrderTransaction(purchases, config, billyRequest, stock, state, i
                             });
                         });
                 });
-            })
-            .catch((error) => {
-                callback({
-                    type: "PdfGenerationFailed",
-                    trace: new Error("Failed to make PDF receipt", error),
-                    previous: error
-                });
+    });
+}
+
+function uploadReceiptAttachment(purchases, billyRequest, state, id, callback) {
+    purchases.getHtmlReceipt(id, (error, htmlReceipt) => {
+        if(error) {
+            return callback(error);
+        }
+
+        // Create and upload pdf receipt to Billy
+        state.browser.newPage()
+        .then((page) => {
+            return page.setContent(htmlReceipt)
+                .then(() => page.pdf({ printBackground: true })
+                .then((pdf) => {
+                    page.close();
+                    return pdf;
+                }));
+        })
+        .then((pdfReceiptBuffer) => {
+            billyRequest.post(`/files`, {
+                headers: {
+                    'Content-Type': 'application/pdf',
+                    'X-Filename': 'kvittering.pdf',
+                },
+                body: pdfReceiptBuffer,
+            }, (error, response) => {
+                if(error) {
+                    return callback({
+                        type: "FailedToUploadReceipt",
+                        trace: new Error("Failed to upload receipt to Billy"),
+                        previous: error,
+                    });
+                }
+
+                if(response.statusCode !== 200) {
+                    return callback({
+                        type: "FailedToUploadReceipt",
+                        trace: new Error("Failed to upload receipt to Billy"),
+                        status: response.statusCode,
+                        body: response.body,
+                    });
+                }
+
+                let pdfReceiptJson;
+                try {
+                    pdfReceiptJson = JSON.parse(response.body).files[0];
+                }
+                catch(error) {
+                    return callback({
+                        trace: new Error("Failed to read receipt upload response"),
+                        previous: error,
+                        body: response.body,
+                    });
+                }
+
+                callback(null, pdfReceiptJson);
+            });
+        })
+        .catch((error) => {
+            callback({
+                type: "PdfGenerationFailed",
+                trace: new Error("Failed to make PDF receipt", error),
+                previous: error
             });
         });
     });
