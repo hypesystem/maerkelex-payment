@@ -46,162 +46,162 @@ function createOrderTransaction(purchases, config, billyRequest, stock, state, i
                 return callback(error);
             }
 
-                    let totalAmount = purchase.data.total;
-                    let excludingVatAmount = parseFloat((totalAmount * 0.8).toFixed(2));
-                    let vatAmount = parseFloat((totalAmount * 0.2).toFixed(2));
+            let totalAmount = purchase.data.total;
+            let excludingVatAmount = parseFloat((totalAmount * 0.8).toFixed(2));
+            let vatAmount = parseFloat((totalAmount * 0.2).toFixed(2));
 
-                    // Sanity check of calculation of numbers -- Floats are mischevious, so at least here we get a warning?
-                    let totalAmountAlternateCalculation = parseFloat((excludingVatAmount * 1.25).toFixed(2));
-                    let totalAmountOtherAlternateCalculation = parseFloat((excludingVatAmount + vatAmount).toFixed(2));
+            // Sanity check of calculation of numbers -- Floats are mischevious, so at least here we get a warning?
+            let totalAmountAlternateCalculation = parseFloat((excludingVatAmount * 1.25).toFixed(2));
+            let totalAmountOtherAlternateCalculation = parseFloat((excludingVatAmount + vatAmount).toFixed(2));
 
-                    let totalAmountAlternateMismatch = totalAmount < totalAmountAlternateCalculation || totalAmount > totalAmountAlternateCalculation;
-                    let totalAmountOtherAlternateMismatch = totalAmount < totalAmountOtherAlternateCalculation || totalAmount > totalAmountOtherAlternateCalculation;
+            let totalAmountAlternateMismatch = totalAmount < totalAmountAlternateCalculation || totalAmount > totalAmountAlternateCalculation;
+            let totalAmountOtherAlternateMismatch = totalAmount < totalAmountOtherAlternateCalculation || totalAmount > totalAmountOtherAlternateCalculation;
 
-                    if(totalAmountAlternateMismatch || totalAmountOtherAlternateMismatch) {
-                        console.warn("Sanity check failed: total amount when recalculated did not match original total amount.", {
-                            totalAmount,
-                            excludingVatAmount,
-                            vatAmount,
-                            totalAmountAlternateCalculation,
-                            totalAmountOtherAlternateCalculation
+            if(totalAmountAlternateMismatch || totalAmountOtherAlternateMismatch) {
+                console.warn("Sanity check failed: total amount when recalculated did not match original total amount.", {
+                    totalAmount,
+                    excludingVatAmount,
+                    vatAmount,
+                    totalAmountAlternateCalculation,
+                    totalAmountOtherAlternateCalculation
+                });
+            }
+
+            const badgeOrderLines = purchase.data.viewModel.orderLines
+                .filter(({ id }) => id);
+
+            // TODO: optimizable db call?
+            Promise.all(badgeOrderLines.map(({ id }) => stock.getBadgeCosts(id)))
+                .then((badgeCosts) => {
+                    const badgeCostsById = {};
+                    badgeOrderLines.forEach(({ id }, i) => badgeCostsById[id] = badgeCosts[i]);
+
+                    let stockCost = 0;
+                    badgeOrderLines
+                        .forEach((line) => {
+                            const badgeCost = badgeCostsById[line.id];
+                            stockCost += badgeCost.productionCost * line.count;
                         });
-                    }
 
-                    const badgeOrderLines = purchase.data.viewModel.orderLines
-                        .filter(({ id }) => id);
+                    let { salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount } = state.accounts;
 
-                    // TODO: optimizable db call?
-                    Promise.all(badgeOrderLines.map(({ id }) => stock.getBadgeCosts(id)))
-                        .then((badgeCosts) => {
-                            const badgeCostsById = {};
-                            badgeOrderLines.forEach(({ id }, i) => badgeCostsById[id] = badgeCosts[i]);
-
-                            let stockCost = 0;
-                            badgeOrderLines
-                                .forEach((line) => {
-                                    const badgeCost = badgeCostsById[line.id];
-                                    stockCost += badgeCost.productionCost * line.count;
-                                });
-
-                            let { salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount } = state.accounts;
-
-                            // Create transaction + postings matching purchase in Billy, incl attachments
-                            billyRequest.post(`/daybookTransactions`, {
-                                json: {
-                                    daybookTransaction: {
+                    // Create transaction + postings matching purchase in Billy, incl attachments
+                    billyRequest.post(`/daybookTransactions`, {
+                        json: {
+                            daybookTransaction: {
+                                organizationId: config.organizationId,
+                                entryDate: billifyDate(purchase.data.dispatchedAt),
+                                description: "Online salg",
+                                state: "approved",
+                                lines: [
+                                    {
+                                        accountId: salesAccount.id,
+                                        amount: excludingVatAmount,
+                                        side: "credit",
+                                        priority: 1,
+                                    },
+                                    {
+                                        accountId: salesVatAccount.id,
+                                        amount: vatAmount,
+                                        side: "credit",
+                                        priority: 2,
+                                    },
+                                    {
+                                        accountId: owedByPartnersAccount.id,
+                                        amount: totalAmount,
+                                        side: "debit",
+                                        priority: 3,
+                                    },
+                                    {
+                                        accountId: stockValueAccount.id,
+                                        amount: stockCost,
+                                        side: "credit",
+                                        priority: 4,
+                                    },
+                                    {
+                                        accountId: stockSpendAccount.id,
+                                        amount: stockCost,
+                                        side: "debit",
+                                        priority: 5,
+                                    },
+                                ],
+                                attachments: [
+                                    {
                                         organizationId: config.organizationId,
-                                        entryDate: billifyDate(purchase.data.dispatchedAt),
-                                        description: "Online salg",
-                                        state: "approved",
-                                        lines: [
-                                            {
-                                                accountId: salesAccount.id,
-                                                amount: excludingVatAmount,
-                                                side: "credit",
-                                                priority: 1,
-                                            },
-                                            {
-                                                accountId: salesVatAccount.id,
-                                                amount: vatAmount,
-                                                side: "credit",
-                                                priority: 2,
-                                            },
-                                            {
-                                                accountId: owedByPartnersAccount.id,
-                                                amount: totalAmount,
-                                                side: "debit",
-                                                priority: 3,
-                                            },
-                                            {
-                                                accountId: stockValueAccount.id,
-                                                amount: stockCost,
-                                                side: "credit",
-                                                priority: 4,
-                                            },
-                                            {
-                                                accountId: stockSpendAccount.id,
-                                                amount: stockCost,
-                                                side: "debit",
-                                                priority: 5,
-                                            },
-                                        ],
-                                        attachments: [
-                                            {
-                                                organizationId: config.organizationId,
-                                                fileId: pdfReceiptJson.id,
-                                                priority: 1,
-                                            }
-                                        ],
+                                        fileId: pdfReceiptJson.id,
+                                        priority: 1,
                                     }
-                                }
-                            }, (error, response) => {
-                                if(error) {
-                                    return callback({
-                                        type: "FailedToCreateTransactions",
-                                        trace: new Error("Failed to create transactions to Billy"),
-                                        previous: error,
-                                    });
-                                }
-                
-                                if(response.statusCode !== 200) {
-                                    return callback({
-                                        type: "FailedToCreateTransactions",
-                                        trace: new Error("Failed to create transactions to Billy"),
-                                        status: response.statusCode,
-                                        body: response.body,
-                                    });
-                                }
-
-                                let transactionCreateJson;
-                                try {
-                                    //Already in JSON format, becasue we post using the `json` field above.
-                                    transactionCreateJson = response.body.daybookTransactions[0];
-                                }
-                                catch(error) {
-                                    return callback({
-                                        trace: new Error("Failed to read transaction creation response"),
-                                        previous: error,
-                                        body: response.body,
-                                    });
-                                }
-
-                                Promise.all(badgeOrderLines.map(async ({ id, count }) => stock.reduceStockForBadge(id, count)))
-                                    .then(() => {
-
-                                        // Save billy transaction ID in purchase.data.autoAccounted field, and save
-                                        let { id, createdTime } = transactionCreateJson;
-
-                                        purchase.data.postedToAccounting = true;
-                                        purchase.data.autoAccounted = {
-                                            transactionId: id,
-                                            createdTime,
-                                        };
-
-                                        purchases.update(purchase, (error) => {
-                                            if(error) {
-                                                return callback(error);
-                                            }
-
-                                            callback();
-                                        });
-                                    })
-                                    .catch((error) => {
-                                        callback({
-                                            trace: new Error("Failed to reduce stock count for at least some order lines"),
-                                            badgeOrderLines,
-                                            previous: error,
-                                        });
-                                    });
-                            });
-                        })
-                        .catch((error) => {
-                            callback({
-                                trace: new Error("Failed to get badge costs for at least some badge ID"),
-                                badgeOrderLines,
+                                ],
+                            }
+                        }
+                    }, (error, response) => {
+                        if(error) {
+                            return callback({
+                                type: "FailedToCreateTransactions",
+                                trace: new Error("Failed to create transactions to Billy"),
                                 previous: error,
                             });
-                        });
+                        }
+
+                        if(response.statusCode !== 200) {
+                            return callback({
+                                type: "FailedToCreateTransactions",
+                                trace: new Error("Failed to create transactions to Billy"),
+                                status: response.statusCode,
+                                body: response.body,
+                            });
+                        }
+
+                        let transactionCreateJson;
+                        try {
+                            //Already in JSON format, becasue we post using the `json` field above.
+                            transactionCreateJson = response.body.daybookTransactions[0];
+                        }
+                        catch(error) {
+                            return callback({
+                                trace: new Error("Failed to read transaction creation response"),
+                                previous: error,
+                                body: response.body,
+                            });
+                        }
+
+                        Promise.all(badgeOrderLines.map(async ({ id, count }) => stock.reduceStockForBadge(id, count)))
+                            .then(() => {
+
+                                // Save billy transaction ID in purchase.data.autoAccounted field, and save
+                                let { id, createdTime } = transactionCreateJson;
+
+                                purchase.data.postedToAccounting = true;
+                                purchase.data.autoAccounted = {
+                                    transactionId: id,
+                                    createdTime,
+                                };
+
+                                purchases.update(purchase, (error) => {
+                                    if(error) {
+                                        return callback(error);
+                                    }
+
+                                    callback();
+                                });
+                            })
+                            .catch((error) => {
+                                callback({
+                                    trace: new Error("Failed to reduce stock count for at least some order lines"),
+                                    badgeOrderLines,
+                                    previous: error,
+                                });
+                            });
+                    });
+                })
+                .catch((error) => {
+                    callback({
+                        trace: new Error("Failed to get badge costs for at least some badge ID"),
+                        badgeOrderLines,
+                        previous: error,
+                    });
                 });
+        });
     });
 }
 
