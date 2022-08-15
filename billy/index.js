@@ -130,116 +130,116 @@ function createOrderTransaction(purchases, config, billyRequest, stock, state, i
                                     stockCost += badgeCost.productionCost * line.count;
                                 });
 
-                    let { salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount } = state.accounts;
+                            let { salesAccount, salesVatAccount, owedByPartnersAccount, stockValueAccount, stockSpendAccount } = state.accounts;
 
-                    // Create transaction + postings matching purchase in Billy, incl attachments
-                    billyRequest.post(`/daybookTransactions`, {
-                        json: {
-                            daybookTransaction: {
-                                organizationId: config.organizationId,
-                                entryDate: billifyDate(purchase.data.dispatchedAt),
-                                description: "Online salg",
-                                state: "approved",
-                                lines: [
-                                    {
-                                        accountId: salesAccount.id,
-                                        amount: excludingVatAmount,
-                                        side: "credit",
-                                        priority: 1,
-                                    },
-                                    {
-                                        accountId: salesVatAccount.id,
-                                        amount: vatAmount,
-                                        side: "credit",
-                                        priority: 2,
-                                    },
-                                    {
-                                        accountId: owedByPartnersAccount.id,
-                                        amount: totalAmount,
-                                        side: "debit",
-                                        priority: 3,
-                                    },
-                                    {
-                                        accountId: stockValueAccount.id,
-                                        amount: stockCost,
-                                        side: "credit",
-                                        priority: 4,
-                                    },
-                                    {
-                                        accountId: stockSpendAccount.id,
-                                        amount: stockCost,
-                                        side: "debit",
-                                        priority: 5,
-                                    },
-                                ],
-                                attachments: [
-                                    {
+                            // Create transaction + postings matching purchase in Billy, incl attachments
+                            billyRequest.post(`/daybookTransactions`, {
+                                json: {
+                                    daybookTransaction: {
                                         organizationId: config.organizationId,
-                                        fileId: pdfReceiptJson.id,
-                                        priority: 1,
+                                        entryDate: billifyDate(purchase.data.dispatchedAt),
+                                        description: "Online salg",
+                                        state: "approved",
+                                        lines: [
+                                            {
+                                                accountId: salesAccount.id,
+                                                amount: excludingVatAmount,
+                                                side: "credit",
+                                                priority: 1,
+                                            },
+                                            {
+                                                accountId: salesVatAccount.id,
+                                                amount: vatAmount,
+                                                side: "credit",
+                                                priority: 2,
+                                            },
+                                            {
+                                                accountId: owedByPartnersAccount.id,
+                                                amount: totalAmount,
+                                                side: "debit",
+                                                priority: 3,
+                                            },
+                                            {
+                                                accountId: stockValueAccount.id,
+                                                amount: stockCost,
+                                                side: "credit",
+                                                priority: 4,
+                                            },
+                                            {
+                                                accountId: stockSpendAccount.id,
+                                                amount: stockCost,
+                                                side: "debit",
+                                                priority: 5,
+                                            },
+                                        ],
+                                        attachments: [
+                                            {
+                                                organizationId: config.organizationId,
+                                                fileId: pdfReceiptJson.id,
+                                                priority: 1,
+                                            }
+                                        ],
                                     }
-                                ],
-                            }
-                        }
-                    }, (error, response) => {
-                        if(error) {
-                            return callback({
-                                type: "FailedToCreateTransactions",
-                                trace: new Error("Failed to create transactions to Billy"),
-                                previous: error,
+                                }
+                            }, (error, response) => {
+                                if(error) {
+                                    return callback({
+                                        type: "FailedToCreateTransactions",
+                                        trace: new Error("Failed to create transactions to Billy"),
+                                        previous: error,
+                                    });
+                                }
+                
+                                if(response.statusCode !== 200) {
+                                    return callback({
+                                        type: "FailedToCreateTransactions",
+                                        trace: new Error("Failed to create transactions to Billy"),
+                                        status: response.statusCode,
+                                        body: response.body,
+                                    });
+                                }
+
+                                let transactionCreateJson;
+                                try {
+                                    //Already in JSON format, becasue we post using the `json` field above.
+                                    transactionCreateJson = response.body.daybookTransactions[0];
+                                }
+                                catch(error) {
+                                    return callback({
+                                        trace: new Error("Failed to read transaction creation response"),
+                                        previous: error,
+                                        body: response.body,
+                                    });
+                                }
+
+                                Promise.all(badgeOrderLines.map(async ({ id, count }) => stock.reduceStockForBadge(id, count)))
+                                    .then(() => {
+
+                                        // Save billy transaction ID in purchase.data.autoAccounted field, and save
+                                        let { id, createdTime } = transactionCreateJson;
+
+                                        purchase.data.postedToAccounting = true;
+                                        purchase.data.autoAccounted = {
+                                            transactionId: id,
+                                            createdTime,
+                                        };
+
+                                        purchases.update(purchase, (error) => {
+                                            if(error) {
+                                                return callback(error);
+                                            }
+
+                                            callback();
+                                        });
+                                    })
+                                    .catch((error) => {
+                                        callback({
+                                            trace: new Error("Failed to reduce stock count for at least some order lines"),
+                                            badgeOrderLines,
+                                            previous: error,
+                                        });
+                                    });
                             });
-                        }
-        
-                        if(response.statusCode !== 200) {
-                            return callback({
-                                type: "FailedToCreateTransactions",
-                                trace: new Error("Failed to create transactions to Billy"),
-                                status: response.statusCode,
-                                body: response.body,
-                            });
-                        }
-
-                        let transactionCreateJson;
-                        try {
-                            //Already in JSON format, becasue we post using the `json` field above.
-                            transactionCreateJson = response.body.daybookTransactions[0];
-                        }
-                        catch(error) {
-                            return callback({
-                                trace: new Error("Failed to read transaction creation response"),
-                                previous: error,
-                                body: response.body,
-                            });
-                        }
-
-                        Promise.all(badgeOrderLines.map(async ({ id, count }) => stock.reduceStockForBadge(id, count)))
-                            .then(() => {
-
-                        // Save billy transaction ID in purchase.data.autoAccounted field, and save
-                        let { id, createdTime } = transactionCreateJson;
-
-                        purchase.data.postedToAccounting = true;
-                        purchase.data.autoAccounted = {
-                            transactionId: id,
-                            createdTime,
-                        };
-
-                        purchases.update(purchase, (error) => {
-                            if(error) {
-                                return callback(error);
-                            }
-
-                            callback();
-                        });
-                            })
-                            .catch((error) => {
-                                callback({
-                                    trace: new Error("Failed to reduce stock count for at least some order lines"),
-                                    badgeOrderLines,
-                                    previous: error,
-                                });
-                            });
-                    });
                         })
                         .catch((error) => {
                             callback({
