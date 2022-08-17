@@ -82,24 +82,27 @@ function createManualReceipt(maerkelex, db, requestBody, callback) {
         var total = (shippingPrice + priceForBadges).toFixed(2);
         const isPreorder = badgeInfos.some((badge) => badge.preorder);
 
+        const orderLines = badgeOrderLines.map(({ name, count, price, lineTotal }) => {
+            return {
+                description: name + " mærke, " + count + " stk.",
+                count,
+                unitPrice: price.toFixed(2),
+                price: lineTotal.toFixed(2)
+            };
+        });
+
+        if(shippingPrice > 0) {
+            orderLines.push({
+                description: "Forsendelse",
+                price: shippingPrice.toFixed(2)
+            });
+        }
+
         var paymentId = uuid.v4();
         var viewModel = {
             date,
             isPreorder,
-            orderLines: [
-                ...badgeOrderLines.map(({ name, count, price, lineTotal }) => {
-                    return {
-                        description: name + " mærke, " + count + " stk.",
-                        count,
-                        unitPrice: price.toFixed(2),
-                        price: lineTotal.toFixed(2)
-                    };
-                }),
-                {
-                    description: "Forsendelse",
-                    price: shippingPrice.toFixed(2)
-                },
-            ],
+            orderLines,
             total,
             vat: (total * 0.2).toFixed(2),
             customerInfo: {},
