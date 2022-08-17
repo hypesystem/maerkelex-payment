@@ -258,7 +258,7 @@ function completePurchase(paymentGateway, db, mailer, id, nonce, callback) {
                 purchase: purchase
             });
         }
-        chargeForPreorderOrSaveCreditCardForPurchase(paymentGateway, nonce, purchase, (error) => {
+        chargeForPreorderOrSaveCreditCardForPurchase(db, paymentGateway, nonce, purchase, (error) => {
             if(error) {
                 return callback(error);
             }
@@ -301,7 +301,7 @@ function completePurchase(paymentGateway, db, mailer, id, nonce, callback) {
     });
 }
 
-function chargeForPreorderOrSaveCreditCardForPurchase(paymentGateway, paymentMethodNonce, purchase, callback) {
+function chargeForPreorderOrSaveCreditCardForPurchase(db, paymentGateway, paymentMethodNonce, purchase, callback) {
     if(purchase.data.isPreorder) {
         paymentGateway.transaction.sale({
             amount: purchase.data.total,
