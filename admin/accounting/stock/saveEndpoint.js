@@ -4,7 +4,7 @@ module.exports = (stock) => (req, res) => {
     }
     const state = req.body
         .filter((badge) => {
-            return badge.productionCost && badge.licenseCost && badge.count;
+            return (badge.productionCost || badge.productionCost === 0) && (badge.licenseCost || badge.licenseCost === 0) && (badge.count || badge.count === 0);
         })
         .map((badge) => {
             return {
