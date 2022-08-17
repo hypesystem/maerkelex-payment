@@ -8,6 +8,9 @@ const view = mustache.render(overviewLayout, { content: viewFragment });
 module.exports = (stock) => (req, res) => {
     stock.loadState()
         .then((badges) => {
+            if(typeof req.query.json !== 'undefined') {
+                return res.send(badges);
+            }
             res.send(mustache.render(view, { badges }));
         })
         .catch((error) => {
