@@ -42,7 +42,7 @@ async function get(baseUrl, badgeIds) {
 }
 
 async function getData(baseUrl) {
-    const response = axios.get(baseUrl + "/m.json");
+    const response = await axios.get(baseUrl + "/m.json");
     return response.data;
 }
 
