@@ -2,10 +2,12 @@ const axios = require("axios");
 
 // Bind context to function using `b`
 const b = (fn, ...args) => fn.bind(null, ...args);
-const cbify = (asyncFunction, callback) => {
+const cbify = (asyncFunction) => {
     return function callbackified() {
-        const promise = asyncFunction.apply(this, arguments);
-        promise.then((data) => callback(null, data)).catch(callback);
+        const callbackIndex = arguments.length - 1;
+        const callback = arguments[callbackIndex];
+        const promise = asyncFunction.apply(this, Array.prototype.slice.call(arguments, 0, callbackIndex));
+        promise.then((result) => callback(null, result)).catch(callback);
     };
 }
 
