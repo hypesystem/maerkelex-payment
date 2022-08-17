@@ -45,11 +45,44 @@
             {{ /badges }}
             <!-- TODO: sums! including changes from previous state that must be booked -->
         </tbody>
+        <thead>
+            <tr>
+                <th>Sum</th>
+                <th data-sum-count></th>
+                <th></th>
+                <th><span data-sum-value></span> DKK</th>
+                <th colspan="4"></th>
+                <th><span data-sum-sales-value></span> DKK</th>
+                <th></th>
+                <th><span data-sum-profit></span> DKK</th>
+            </tr>
+        </thead>
     </table>
     <script>
         const rows = [];
 
         const saveButton = document.querySelector("[data-save-button]");
+
+        const sumCountField = document.querySelector('[data-sum-count]');
+        const sumValueField = document.querySelector('[data-sum-value]');
+        const sumSalesValueField = document.querySelector('[data-sum-sales-value]');
+        const sumProfitField = document.querySelector('[data-sum-profit]');
+        
+        function updateSums() {
+            const sum = (list, key, map = (x) => x) => list
+                .map((item) => map(item[key]))
+                .reduce((a, b) => a + b, 0);
+
+            const arrayQuery = (selector) => {
+                const nodeList = document.querySelectorAll(selector);
+                return Array.prototype.slice.call(nodeList);
+            }
+
+            sumCountField.innerText = sum(rows, "count");
+            sumValueField.innerText = sum(arrayQuery("[data-total-value]"), "innerText", parseFloat).toFixed(2);
+            sumSalesValueField.innerText = sum(arrayQuery("[data-total-sales-value]"), "innerText", parseFloat).toFixed(2);
+            sumProfitField.innerText = sum(arrayQuery("[data-total-profit]"), "innerText", parseFloat).toFixed(2);
+        }
 
         document.querySelectorAll("[data-badge-id]").forEach((row) => {
             const countInput = row.querySelector("input[name=count]");
@@ -58,9 +91,9 @@
 
             const model = {
                 id: row.dataset.badgeId,
-                count: countInput.value,
-                productionCost: productionCostInput.value,
-                licenseCost: licenseCostInput.value,
+                count: parseInt(countInput.value) || 0,
+                productionCost: parseFloat(productionCostInput.value) || 0,
+                licenseCost: parseFloat(licenseCostInput.value) || 0,
             };
             rows.push(model);
 
@@ -76,17 +109,17 @@
             const priceNoVat = parseFloat(priceNoVatString);
 
             countInput.addEventListener('change', (e) => {
-                model.count = countInput.value;
+                model.count = parseInt(countInput.value);
                 onChange();
             });
 
             productionCostInput.addEventListener('change', (e) => {
-                model.productionCost = productionCostInput.value;
+                model.productionCost = parseFloat(productionCostInput.value);
                 onChange();
             });
 
             licenseCostInput.addEventListener('change', (e) => {
-                model.licenseCost = licenseCostInput.value;
+                model.licenseCost = parseFloat(licenseCostInput.value);
                 onChange();
             });
 
@@ -102,6 +135,8 @@
                 const profit = salesValue - model.productionCost;
                 profitField.innerText = profit.toFixed(2);
                 totalProfitField.innerText = (profit * model.count).toFixed(2);
+
+                updateSums();
             }
 
             function onChange() {
@@ -110,6 +145,7 @@
             }
         });
 
+        
         saveButton.addEventListener("click", async (e) => {
             saveButton.setAttribute("disabled", "disabled");
 
