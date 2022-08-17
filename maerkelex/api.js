@@ -2,7 +2,12 @@ const axios = require("axios");
 
 // Bind context to function using `b`
 const b = (fn, ...args) => fn.bind(null, ...args);
-const cbify = (promise, callback) => promise.then((data) => callback(null, data)).catch(callback);
+const cbify = (asyncFunction, callback) => {
+    return function callbackified() {
+        const promise = asyncFunction.apply(this, arguments);
+        promise.then((data) => callback(null, data)).catch(callback);
+    };
+}
 
 function MaerkelexApi(config) {
     return {
