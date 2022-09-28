@@ -293,7 +293,6 @@ function loadOrders(backoff) {
             return setTimeout(loadOrders, backoff, backoff * 2);
         }
         entries = orders;
-        console.warn("ENTRIES", entries[0]);
         options.find(o => o.cls == "option-new-orders").el.click();
         setInterval(checkForNewOrders, 2 * 60 * 1000); //check every 2 mins
     });
