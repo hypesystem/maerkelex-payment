@@ -28,6 +28,7 @@
                 <th title="Oprettelsesdato for ordren">Opr.dato</th>
                 <th>Kunde</th>
                 <th>Status</th>
+                <th>Billede</th>
                 <th>Ordrebeskrivelse</th>
                 <th>Indtægt</th>
                 <th></th>
@@ -99,10 +100,13 @@ function renderEntriesToList(entries) {
 
 function renderEntries(entries) {
     return entries.map(entry => {
+        const badgeImages = badgeImageList(entry);
+        const imageBaseUrl = "https://xn--mrkelex-mxa.dk/img/compressed/";
         return `<tr id="order-${entry.id}">
             <td class="date-field">${entry.date.replace(" ","<br>")}</td>
             <td>${entry.customer || 'En kunde'}</td>
             <td class="status">${translateStatus(entry.status)}<br><span class="status-date">${entry.statusChangeDate || "?"}</span></td>
+            <td>${badgeImages.map((imageUrl) => `<img class="image-thumbnail" src="${imageBaseUrl + imageUrl}.jpg">`).join('')}</td>
             <td>${entry.isPreorder ? 'PRE: ' : ''}${entry.description}</td>
             <td class="income">${entry.total}</td>
             <td class="actions"><a href="javascript:openOrder('${entry.id}');">Åbn ordre</a></td>
@@ -165,6 +169,40 @@ function renderEntries(entries) {
             </td>
         </tr>`;
     }).join("");
+}
+
+function badgeImageList(entry) {
+    let images = [];
+    const badgeNameImageMapping = {
+        "10-minutters-tårn": "10-min-taarn",
+        "12 x telt": "12-x-telt",
+        "200 km mærket": "200km",
+        "36 timer": "36-timer",
+        "Gift med en spejder": "gift-med-en-spejder",
+        "Kystvogter": "kystvogter",
+        "Leder&shy;challenge": "lederchallenge",
+        "Madtropperne": "madtropperne",
+        "Mærkedesigner": "maerkedesigner",
+        "One night stand": "one-night-stand",
+        "Overlevelsestur": "overlevelsestur",
+        "Rollespejd Bronze": "rollespejd-bronze",
+        "Rollespejd Sølv": "rollespejd-soelv",
+        "Rollespejd Guld": "rollespejd-guld",
+        "Skirty mærke": "skirty",
+        "Skirty365 mærke": "skirty365",
+        "Skovskider": "skovskider",
+        "Sleep-over": "sleep-over",
+        "Sovepose­365": "sovepose365",
+        "Spejd­365": "spejd­365",
+        "St. Georgsdag": "st-george",
+        "Voer­lade­gård Hjemme­spejd": "voerladegaard-hjemmespejd",
+    };
+    Object.keys(badgeNameImageMapping).forEach(badgeName => {
+        if (entry.description.includes(badgeName)) {
+            images.push(badgeNameImageMapping[badgeName]);
+        }
+    });
+    return images;
 }
 
 function translateStatus(status) {
@@ -255,6 +293,7 @@ function loadOrders(backoff) {
             return setTimeout(loadOrders, backoff, backoff * 2);
         }
         entries = orders;
+        console.warn("ENTRIES", entries[0]);
         options.find(o => o.cls == "option-new-orders").el.click();
         setInterval(checkForNewOrders, 2 * 60 * 1000); //check every 2 mins
     });
