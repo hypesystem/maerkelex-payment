@@ -17,12 +17,12 @@ const createManualReceiptEndpoint = require("./manual-receipt/create-endpoint");
 const viewStockEndpoint = require("./accounting/stock/viewEndpoint");
 const saveStockEndpoint = require("./accounting/stock/saveEndpoint");
 
-module.exports = (db, purchases, billy, maerkelex, stock) => {
+module.exports = (db, purchases, billy, maerkelex, stock, maerkelexBaseUrl) => {
     let app = express();
 
     let users = Users(db);
 
-    app.get("/", authenticate(users), listPurchasesEndpoint(purchases));
+    app.get("/", authenticate(users), listPurchasesEndpoint(purchases, maerkelex, maerkelexBaseUrl));
 
     app.get("/manual-receipt", authenticate(users), inputManualReceiptEndpoint(maerkelex));
     app.post("/manual-receipt", authenticate(users), createManualReceiptEndpoint(purchases));
