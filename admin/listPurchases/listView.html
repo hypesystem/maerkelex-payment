@@ -181,7 +181,7 @@ function badgeImageList(entry) {
 
     };
     Object.keys(badgeNameImageMapping).forEach(badgeName => {
-        if (entry.description.includes(badgeName)) {
+        if (entry.description.includes(badgeName + " mærke")) {
             images.push(badgeNameImageMapping[badgeName]);
         }
     });
