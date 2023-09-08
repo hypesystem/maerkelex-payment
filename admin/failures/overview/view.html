@@ -49,7 +49,13 @@
             const id = this.parentNode.parentNode.dataset.id;
             const dataSection = document.querySelector(`.failure-data[data-id='${id}']`);
 
-            dataSection.classList.remove("hidden");
+            if(dataSection.classList.contains("hidden")){
+                btn.innerText = "Luk data";
+                dataSection.classList.remove("hidden");
+            }else{
+                btn.innerText = "Vis data";
+                dataSection.classList.add("hidden");
+            }
         });
     });
 
