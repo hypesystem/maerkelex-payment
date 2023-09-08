@@ -13,20 +13,16 @@ module.exports = (purchases) => (req, res) => {
         let failedOrders = orders
             .filter(x => x.status == "failed" || (x.data.errors && x.data.errors.length))
             .sort((a, b) => {
-                if(!a.data.errors || !a.data.errors.length) {
-                    return -1;
-                }
-                if(!b.data.errors || !b.data.errors.length) {
-                    return 1;
-                }
+                let aLatestTimestamp, bLatestTimestamp;
 
-                const aLatest = a.data.errors[a.data.errors.length - 1];
-                const bLatest = b.data.errors[b.data.errors.length - 1];
-                if(aLatest.at < bLatest.at) {
-                    return -1;
-                }
-                if(aLatest.at > bLatest.at) {
+                !a.data.errors || !a.data.errors.length ? aLatestTimestamp = a.data.viewModel.date : aLatestTimestamp = a.data.errors[a.data.errors.length - 1].at;
+                !b.data.errors || !b.data.errors.length ? bLatestTimestamp = b.data.viewModel.date : bLatestTimestamp = b.data.errors[b.data.errors.length - 1].at;
+
+                if(aLatestTimestamp < bLatestTimestamp) {
                     return 1;
+                }
+                if(aLatestTimestamp > bLatestTimestamp) {
+                    return -1;
                 }
                 return 0;
             })
@@ -34,7 +30,7 @@ module.exports = (purchases) => (req, res) => {
                 const latestError = o.data.errors && o.data.errors.length && o.data.errors[o.data.errors.length - 1];
                 return {
                     id: o.id,
-                    latestErrorAt: latestError && prettifyDate(latestError.at),
+                    latestErrorAt: (latestError && prettifyDate(latestError.at) ) || prettifyDate(o.data.viewModel.date),
                     errors: !latestError ? [] : o.data.errors.reverse().map((error) => {
                         return {
                             at: prettifyDate(error.at),
