@@ -82,27 +82,88 @@ options.forEach(function(option) {
             tbody.innerHTML = "<tr><td colspan='1000'>Fejl ved load af ordrer. Prøver igen automatisk. Alternativt kan du forsøge at opdatere siden (tryk F5).</td></tr>";
         }
         else {
-            nav.innerHTML = '';
-            for(let i = 0; i < Math.ceil(entries.filter(option.filter).length / 10); i++){
-                nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-index-${i}">${i+1}</a>`
-            }
-            for(let i = 0; i < Math.ceil(entries.filter(option.filter).length / 10); i++){
-                document.querySelector(`.subpage-selector-index-${i}`).addEventListener("click", function (e){
-                    e.preventDefault();
-                    document.querySelector(`.subpage-selector-index-${entryPageIndex}`).classList.remove("selected");
-                    entryPageIndex = i;
-                    document.querySelector(`.subpage-selector-index-${entryPageIndex}`).classList.add("selected");
-                    renderEntriesToList(entries.filter(option.filter).slice(entryPageIndex * 10, entryPageIndex * 10 + 10));
-                });
-                
-            }
-            if(document.querySelector(".subpage-selector-index-0")) document.querySelector(".subpage-selector-index-0").classList.add("selected");
-            renderEntriesToList(entries.filter(option.filter).slice(entryPageIndex * 10, entryPageIndex * 10 + 10));
+            entryPageIndex = 0;
+            updateContent(option);
+            generateSubPageNavigation(option);
+            
         }
-
         return false;
     });
 });
+
+const amountOfShownSubpages = 3;
+
+function generateSubPageNavigation(option){
+    nav.innerHTML = '';
+    const amountOfSubpages = Math.ceil(entries.filter(option.filter).length / 10);
+    let startIndexToRender = 0;
+    if(amountOfSubpages >= amountOfShownSubpages){
+        nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-to-start"><<</a>`
+        nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-backwards"><</a>`
+
+        startIndexToRender = entryPageIndex;
+        if(startIndexToRender + Math.floor(amountOfShownSubpages/2) >= amountOfSubpages){
+            startIndexToRender = amountOfSubpages - amountOfShownSubpages;
+        }else if(startIndexToRender - Math.floor(amountOfShownSubpages/2) > 0){
+            startIndexToRender -= Math.floor(amountOfShownSubpages/2);
+        }else{
+            startIndexToRender = 0;
+        }
+    }
+    
+    for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
+        nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-index-${i}">${i+1}</a>`
+    }
+
+    if(amountOfSubpages >= amountOfShownSubpages){
+        nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-forward">></a>`
+        nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-to-end">>></a>`
+        document.querySelector(`.subpage-selector-backwards`).addEventListener("click", function (e){
+            e.preventDefault();
+            if(entryPageIndex <= 0) return;
+            entryPageIndex--;
+            updateContent(option);
+            generateSubPageNavigation(option);
+        });
+        document.querySelector(`.subpage-selector-forward`).addEventListener("click", function (e){
+            e.preventDefault();
+            if(entryPageIndex >= amountOfSubpages - 1) return;
+            entryPageIndex++;
+            updateContent(option);
+            generateSubPageNavigation(option);
+        });
+        document.querySelector(`.subpage-selector-to-start`).addEventListener("click", function (e){
+            e.preventDefault();
+            entryPageIndex = 0;
+            updateContent(option);
+            generateSubPageNavigation(option);
+        });
+        document.querySelector(`.subpage-selector-to-end`).addEventListener("click", function (e){
+            e.preventDefault();
+            entryPageIndex = amountOfSubpages - 1;
+            updateContent(option);
+            generateSubPageNavigation(option);
+        });
+    }
+    
+    for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
+        document.querySelector(`.subpage-selector-index-${i}`).addEventListener("click", function (e){
+            e.preventDefault();
+            document.querySelector(`.subpage-selector-index-${entryPageIndex}`).classList.remove("selected");
+            entryPageIndex = i;
+            document.querySelector(`.subpage-selector-index-${entryPageIndex}`).classList.add("selected");
+            updateContent(option);
+            generateSubPageNavigation(option);
+        });
+        
+    }
+    
+    document.querySelector(`.subpage-selector-index-${entryPageIndex}`).classList.add("selected");
+}
+
+function updateContent(option){
+    renderEntriesToList(entries.filter(option.filter).slice(entryPageIndex * 10, entryPageIndex * 10 + 10));
+}
 
 var tbody = document.querySelector(".container table tbody");
 
