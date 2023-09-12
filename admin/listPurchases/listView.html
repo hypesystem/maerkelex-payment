@@ -20,6 +20,7 @@
         <a href="#" class="option option-all-orders">Alle ordrer</a>
         <a href="#" class="option option-new-orders selected">Nye ordrer</a>
         <a href="#" class="option option-sent-orders">Afsendte ordrer</a>
+        <input id="order-search-bar" type="search" placeholder="søg">
     </nav>
     <table>
         <thead>
@@ -90,9 +91,7 @@ options.forEach(function(option) {
         else {
             entryPageIndex = 0;
             currentOption = option;
-            updateContent();
-            generateSubPageNavigation(option);
-            
+            updateContent();    
         }
         return false;
     });
@@ -103,7 +102,8 @@ var amountOfSubpages;
 
 function generateSubPageNavigation(){
     nav.innerHTML = '';
-    amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).length / 10);
+    orderSearchBar.value ? amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).filter(searchBarFilter).length / 10) : amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).length / 10);
+    if(entryPageIndex >= amountOfSubpages) entryPageIndex = amountOfSubpages - 1;
     let startIndexToRender = 0;
     if(amountOfSubpages > amountOfShownSubpages){
         nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-to-start"><<</a>`
@@ -131,42 +131,35 @@ function generateSubPageNavigation(){
             if(entryPageIndex <= 0) return;
             entryPageIndex--;
             updateContent();
-            generateSubPageNavigation();
         });
         document.querySelector(`.subpage-selector-forward`).addEventListener("click", function (e){
             e.preventDefault();
             if(entryPageIndex >= amountOfSubpages - 1) return;
             entryPageIndex++;
             updateContent();
-            generateSubPageNavigation();
         });
         document.querySelector(`.subpage-selector-to-start`).addEventListener("click", function (e){
             e.preventDefault();
             entryPageIndex = 0;
             updateContent();
-            generateSubPageNavigation();
         });
         document.querySelector(`.subpage-selector-to-end`).addEventListener("click", function (e){
             e.preventDefault();
             entryPageIndex = amountOfSubpages - 1;
             updateContent();
-            generateSubPageNavigation();
         });
     }
     
     for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
         document.querySelector(`.subpage-selector-index-${i}`).addEventListener("click", function (e){
             e.preventDefault();
-            document.querySelector(`.subpage-selector-index-${entryPageIndex}`).classList.remove("selected");
             entryPageIndex = i;
-            document.querySelector(`.subpage-selector-index-${entryPageIndex}`).classList.add("selected");
             updateContent();
-            generateSubPageNavigation();
         });
         
     }
 
-    document.querySelector(`.subpage-selector-index-${entryPageIndex}`).classList.add("selected");
+    if(amountOfSubpages) document.querySelector(`.subpage-selector-index-${entryPageIndex}`).classList.add("selected");
     updateSubpageInputBox();
 }
 
@@ -182,11 +175,29 @@ document.getElementById("subpageInputForm").addEventListener("submit", e => {
     e.preventDefault();
     entryPageIndex = inputEle.value - 1;
     updateContent();
-    generateSubPageNavigation();
 })
 
+const orderSearchBar = document.getElementById("order-search-bar");
+
+orderSearchBar.addEventListener("input", () =>{entryPageIndex = 0; updateContent();});
+
 function updateContent(){
-    renderEntriesToList(entries.filter(currentOption.filter).slice(entryPageIndex * 10, entryPageIndex * 10 + 10));
+    if(!orderSearchBar.value){
+        renderEntriesToList(entries.filter(currentOption.filter).slice(entryPageIndex * 10, entryPageIndex * 10 + 10));
+    }else{
+        renderEntriesToList(entries.filter(currentOption.filter).filter(searchBarFilter).slice(entryPageIndex * 10, entryPageIndex * 10 + 10));
+    }
+    generateSubPageNavigation();
+}
+
+function searchBarFilter(x){
+    searchParams = orderSearchBar.value.split(" ")
+    for(const searchParam of searchParams){
+       if(!x.customer.includes(searchParam) && !x.date.includes(searchParam) && !x.email.includes(searchParam) && !x.address.includes(searchParam) && !x.description.includes(searchParam) && !x.id.includes(searchParam)){
+            return false;
+        }
+    };
+    return true; ;
 }
 
 var tbody = document.querySelector(".container table tbody");
