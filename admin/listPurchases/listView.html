@@ -20,7 +20,7 @@
         <a href="#" class="option option-all-orders">Alle ordrer</a>
         <a href="#" class="option option-new-orders selected">Nye ordrer</a>
         <a href="#" class="option option-sent-orders">Afsendte ordrer</a>
-        <input id="order-search-bar" type="search" placeholder="søg">
+        <input id="order-search-bar" type="search" placeholder="Søg ...">
     </nav>
     <table>
         <thead>
@@ -45,10 +45,8 @@
     <nav class="subpage-selector-nav">
     </nav>
     <nav class="subpage-input-nav">
-        <form id="subpageInputForm">
             <input id="subpageInputBox" name="subpageInputBox" type="number" value="" min="1">
             <label id="subpageInputLabel" for="subpageInputBox">ud af </label>
-        </form>
     </nav>
 </div>
 <script>
@@ -98,11 +96,12 @@ options.forEach(function(option) {
 });
 
 const amountOfShownSubpages = 5;
+const entriesPerSubpage = 20;
 var amountOfSubpages;
 
 function generateSubPageNavigation(){
     nav.innerHTML = '';
-    orderSearchBar.value ? amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).filter(searchBarFilter).length / 10) : amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).length / 10);
+    orderSearchBar.value ? amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).filter(searchBarFilter).length / entriesPerSubpage) : amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).length / entriesPerSubpage);
     if(entryPageIndex >= amountOfSubpages) entryPageIndex = amountOfSubpages - 1;
     let startIndexToRender = 0;
     if(amountOfSubpages > amountOfShownSubpages){
@@ -171,29 +170,28 @@ function updateSubpageInputBox(){
     document.getElementById("subpageInputLabel").innerText = "ud af " + amountOfSubpages;
 }
 
-document.getElementById("subpageInputForm").addEventListener("submit", e => {
-    e.preventDefault();
+inputEle.addEventListener("change", () => {
+    if(inputEle.value > amountOfSubpages) inputEle.value = amountOfSubpages;
     entryPageIndex = inputEle.value - 1;
     updateContent();
-})
+});
 
 const orderSearchBar = document.getElementById("order-search-bar");
-
-orderSearchBar.addEventListener("input", () =>{entryPageIndex = 0; updateContent();});
+var searchParams;
+orderSearchBar.addEventListener("change", () =>{entryPageIndex = 0; searchParams = orderSearchBar.value.split(" "); updateContent();});
 
 function updateContent(){
     if(!orderSearchBar.value){
-        renderEntriesToList(entries.filter(currentOption.filter).slice(entryPageIndex * 10, entryPageIndex * 10 + 10));
+        renderEntriesToList(entries.filter(currentOption.filter).slice(entryPageIndex * entriesPerSubpage, entryPageIndex * entriesPerSubpage + entriesPerSubpage));
     }else{
-        renderEntriesToList(entries.filter(currentOption.filter).filter(searchBarFilter).slice(entryPageIndex * 10, entryPageIndex * 10 + 10));
+        renderEntriesToList(entries.filter(currentOption.filter).filter(searchBarFilter).slice(entryPageIndex * entriesPerSubpage, entryPageIndex * entriesPerSubpage + entriesPerSubpage));
     }
     generateSubPageNavigation();
 }
 
 function searchBarFilter(x){
-    searchParams = orderSearchBar.value.split(" ")
     for(const searchParam of searchParams){
-       if(!x.customer.includes(searchParam) && !x.date.includes(searchParam) && !x.email.includes(searchParam) && !x.address.includes(searchParam) && !x.description.includes(searchParam) && !x.id.includes(searchParam)){
+       if((!x.customer||!x.customer.toLowerCase().includes(searchParam.toLowerCase())) && (!x.date||!x.date.includes(searchParam)) && (!x.email||!x.email.includes(searchParam)) && (!x.address||!x.address.toLowerCase().includes(searchParam.toLowerCase())) && (!x.description||!x.description.includes.toLowerCase()(searchParam.toLowerCase())) && (!x.id||!x.id.includes(searchParam))){
             return false;
         }
     };
