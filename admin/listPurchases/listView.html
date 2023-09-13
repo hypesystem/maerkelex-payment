@@ -172,6 +172,7 @@ function updateSubpageInputBox(){
 
 inputEle.addEventListener("change", () => {
     if(inputEle.value > amountOfSubpages) inputEle.value = amountOfSubpages;
+    if(inputEle.value < 1) inputEle.value = 1;
     entryPageIndex = inputEle.value - 1;
     updateContent();
 });
