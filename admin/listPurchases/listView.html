@@ -106,7 +106,7 @@ function renderEntries(entries) {
             <td>${entry.customer || 'En kunde'}</td>
             <td class="status">${translateStatus(entry.status)}<br><span class="status-date">${entry.statusChangeDate || "?"}</span></td>
             <td>${badgeImages.map((imageUrl) => `<img class="image-thumbnail" src="${imageBaseUrl + imageUrl}">`).join('')}</td>
-            <td>${entry.isPreorder ? 'PRE: ' : ''}${entry.description.replaceAll(" + ", "<br>").replaceAll(",",":")}</td>
+            <td>${entry.isPreorder ? 'PRE: ' : ''}${entry.description.replaceAll(" + ", "<br>").replaceAll(",",":").replace(/\d* stk./g, "<b>$&</b>")}</td>
             <td class="income">${entry.total}</td>
             <td class="actions"><a href="javascript:openOrder('${entry.id}');">Åbn ordre</a></td>
         </tr>
