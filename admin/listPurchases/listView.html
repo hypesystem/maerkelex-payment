@@ -72,10 +72,10 @@ var options = [
 ];
 
 var entries = null;
-let entryPageIndex = 0;
+let currentPageIndex = 0;
 let currentOption;
 
-var nav = document.querySelector(".container .subpage-selector-nav");
+let nav = document.querySelector(".container .subpage-selector-nav");
 
 options.forEach(function(option) {
     option.el.addEventListener("click", function(e) {
@@ -87,7 +87,7 @@ options.forEach(function(option) {
             tbody.innerHTML = "<tr><td colspan='1000'>Fejl ved load af ordrer. Prøver igen automatisk. Alternativt kan du forsøge at opdatere siden (tryk F5).</td></tr>";
         }
         else {
-            entryPageIndex = 0;
+            currentPageIndex = 0;
             currentOption = option;
             updateContent();    
         }
@@ -97,18 +97,29 @@ options.forEach(function(option) {
 
 const amountOfShownSubpages = 5;
 const entriesPerSubpage = 20;
-var amountOfSubpages;
+let amountOfSubpages;
 
 function generateSubPageNavigation(){
-    nav.innerHTML = '';
-    orderSearchBar.value ? amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).filter(searchBarFilter).length / entriesPerSubpage) : amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).length / entriesPerSubpage);
-    if(entryPageIndex >= amountOfSubpages) entryPageIndex = amountOfSubpages - 1;
-    let startIndexToRender = 0;
-    if(amountOfSubpages > amountOfShownSubpages){
-        nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-to-start"><<</a>`
-        nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-backwards"><</a>`
+    if(orderSearchBar.value){
+        amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).filter(searchBarFilter).length / entriesPerSubpage);
+    }else{
+        amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).length / entriesPerSubpage);
+    }
 
-        startIndexToRender = entryPageIndex;
+    if(currentPageIndex >= amountOfSubpages){
+        currentPageIndex = amountOfSubpages - 1;
+    } 
+
+    let startIndexToRender = 0;
+    let subpageNavigation = [];
+
+    const extraNavNeeded = amountOfSubpages > amountOfShownSubpages;
+
+    if(extraNavNeeded){
+        subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-to-start">&lt&lt</a>`);
+        subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-backwards">&lt</a>`);
+
+        startIndexToRender = currentPageIndex;
         if(startIndexToRender + Math.floor(amountOfShownSubpages/2) >= amountOfSubpages){
             startIndexToRender = amountOfSubpages - amountOfShownSubpages;
         }else if(startIndexToRender - Math.floor(amountOfShownSubpages/2) > 0){
@@ -119,32 +130,37 @@ function generateSubPageNavigation(){
     }
     
     for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
-        nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-index-${i}">${i+1}</a>`
+        subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-index-${i}">${i+1}</a>`);
     }
 
-    if(amountOfSubpages > amountOfShownSubpages){
-        nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-forward">></a>`
-        nav.innerHTML += `<a href="#" class="option subpage-selector subpage-selector-to-end">>></a>`
+    if(extraNavNeeded){
+        subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-forward">&gt</a>`);
+        subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-to-end">&gt&gt</a>`);
+    }
+
+    nav.innerHTML = subpageNavigation.join("");
+
+    if(extraNavNeeded){
         document.querySelector(`.subpage-selector-backwards`).addEventListener("click", function (e){
             e.preventDefault();
-            if(entryPageIndex <= 0) return;
-            entryPageIndex--;
+            if(currentPageIndex <= 0) return;
+            currentPageIndex--;
             updateContent();
         });
         document.querySelector(`.subpage-selector-forward`).addEventListener("click", function (e){
             e.preventDefault();
-            if(entryPageIndex >= amountOfSubpages - 1) return;
-            entryPageIndex++;
+            if(currentPageIndex >= amountOfSubpages - 1) return;
+            currentPageIndex++;
             updateContent();
         });
         document.querySelector(`.subpage-selector-to-start`).addEventListener("click", function (e){
             e.preventDefault();
-            entryPageIndex = 0;
+            currentPageIndex = 0;
             updateContent();
         });
         document.querySelector(`.subpage-selector-to-end`).addEventListener("click", function (e){
             e.preventDefault();
-            entryPageIndex = amountOfSubpages - 1;
+            currentPageIndex = amountOfSubpages - 1;
             updateContent();
         });
     }
@@ -152,13 +168,15 @@ function generateSubPageNavigation(){
     for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
         document.querySelector(`.subpage-selector-index-${i}`).addEventListener("click", function (e){
             e.preventDefault();
-            entryPageIndex = i;
+            currentPageIndex = i;
             updateContent();
         });
-        
     }
 
-    if(amountOfSubpages) document.querySelector(`.subpage-selector-index-${entryPageIndex}`).classList.add("selected");
+    if(amountOfSubpages) {
+        document.querySelector(`.subpage-selector-index-${currentPageIndex}`).classList.add("selected");
+    }
+
     updateSubpageInputBox();
 }
 
@@ -166,26 +184,32 @@ const inputEle = document.getElementById("subpageInputBox");
 
 function updateSubpageInputBox(){
     inputEle.setAttribute("max", amountOfSubpages);
-    inputEle.value = entryPageIndex + 1;
+    inputEle.value = currentPageIndex + 1;
     document.getElementById("subpageInputLabel").innerText = "ud af " + amountOfSubpages;
 }
 
 inputEle.addEventListener("change", () => {
     if(inputEle.value > amountOfSubpages) inputEle.value = amountOfSubpages;
     if(inputEle.value < 1) inputEle.value = 1;
-    entryPageIndex = inputEle.value - 1;
+    currentPageIndex = inputEle.value - 1;
     updateContent();
 });
 
 const orderSearchBar = document.getElementById("order-search-bar");
-var searchParams;
-orderSearchBar.addEventListener("change", () =>{entryPageIndex = 0; searchParams = orderSearchBar.value.split(" "); updateContent();});
+let searchParams;
+orderSearchBar.addEventListener("change", () =>{currentPageIndex = 0; searchParams = orderSearchBar.value.split(" "); updateContent();});
 
 function updateContent(){
+    const entriesFiltered = entries.filter(currentOption.filter);
     if(!orderSearchBar.value){
-        renderEntriesToList(entries.filter(currentOption.filter).slice(entryPageIndex * entriesPerSubpage, entryPageIndex * entriesPerSubpage + entriesPerSubpage));
+        const entriesFilteredSectioned = entriesFiltered.slice(currentPageIndex * entriesPerSubpage, currentPageIndex * entriesPerSubpage + entriesPerSubpage);
+        renderEntriesToList(entriesFilteredSectioned);
+        amountOfSubpages = Math.ceil(entriesFilteredSectioned.length / entriesPerSubpage);
     }else{
-        renderEntriesToList(entries.filter(currentOption.filter).filter(searchBarFilter).slice(entryPageIndex * entriesPerSubpage, entryPageIndex * entriesPerSubpage + entriesPerSubpage));
+        const entriesFilteredSearched = entriesFiltered.filter(searchBarFilter);
+        const entriesFilteredSearchedSectioned = entriesFilteredSearched.slice(currentPageIndex * entriesPerSubpage, currentPageIndex * entriesPerSubpage + entriesPerSubpage);
+        renderEntriesToList(entriesFilteredSearchedSectioned);
+        amountOfSubpages = Math.ceil(entriesFilteredSearchedSectioned.length / entriesPerSubpage);
     }
     generateSubPageNavigation();
 }
@@ -448,7 +472,7 @@ function checkForNewOrders() {
 }
 
 function renderNewOrders(newOrders, diffCount) {
-    if(entryPageIndex != 0){
+    if(currentPageIndex != 0){
         modifyUnseenOrdersCount(diffCount);
 
         return;
