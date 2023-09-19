@@ -311,9 +311,35 @@
                 font-family: inherit;
                 font-size: inherit;
             }
+            .admin-nav {
+                top: 0;
+                overflow: hidden;
+                background-color: #333;
+                position: fixed;
+                width: 100%;
+                z-index: 3;
+            }
+            .admin-nav .admin-nav-link {
+                float: left;
+                font-size: 16px;
+                color: white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+            .admin-nav .admin-nav-link:hover {
+                background-color: rgba(250, 166, 58, .5);
+            }
         </style>
     </head>
     <body>
+        <nav class="admin-nav">
+            <a class="admin-nav-link" href="/admin">Ordrer</a>
+            <a class="admin-nav-link" href="/admin/accounting">Bogføring</a>
+            <a class="admin-nav-link" href="/admin/failures">Fejl</a>
+            <a class="admin-nav-link" href="/admin/accounting/stock">Lager oversigt</a>
+            <a class="admin-nav-link" href="/admin/manual-receipt">Opret kvitering</a>
+        </nav>
         <div class="hero">
             <div class="image"></div>
         </div>
