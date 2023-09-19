@@ -1,385 +1,81 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Mærkelex Salg</title>
-        <style type="text/css">
-            @font-face { font-family: "Open Sans"; src: url("/assets/font/OpenSans-Regular.ttf") format("truetype"); }
-            @font-face { font-family: "Open Sans Light"; src: url("/assets/font/OpenSans-Light.ttf") format("truetype"); }
+<div class="container">
+    <table>
+        <thead> 
+            <tr>
+                <th title="Oprettelsesdato for ordren">Seneste fejl</th>
+                <th>Beskrivelse</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ # failedOrders }}
+            <tr class="unaccounted-order-row" data-id="{{ id }}">
+                <td class="table-date">
+                    {{ latestErrorAt }}
+                </td>
+                <td>
+                    {{ &description }}
+                </td>
+                <td class="failure-actions">
+                    <button class="btn" data-action-show-data>Vis data</button>
+                    <br><br>
+                    <select data-input-status>
+                        <option value="completed">Køb gennemført</option>
+                        <option value="dispatched">Afsendt</option>
+                    </select>
+                    <button class="btn" data-action-set-status>Gem status</button>
+                </td>
+            </tr>
+            <tr class="failure-data hidden" data-id="{{ id }}">
+                <td colspan="3" style="background: rgba(0,0,0,0.05);">
+                    {{ # errors }}
+                        <h3>Error at {{ at }}</h3>
+                        <pre style="background-color: rgba(0,0,0,0.1); padding: 5px; width: 600px;">{{ description }}</pre>
+                        <pre style="overflow: scroll; width: 600px;">{{ data }}</pre>
+                    {{ / errors }}
 
-            body {
-                background: whitesmoke;
-                font-family: "Open Sans", sans-serif;
-                margin: 0;
-                text-align: center;
-            }
-            .hero {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 400px;
-                overflow: hidden;
-                z-index: -1;
-            }
-            .hero .image {
-                background-image: url('data:image/jpeg;base64,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');
-                filter: blur(7px);
-                background-size: cover;
-                background-position: center;
-                position: absolute;
-                left: -9px;
-                right: -9px;
-                top: -9px;
-                bottom: -9px;
-            }
-            @keyframes fade20 {
-                0% { opacity: 0; }
-                20% { opacity: 0; }
-                100% { opacity: 1; }
-            }
-            @keyframes fade40 {
-                0% { opacity: 0; }
-                40% { opacity: 0; }
-                100% { opacity: 1; }
-            }
-            .logo-section {
-                position: relative;
-                z-index: 2;
-                margin: 80px 10px;
-            }
-            .logo-section img {
-                width: 150px;
-                height: 150px;
-                animation-name: fade20;
-                animation-duration: 2.5s;
-            }
-            .logo-section .tagline {
-                color: white;
-                text-transform: uppercase;
-                font-size: 1.4em;
-                font-family: 'Open Sans Light', sans-serif;
-                letter-spacing: 24px;
-                animation-name: fade40;
-                animation-duration: 4s;
-                display: inline-block;
-                padding-left: 24px;
-            }
-            .stats-section {
-                margin: 35px 5px 50px;
-            }
-            .stat {
-                background: whitesmoke;
-                display: inline-block;
-                padding: 15px;
-                vertical-align: top;
-                width: 200px;
-                height: 150px;
-                box-sizing: border-box;
-                margin: 0 5px;
-                position: relative;
-                margin-bottom: 5px;
-            }
-            .stat .label {
-                text-transform: uppercase;
-                font-size: 0.9em;
-                display: block;
-            }
-            .stat .value {
-                display: block;
-                font-size: 2.2em;
-                font-family: 'Open Sans Light', sans-serif;
-                font-weight: 200;
-            }
-            .stat .value-dkk:after {
-                content: ' DKK';
-                font-size: 0.35em;
-                font-weight: bold;
-            }
-            .stat .description {
-                font-size: 0.8em;
-                display: block;
-                line-height: 95%;
-                color: #32323c;
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                padding: 15px;
-            }
-            .container {
-                display: inline-block;
-                text-align: left;
-                position: relative;
-                width: 100%;
-                max-width: 1000px;
-                background: whitesmoke;
-            }
-            .container nav {
-                background: #32323c;
-                padding: 13px;
-                font-size: 0.9em;
-                color: white;
-                text-align: center;
-            }
-            nav .option {
-                display: inline-block;
-                text-decoration: none;
-                background: transparent;
-                color: white;
-                font-weight: bold;
-                border-radius: 14px;
-                font-size: 0.9em;
-                padding: 4px 8px;
-                margin: 2px 7px;
-                border: 1px solid rgb(250, 166, 58);
-                transition: background 0.2s;
-            }
-            nav .option:not(.selected):hover {
-                background: rgba(250, 166, 58, 0.075);
-            }
-            nav .option.selected {
-                background: rgba(250, 166, 58, 1);
-                text-shadow: 0 0 9px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.2);
-            }
-            table {
-                margin: 0 0 90px;
-                font-size: 0.9em;
-                border-collapse: collapse;
-                width: 100%;
-            }
-            th:nth-child(1), td:nth-child(1) {
-                padding-left: 40px;
-            }
-            th:nth-child(6), td:nth-child(6) {
-                padding-right: 40px;
-            }
-            th {
-                padding: 16px 12px;
-                background: rgba(0,0,0,0.1);
-                text-align: center;
-            }
-            td {
-                padding: 8px 12px;
-                border-bottom: 1px solid rgba(0,0,0,0.1);
-            }
-            td.date-field {
-                font-size: 0.9em;
-                text-align: center;
-                line-height: 90%;
-            }
-            td.status {
-                font-weight: bold;
-                text-align: center;
-            }
-            td.status .status-date {
-                display: block;
-                font-size: 0.6em;
-                font-weight: normal;
-            }
-            td.status .status-date:before {
-                content: '(';
-            }
-            td.status .status-date:after {
-                content: ')';
-            }
-            td.income {
-                text-align: right;
-            }
-            td.income:after {
-                content: ' DKK';
-                font-size: 0.7em;
-            }
-            td.actions {
-                font-size: 0.9em;
-            }
-            td.more-info {
-                display: none;
-                background: rgba(0,0,0,0.015);
-                padding-bottom: 20px;
-                border-bottom: 2px solid rgba(0,0,0,0.25);
-            }
-            td.more-info .mark-as-sent, td.more-info .see-receipt {
-                float: right;
-                max-width: 300px;
-                width: 100%;
-            }
-            td.more-info .mark-as-sent div, td.more-info .see-receipt div {
-                padding: 2px 8px 8px;
-                font-size: 0.9em;
-            }
-            .btn {
-                border: none;
-                color: white;
-                font-weight: bold;
-                font-family: 'Open Sans', sans-serif;
-                padding: 6px 5px;
-                background: #089fda;
-                display: block;
-                text-decoration: none;
-                text-align: center;
-                cursor: pointer;
-            }
-            .btn:disabled {
-                background: #5099b5;
-                cursor: default;
-            }
-            .table-date {
-                text-align: center;
-            }
-            .accounting-actions {
-                display: flex;
-                flex-direction: column;
-                justify-content: stretch;
-            }
-            .accounting-action {
-                cursor: pointer;
-                text-decoration: none;
-                border: 1px solid #089fda;
-                text-align: center;
-                padding: 5px;
-            }
-            .btn.accounting-action:disabled {
-                border-color: #5099b5;
-            }
-            .accounting-action-mark-as-posted {
-                background: transparent;
-                color: #089fda;
-            }
-            .btn.accounting-action-mark-as-posted:disabled {
-                background: transparent;
-                color: #5099b5;
-            }
-            @keyframes rotate {
-                from { transform: rotate(10deg); }
-                to { transform: rotate(360deg); }
-            }
-            .spinner {
-                width: 20px;
-                height: 20px;
-                border: 3px solid #089fda;
-                border-radius: 100%;
-                border-top: 3px solid rgba(250, 166, 58, 1);
-                animation: rotate 1s infinite linear;
-            }
-            .hidden {
-                display: none;
-            }
+                    <h3>View model for order</h3>
+                    <pre style="overflow: scroll; width: 600px;">{{ viewModel }}</pre>
+                </td>
+            </tr>
+            {{ / failedOrders }}
+        </tbody>
+    </table>
+</div>
+<script>
+    const failureActionsBtns = document.querySelectorAll(".failure-actions [data-action-show-data]");
+    Array.prototype.forEach.call(failureActionsBtns, (btn) => {
+        btn.addEventListener("click", function(e) {
+            const id = this.parentNode.parentNode.dataset.id;
+            const dataSection = document.querySelector(`.failure-data[data-id='${id}']`);
 
-            .multiaction-output {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-            }
-            .multiaction-output-feed {
-                font-size: 0.75em;
-                margin-left: 1em;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="hero">
-            <div class="image"></div>
-        </div>
-        <section class="logo-section">
-            <img src="/assets/logo.svg"><br>
-            <div class="tagline">salg</div>
-        </section>
-        <div class="container">
-            <table>
-                <thead>
-                    <tr>
-                        <th title="Oprettelsesdato for ordren">Seneste fejl</th>
-                        <th>Beskrivelse</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{ # failedOrders }}
-                    <tr class="unaccounted-order-row" data-id="{{ id }}">
-                        <td class="table-date">
-                            {{ latestErrorAt }}
-                        </td>
-                        <td>
-                            {{ &description }}
-                        </td>
-                        <td class="failure-actions">
-                            <button class="btn" data-action-show-data>Vis data</button>
-                            <br><br>
-                            <select data-input-status>
-                                <option value="completed">Køb gennemført</option>
-                                <option value="dispatched">Afsendt</option>
-                            </select>
-                            <button class="btn" data-action-set-status>Gem status</button>
-                        </td>
-                    </tr>
-                    <tr class="failure-data hidden" data-id="{{ id }}">
-                        <td colspan="3" style="background: rgba(0,0,0,0.05);">
-                            {{ # errors }}
-                                <h3>Error at {{ at }}</h3>
-                                <pre style="background-color: rgba(0,0,0,0.1); padding: 5px; width: 600px;">{{ description }}</pre>
-                                <pre style="overflow: scroll; width: 600px;">{{ data }}</pre>
-                            {{ / errors }}
+            dataSection.classList.remove("hidden");
+        });
+    });
 
-                            <h3>View model for order</h3>
-                            <pre style="overflow: scroll; width: 600px;">{{ viewModel }}</pre>
-                        </td>
-                    </tr>
-                    {{ / failedOrders }}
-                </tbody>
-            </table>
-        </div>
-        <script>
-            const failureActionsBtns = document.querySelectorAll(".failure-actions [data-action-show-data]");
-            Array.prototype.forEach.call(failureActionsBtns, (btn) => {
-                btn.addEventListener("click", function(e) {
-                    const id = this.parentNode.parentNode.dataset.id;
-                    const dataSection = document.querySelector(`.failure-data[data-id='${id}']`);
+    const statusChangeButtons = document.querySelectorAll(".failure-actions [data-action-set-status]");
+    Array.prototype.forEach.call(statusChangeButtons, (btn) => {
+        btn.addEventListener("click", async function(e) {
+            const row = this.parentNode.parentNode;
+            const id = row.dataset.id;
+            const status = row.querySelector(`[data-input-status]`).value;
 
-                    dataSection.classList.remove("hidden");
-                });
+            const response = await fetch("/admin/orders/" + id, {
+                method: "put",
+                body: JSON.stringify({ status }),
+                headers: { 'content-type': 'application/json' },
             });
 
-            const statusChangeButtons = document.querySelectorAll(".failure-actions [data-action-set-status]");
-            Array.prototype.forEach.call(statusChangeButtons, (btn) => {
-                btn.addEventListener("click", async function(e) {
-                    const row = this.parentNode.parentNode;
-                    const id = row.dataset.id;
-                    const status = row.querySelector(`[data-input-status]`).value;
+            if(response.status != 200) {
+                throw {
+                    type: "failure",
+                    trace: new Error("Bad response"),
+                    response
+                };
+            }
 
-                    const response = await fetch("/admin/orders/" + id, {
-                        method: "put",
-                        body: JSON.stringify({ status }),
-                        headers: { 'content-type': 'application/json' },
-                    });
-
-                    if(response.status != 200) {
-                        throw {
-                            type: "failure",
-                            trace: new Error("Bad response"),
-                            response
-                        };
-                    }
-
-                    row.classList.add("hidden");
-                });
-            });
-        </script>
-        <!-- Fathom - simple website analytics - https://github.com/usefathom/fathom -->
-        <script>
-        (function(f, a, t, h, o, m){
-            a[h]=a[h]||function(){
-                (a[h].q=a[h].q||[]).push(arguments)
-            };
-            o=f.createElement('script'),
-            m=f.getElementsByTagName('script')[0];
-            o.async=1; o.src=t; o.id='fathom-script';
-            m.parentNode.insertBefore(o,m)
-        })(document, window, '//fathom.k8s.deranged.dk/tracker.js', 'fathom');
-        fathom('set', 'siteId', 'SJWTJ');
-        fathom('trackPageview');
-        </script>
-        <!-- / Fathom -->
-    </body>
-</html>
+            row.classList.add("hidden");
+        });
+    });
+</script>
+        
