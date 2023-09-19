@@ -15,8 +15,17 @@ module.exports = (purchases) => (req, res) => {
             .sort((a, b) => {
                 let aLatestTimestamp, bLatestTimestamp;
 
-                !a.data.errors || !a.data.errors.length ? aLatestTimestamp = a.data.viewModel.date : aLatestTimestamp = a.data.errors[a.data.errors.length - 1].at;
-                !b.data.errors || !b.data.errors.length ? bLatestTimestamp = b.data.viewModel.date : bLatestTimestamp = b.data.errors[b.data.errors.length - 1].at;
+                if(!a.data.errors || !a.data.errors.length){
+                    aLatestTimestamp = a.data.viewModel.date;
+                }else{
+                    aLatestTimestamp = a.data.errors[a.data.errors.length - 1].at;
+                }
+
+                if(!b.data.errors || !b.data.errors.length){
+                    bLatestTimestamp = b.data.viewModel.date
+                }else{
+                    bLatestTimestamp = b.data.errors[b.data.errors.length - 1].at;
+                }
 
                 if(aLatestTimestamp < bLatestTimestamp) {
                     return 1;
@@ -28,9 +37,10 @@ module.exports = (purchases) => (req, res) => {
             })
             .map((o) => {
                 const latestError = o.data.errors && o.data.errors.length && o.data.errors[o.data.errors.length - 1];
+                const latestErrorAt = latestError ? prettifyDate(latestError.at) : prettifyDate(o.data.viewModel.date);
                 return {
                     id: o.id,
-                    latestErrorAt: (latestError && prettifyDate(latestError.at) ) || prettifyDate(o.data.viewModel.date),
+                    latestErrorAt,
                     errors: !latestError ? [] : o.data.errors.reverse().map((error) => {
                         return {
                             at: prettifyDate(error.at),
