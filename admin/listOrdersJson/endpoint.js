@@ -30,7 +30,8 @@ module.exports = (purchases) => (req, res) => {
                     ...customerInfo,
                     status: translateOrderStatus(order.status),
                     description: describeOrder(viewModel.orderLines),
-                    total: order.data.total
+                    total: order.data.total,
+                    items: viewModel.orderLines
                 };
             });
         res.send(result);
