@@ -116,7 +116,7 @@ function renderEntries(entries) {
                 (entry.status == "pending" ?
                     `<div class="mark-as-sent">
                         <div>Når du har afsendt ordren til kunden, kan du markere det her, så sendes kvitteringen.</div>
-                        <a class="btn btn-big" href="/admin/orders/${entry.id}/mark-dispatched">
+                        <a class="btn btn-big mark-as-sent-btn" href="javascript:markOrderDispatched('${entry.id}');">
                             Marker som afsendt
                         </a>
                     </div>`
@@ -265,6 +265,39 @@ async function saveOrderInfo(event) {
         Email <a href="mailto:${this.email.value}">${this.email.value}</a><br>
         Telefon <a href="tel:${this["phone-number"].value}">${this["phone-number"].value}</a><br>
     `;
+}
+
+function markOrderDispatched(id){    
+    let dispatchButton = document.querySelector(".more-info-" + id + " .mark-as-sent-btn");
+    dispatchButton.classList.add("isClicked");
+    requestMarkOrderDispatched(id, (error) => {
+        if(error) {
+            document.write(error.response);
+            return;
+        }
+        entries.find(entry => entry.id == id).status = "dispatched";
+        options.find(o => o.cls == "option-new-orders").el.click();
+    })
+}
+
+function requestMarkOrderDispatched(id, callback){
+    let req = new XMLHttpRequest();
+    req.open("GET", `/admin/orders/${id}/mark-dispatched`);
+    req.onreadystatechange = function() {
+        if(req.readyState != 4) {
+            return;
+        }
+        if(req.status == 200) {
+            return callback(null);
+        }
+        callback({
+            trace: new Error("Error response from server on request"),
+            status: req.statusText,
+            responseType: req.responseType,
+            response: req.response
+        });
+    };
+    req.send();
 }
 
 function loadOrders(backoff) {
