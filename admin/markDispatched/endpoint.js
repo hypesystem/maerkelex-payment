@@ -12,7 +12,7 @@ module.exports = (purchases) => (req, res) => {
             return res.fail(500, "Kunne ikke sende en kvitering for ordren");
         }
         if(options && options.redirectToAdmin == "false") {
-            return res.send(200, "Ordren blev markeret som afsendt");
+            return res.status(200).send("Ordren blev markeret som afsendt");
         }
         res.redirect("/admin");
     });
