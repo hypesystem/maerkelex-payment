@@ -1,4 +1,5 @@
 module.exports = (purchases) => (req, res) => {
+    const options = req.query;
     purchases.sendReceipt(req.params.id, (error) => {
         if(error && error.type == "PurchaseNotFound") {
             return res.send(400, "Ordren findes ikke.");
@@ -9,6 +10,9 @@ module.exports = (purchases) => (req, res) => {
         if(error) {
             console.error("Failed to send receipt for purchase", error);
             return res.fail(500);
+        }
+        if(options && options.redirectToAdmin == "false") {
+            return res.send(200, "Ordren blev markeret som afsendt");
         }
         res.redirect("/admin");
     });

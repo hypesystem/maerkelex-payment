@@ -282,7 +282,7 @@ function markOrderDispatched(id){
 
 function requestMarkOrderDispatched(id, callback){
     let req = new XMLHttpRequest();
-    req.open("GET", `/admin/orders/${id}/mark-dispatched`);
+    req.open("GET", `/admin/orders/${id}/mark-dispatched?redirectToAdmin=false`);
     req.onreadystatechange = function() {
         if(req.readyState != 4) {
             return;
