@@ -106,7 +106,7 @@ function renderEntries(entries) {
             <td>${entry.customer || 'En kunde'}</td>
             <td class="status">${translateStatus(entry.status)}<br><span class="status-date">${entry.statusChangeDate || "?"}</span></td>
             <td>${badgeImages.map((imageUrl) => `<img class="image-thumbnail" src="${imageBaseUrl + imageUrl}">`).join('')}</td>
-            <td>${entry.isPreorder ? 'PRE: ' : ''}${entry.items.map((item) => item.id && item.count ? item.id + ": <b>" + item.count +" stk</b>" : item.description).join("<br>")}</td>
+            <td>${describeEntry(entry)}</td>
             <td class="income">${entry.total}</td>
             <td class="actions"><a href="javascript:openOrder('${entry.id}');">Åbn ordre</a></td>
         </tr>
@@ -196,6 +196,21 @@ function translateStatus(status) {
         default:
             return "?";
     }
+}
+
+function describeEntry(entry){
+    const preOrderTag = entry.isPreorder ? 'PRE:<br> ' : '';
+    const describedItems = entry.items
+        .map((item) => describeItem(item))
+        .join("<br>");
+    return `${preOrderTag}${describedItems}`;
+}
+
+function describeItem(item){
+    if(item.id && item.count){
+        return `${item.id}: <b>${item.count} stk</b>`;
+    }
+    return item.description;
 }
 
 function openOrder(id) {
