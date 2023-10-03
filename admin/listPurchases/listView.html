@@ -209,9 +209,21 @@ function describeEntry(entry){
 
 function describeItem(item){
     if(item.id && item.count){
-        return `${item.id}: <b>${item.count} stk</b>`;
+        return `${badgeNameFromId(item.id)}: <b>${item.count} stk</b>`;
     }
     return item.description;
+}
+
+function badgeNameFromId(id){
+    const badgeIdNameMapping = {
+        {{#badgesForSale}}
+        "{{ &id }}" : "{{ &name }}",
+        {{/badgesForSale}}
+    };
+    if(!badgeIdNameMapping[id]){
+        return id;
+    }
+    return badgeIdNameMapping[id];
 }
 
 function openOrder(id) {
