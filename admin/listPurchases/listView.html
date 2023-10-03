@@ -269,7 +269,7 @@ async function saveOrderInfo(event) {
 
 function markOrderDispatched(id){    
     let dispatchButton = document.querySelector(".more-info-" + id + " .mark-as-sent-btn");
-    dispatchButton.classList.add("isClicked");
+    dispatchButton.classList.add("is-clicked");
     requestMarkOrderDispatched(id, (error) => {
         if(error) {
             document.write(error.response);
