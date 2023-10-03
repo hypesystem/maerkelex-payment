@@ -93,6 +93,13 @@ function renderEntriesToList(entries) {
     }
     tbody.innerHTML = renderEntries(entries);
 
+    Array.prototype.forEach.call(document.querySelectorAll('.mark-as-sent-btn'), function(markAsSentButton) {
+        markAsSentButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            markOrderDispatched(markAsSentButton.dataset.orderId);
+        });
+    });
+
     Array.prototype.forEach.call(tbody.querySelectorAll(".edit-info-form"), function(editInfoForm) {
         editInfoForm.addEventListener("submit", saveOrderInfo);
     });
@@ -116,7 +123,7 @@ function renderEntries(entries) {
                 (entry.status == "pending" ?
                     `<div class="mark-as-sent">
                         <div>Når du har afsendt ordren til kunden, kan du markere det her, så sendes kvitteringen.</div>
-                        <a class="btn btn-big mark-as-sent-btn" href="javascript:markOrderDispatched('${entry.id}');">
+                        <a class="btn btn-big mark-as-sent-btn" data-order-id="${entry.id}" href="javascript:markOrderDispatched('${entry.id}');">
                             Marker som afsendt
                         </a>
                     </div>`
