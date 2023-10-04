@@ -9,42 +9,42 @@ module.exports = (purchases, maerkelex) => (req, res) => {
                 console.error("Failed to list purchase", error);
                 res.fail(500, "Failed to get data from maerkelex.dk");
             }
-        let result = orders
-            .filter(order => order.status == "completed" || order.status == "dispatched")
-            .sort((a, b) => a.data.completedAt < b.data.completedAt ? 1 : (a.data.completedAt > b.data.completedAt ? -1 : 0))
-            .map(order => {
-                const viewModel = order.data.viewModel;
-                let customerInfo = {};
-                if(viewModel.customerInfo) {
-                    customerInfo.email = viewModel.customerInfo.email;
-                    customerInfo.phoneNumber = viewModel.customerInfo.phoneNumber;
+            let result = orders
+                .filter(order => order.status == "completed" || order.status == "dispatched")
+                .sort((a, b) => a.data.completedAt < b.data.completedAt ? 1 : (a.data.completedAt > b.data.completedAt ? -1 : 0))
+                .map(order => {
+                    const viewModel = order.data.viewModel;
+                    let customerInfo = {};
+                    if(viewModel.customerInfo) {
+                        customerInfo.email = viewModel.customerInfo.email;
+                        customerInfo.phoneNumber = viewModel.customerInfo.phoneNumber;
 
-                    if(viewModel.customerInfo.name && viewModel.customerInfo.invoicingAddress) {
-                        customerInfo.customer = viewModel.customerInfo.name + ", " + viewModel.customerInfo.invoicingAddress.city;
-                    }
-                    if(viewModel.customerInfo.deliveryAddress) {
-                        customerInfo.address = stringifyAddress(viewModel.customerInfo.deliveryAddress);
-                    }
-                }
-
-                return {
-                    id: order.id,
-                    date: prettifyDate(order.data.completedAt),
-                    isPreorder: order.data.isPreorder || false,
-                    statusChangeDate: prettifyDate(selectLatestStateDate(order.data)),
-                    ...customerInfo,
-                    status: translateOrderStatus(order.status),
-                    description: describeOrder(viewModel.orderLines),
-                    total: order.data.total,
-                    items: viewModel.orderLines.map((orderLine) => {
-                        if(orderLine.id) {
-                            orderLine.name = maerkeData.m.find((m) => m.id === orderLine.id)?.name;
+                        if(viewModel.customerInfo.name && viewModel.customerInfo.invoicingAddress) {
+                            customerInfo.customer = viewModel.customerInfo.name + ", " + viewModel.customerInfo.invoicingAddress.city;
                         }
-                        return orderLine;
-                    }),
-                };
-            });
-        res.send(result);
+                        if(viewModel.customerInfo.deliveryAddress) {
+                            customerInfo.address = stringifyAddress(viewModel.customerInfo.deliveryAddress);
+                        }
+                    }
+
+                    return {
+                        id: order.id,
+                        date: prettifyDate(order.data.completedAt),
+                        isPreorder: order.data.isPreorder || false,
+                        statusChangeDate: prettifyDate(selectLatestStateDate(order.data)),
+                        ...customerInfo,
+                        status: translateOrderStatus(order.status),
+                        description: describeOrder(viewModel.orderLines),
+                        total: order.data.total,
+                        items: viewModel.orderLines.map((orderLine) => {
+                            if(orderLine.id) {
+                                orderLine.name = maerkeData.m.find((m) => m.id === orderLine.id)?.name;
+                            }
+                            return orderLine;
+                        }),
+                    };
+                });
+            res.send(result);
         });
     });
 };
