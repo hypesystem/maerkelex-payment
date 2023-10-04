@@ -287,24 +287,17 @@ function markOrderDispatched(id){
     })
 }
 
-function requestMarkOrderDispatched(id, callback){
-    let req = new XMLHttpRequest();
-    req.open("GET", `/admin/orders/${id}/mark-dispatched?redirectToAdmin=false`);
-    req.onreadystatechange = function() {
-        if(req.readyState != 4) {
-            return;
-        }
-        if(req.status == 200) {
-            return callback(null);
-        }
-        callback({
-            trace: new Error("Error response from server on request"),
-            status: req.statusText,
-            responseType: req.responseType,
-            response: req.response
-        });
-    };
-    req.send();
+async function requestMarkOrderDispatched(id, callback){
+    const response = await fetch(`/admin/orders/${id}/mark-dispatched?redirectToAdmin=false`, {method: "GET"}); 
+    if(response.status == 200){
+        return callback(null);
+    }
+    callback({
+        trace: new Error("Error respones from the server on request"),
+        status: response.statusText,
+        responseType: response.type,
+        response: await response.text()
+    });
 }
 
 function loadOrders(backoff) {
