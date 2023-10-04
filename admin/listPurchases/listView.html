@@ -279,7 +279,8 @@ function markOrderDispatched(id){
     dispatchButton.classList.add("is-clicked");
     requestMarkOrderDispatched(id, (error) => {
         if(error) {
-            document.write(error.response);
+            alert("couldn't mark order dispatched");
+            dispatchButton.classList.remove("is-clicked");
             return;
         }
         entries.find(entry => entry.id == id).status = "dispatched";
