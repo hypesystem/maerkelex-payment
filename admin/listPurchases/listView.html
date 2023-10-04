@@ -284,8 +284,8 @@ function markOrderDispatched(id){
             return;
         }
         entries.find(entry => entry.id == id).status = "dispatched";
-        options.find(o => o.cls == "option-new-orders").el.click();
-    })
+        removeOrderFromRender(id);
+    });
 }
 
 async function requestMarkOrderDispatched(id, callback){
@@ -299,6 +299,12 @@ async function requestMarkOrderDispatched(id, callback){
         responseType: response.type,
         response: await response.text()
     });
+}
+
+function removeOrderFromRender(id){
+    closeOrder(id);
+    let ele = document.getElementById(`order-${id}`);
+    ele.remove();
 }
 
 function loadOrders(backoff) {
