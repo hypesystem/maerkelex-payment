@@ -93,6 +93,13 @@ function renderEntriesToList(entries) {
     }
     tbody.innerHTML = renderEntries(entries);
 
+    Array.prototype.forEach.call(document.querySelectorAll('.mark-as-sent-btn'), function(markAsSentButton) {
+        markAsSentButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            markOrderDispatched(markAsSentButton.dataset.orderId);
+        });
+    });
+
     Array.prototype.forEach.call(tbody.querySelectorAll(".edit-info-form"), function(editInfoForm) {
         editInfoForm.addEventListener("submit", saveOrderInfo);
     });
@@ -116,7 +123,7 @@ function renderEntries(entries) {
                 (entry.status == "pending" ?
                     `<div class="mark-as-sent">
                         <div>Når du har afsendt ordren til kunden, kan du markere det her, så sendes kvitteringen.</div>
-                        <a class="btn btn-big" href="/admin/orders/${entry.id}/mark-dispatched">
+                        <a class="btn btn-big mark-as-sent-btn" data-order-id="${entry.id}" href="javascript:markOrderDispatched('${entry.id}');">
                             Marker som afsendt
                         </a>
                     </div>`
@@ -265,6 +272,39 @@ async function saveOrderInfo(event) {
         Email <a href="mailto:${this.email.value}">${this.email.value}</a><br>
         Telefon <a href="tel:${this["phone-number"].value}">${this["phone-number"].value}</a><br>
     `;
+}
+
+function markOrderDispatched(id){    
+    let dispatchButton = document.querySelector(".more-info-" + id + " .mark-as-sent-btn");
+    dispatchButton.classList.add("is-clicked");
+    requestMarkOrderDispatched(id, (error) => {
+        if(error) {
+            alert("couldn't mark order dispatched");
+            dispatchButton.classList.remove("is-clicked");
+            return;
+        }
+        entries.find(entry => entry.id == id).status = "dispatched";
+        removeOrderFromRender(id);
+    });
+}
+
+async function requestMarkOrderDispatched(id, callback){
+    const response = await fetch(`/admin/orders/${id}/mark-dispatched?redirectToAdmin=false`, {method: "GET"}); 
+    if(response.status == 200){
+        return callback(null);
+    }
+    callback({
+        trace: new Error("Error respones from the server on request"),
+        status: response.statusText,
+        responseType: response.type,
+        response: await response.text()
+    });
+}
+
+function removeOrderFromRender(id){
+    closeOrder(id);
+    let ele = document.getElementById(`order-${id}`);
+    ele.remove();
 }
 
 function loadOrders(backoff) {
