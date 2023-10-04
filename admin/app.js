@@ -27,7 +27,7 @@ module.exports = (db, purchases, billy, maerkelex, stock, maerkelexBaseUrl) => {
     app.get("/manual-receipt", authenticate(users), inputManualReceiptEndpoint(maerkelex));
     app.post("/manual-receipt", authenticate(users), createManualReceiptEndpoint(purchases));
 
-    app.get("/orders", authenticate(users), listOrdersJsonEndpoint(purchases));
+    app.get("/orders", authenticate(users), listOrdersJsonEndpoint(purchases, maerkelex));
     app.get("/orders/:id/mark-dispatched", authenticate(users), markDispatchedEndpoint(purchases));
     app.get("/orders/:id/receipt", authenticate(users), viewReceiptEndpoint(purchases));
     app.get("/accounting", authenticate(users), accountingOverviewEndpoint(purchases));

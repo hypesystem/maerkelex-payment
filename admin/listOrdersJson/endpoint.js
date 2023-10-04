@@ -1,9 +1,14 @@
-module.exports = (purchases) => (req, res) => {
+module.exports = (purchases, maerkelex) => (req, res) => {
     purchases.list((error, orders) => {
         if(error) {
             console.error("Failed to list purchases", error);
             return res.status(500).send({ error: "failed to list orders" });
         }
+        maerkelex.getData((error, maerkeData) => {
+            if(error) {
+                console.error("Failed to list purchase", error);
+                res.fail(500, "Failed to get data from maerkelex.dk");
+            }
         let result = orders
             .filter(order => order.status == "completed" || order.status == "dispatched")
             .sort((a, b) => a.data.completedAt < b.data.completedAt ? 1 : (a.data.completedAt > b.data.completedAt ? -1 : 0))
@@ -31,10 +36,16 @@ module.exports = (purchases) => (req, res) => {
                     status: translateOrderStatus(order.status),
                     description: describeOrder(viewModel.orderLines),
                     total: order.data.total,
-                    items: viewModel.orderLines
+                    items: viewModel.orderLines.map((orderLine) => {
+                        if(orderLine.id) {
+                            orderLine.name = maerkeData.m.find((m) => m.id === orderLine.id)?.name;
+                        }
+                        return orderLine;
+                    }),
                 };
             });
         res.send(result);
+        });
     });
 };
 
