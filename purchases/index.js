@@ -17,7 +17,7 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
         start: (requestBody, order, customerInfo, callback) => startPurchase(maerkelex, paymentGateway, db, requestBody, order, customerInfo, callback),
         complete: (id, nonce, callback) => completePurchase(paymentGateway, db, mailer, id, nonce, callback),
         sendReceipt: (id, callback) => sendPurchaseReceipt(paymentGateway, db, mailer, id, callback),
-        list: (callback) => listPurchases(db, callback),
+        list: (options, callback) => listPurchases(db, options, callback),
         get: (id, callback) => getPurchase(db, id, callback),
         update: (purchase, callback) => updatePurchase(db, purchase.id, purchase.status, purchase.data, callback),
         getHtmlReceipt: (id, callback) => getPurchaseHtmlReceipt(db, id, callback),
@@ -505,14 +505,36 @@ function renderHtmlReceipt(purchase) {
     return mustache.render(receiptEmailLayout, purchase.data.viewModel);
 }
 
-function listPurchases(db, callback) {
-    db.query("SELECT * FROM purchase", (error, result) => {
+function listPurchases(db, options, callback) {
+    if(!callback){
+        callback = options
+        options = {};
+    }
+   
+    const offset = getOffset(options);
+    const limit = getLimit(options);
+
+    db.query(`SELECT * FROM purchase OFFSET ${offset} LIMIT ${limit}`, (error, result) => {
         if(error) {
             console.error("Failed to get purchases to list", error);
             return callback(error);
         }
         callback(null, result.rows);
     });
+}
+
+function getOffset(options){
+    if(options["offset"]){
+        return options["offset"];
+    }
+    return 0;
+}
+
+function getLimit(options){
+    if(options["limit"]){
+        return options["limit"];
+    }
+    return "ALL";
 }
 
 function getPurchaseHtmlReceipt(db, id, callback) {
