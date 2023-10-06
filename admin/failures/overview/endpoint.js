@@ -56,7 +56,7 @@ function getLatestTimestamp(order){
     return order.data.errors[order.data.errors.length - 1].at;
 }
 
-function getLastELement(list) {
+function getLastElement(list) {
     if(!list || !list.length) {
         return undefined;
     }
