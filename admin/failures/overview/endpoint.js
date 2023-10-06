@@ -13,19 +13,8 @@ module.exports = (purchases) => (req, res) => {
         let failedOrders = orders
             .filter(x => x.status == "failed" || (x.data.errors && x.data.errors.length))
             .sort((a, b) => {
-                let aLatestTimestamp, bLatestTimestamp;
-
-                if(!a.data.errors || !a.data.errors.length){
-                    aLatestTimestamp = a.data.viewModel.date;
-                }else{
-                    aLatestTimestamp = a.data.errors[a.data.errors.length - 1].at;
-                }
-
-                if(!b.data.errors || !b.data.errors.length){
-                    bLatestTimestamp = b.data.viewModel.date
-                }else{
-                    bLatestTimestamp = b.data.errors[b.data.errors.length - 1].at;
-                }
+                const aLatestTimestamp = getLatestTimestamp(a);
+                const bLatestTimestamp = getLatestTimestamp(b);
 
                 if(aLatestTimestamp < bLatestTimestamp) {
                     return 1;
@@ -56,6 +45,13 @@ module.exports = (purchases) => (req, res) => {
         res.send(mustache.render(view, { failedOrders }));
     });
 };
+
+function getLatestTimestamp(order){
+    if(!order.data.errors || !order.data.errors.length){
+        return order.data.viewModel.date;
+    }
+    return order.data.errors[order.data.errors.length - 1].at;
+}
 
 function prettifyDate(date) {
     if(!date) return "";
