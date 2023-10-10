@@ -511,16 +511,17 @@ function listPurchases(db, options, callback) {
         options = {};
     }
    
-    const offset = getOffset(options);
-    const limit = getLimit(options);
-
-    db.query(`SELECT * FROM purchase OFFSET ${offset} LIMIT ${limit}`, (error, result) => {
+    db.query(createQueryString(options), (error, result) => {
         if(error) {
             console.error("Failed to get purchases to list", error);
             return callback(error);
         }
         callback(null, result.rows);
     });
+}
+
+function createQueryString(options){
+    return`SELECT * FROM purchase ORDER BY started_at ASC OFFSET ${getOffset(options)} LIMIT ${getLimit(options)}`
 }
 
 function getOffset(options){
