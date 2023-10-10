@@ -516,26 +516,36 @@ function listPurchases(db, options, callback) {
             console.error("Failed to get purchases to list", error);
             return callback(error);
         }
-        callback(null, result.rows);
     });
 }
 
 function createQueryString(options){
-    return`SELECT * FROM purchase ORDER BY started_at ASC OFFSET ${getOffset(options)} LIMIT ${getLimit(options)}`
+    const queryString = ['SELECT * FROM purchase'];
+    addParams(queryString, options)
+    return queryString.join(" ");
 }
 
-function getOffset(options){
+function addParams(queryString, options){
+    addWhere(queryString, options);
+    addOffset(queryString, options);
+    addLimit(queryString, options);
+}
+
+function addWhere(queryString, options){
+    if(options["where"]){
+        queryString.push(`WHERE status = '${options["where"]}'`);
+    }
+}
+function addOffset(queryString, options){
     if(options["offset"]){
-        return options["offset"];
+        queryString.push(`OFFSET ${options["offset"]}`);
     }
-    return 0;
 }
 
-function getLimit(options){
+function addLimit(queryString, options){
     if(options["limit"]){
-        return options["limit"];
+        queryString.push(`LIMIT ${options["limit"]}`);
     }
-    return "ALL";
 }
 
 function getPurchaseHtmlReceipt(db, id, callback) {
