@@ -512,10 +512,12 @@ function listPurchases(db, options, callback) {
     }
    
     db.query(createQueryString(options), (error, result) => {
+    db.query(createQueryString(options), (error, result, amountOfOrders) => {
         if(error) {
             console.error("Failed to get purchases to list", error);
             return callback(error);
         }
+        callback(null, result.rows.slice(getStartIndex(options), getEndIndex(options)), result.rows.length);
     });
 }
 
@@ -537,15 +539,22 @@ function addWhere(queryString, options){
     }
 }
 function addOffset(queryString, options){
+
+function getStartIndex(options){
     if(options["offset"]){
         queryString.push(`OFFSET ${options["offset"]}`);
+        return options["offset"];
     }
+    return 0;
 }
 
 function addLimit(queryString, options){
+function getEndIndex(options){
     if(options["limit"]){
         queryString.push(`LIMIT ${options["limit"]}`);
+        return options["limit"] + getStartIndex(options);
     }
+    return undefined;
 }
 
 function getPurchaseHtmlReceipt(db, id, callback) {

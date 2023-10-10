@@ -6,7 +6,7 @@ module.exports = (purchases) => (req, res) => {
         }  
     });
 
-    purchases.list(options, (error, orders) => {
+    purchases.list(options, (error, orders, amountOfOrders) => {
         if(error) {
             console.error("Failed to list purchases", error);
             return res.status(500).send({ error: "failed to list orders" });
