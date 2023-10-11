@@ -57,17 +57,20 @@ var options = [
     {
         cls: "option-all-orders",
         el: document.querySelector(".option-all-orders"),
-        filter: function(x) { return true; }
+        filter: function(x) { return true; },
+        category: "all"
     },
     {
         cls: "option-new-orders",
         el: document.querySelector(".option-new-orders"),
-        filter: function(x) { return x.status == "pending"; }
+        filter: function(x) { return x.status == "pending"; },
+        category: "completed"
     },
     {
         cls: "option-sent-orders",
         el: document.querySelector(".option-sent-orders"),
-        filter: function(x) { return x.status == "dispatched"; }
+        filter: function(x) { return x.status == "dispatched"; },
+        category: "dispatched"
     }
 ];
 
@@ -446,9 +449,17 @@ async function requestOrdersWithQuery(queryString, callback){
 }
 
 function createQueryString(){
-    return "";
+    const queryString = [
+        `limit=${entriesPerSubpage}`,
+        `offset=${currentPageIndex * entriesPerSubpage}`,
+        `category=${getCurrentCategory()}`
+    ];
+    return queryString.join("&");
 }
 
+function getCurrentCategory(){
+    return currentOption.category;
+}
 
 function loadOrders(backoff) {
     requestOrders((error, orders) => {
@@ -544,7 +555,6 @@ function modifyUnseenOrdersCount(diff) {
     }
 }
 
-loadOrders(200);
 
 Notification.requestPermission();
 </script>
