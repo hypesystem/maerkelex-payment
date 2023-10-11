@@ -72,6 +72,7 @@ var options = [
 ];
 
 var entries = null;
+let amountOfEntries = 0;
 let currentPageIndex = 0;
 let currentOption;
 
@@ -420,6 +421,34 @@ async function saveOrderInfo(event) {
         Telefon <a href="tel:${this["phone-number"].value}">${this["phone-number"].value}</a><br>
     `;
 }
+
+function loadSomeOrders(){
+    requestOrdersWithQuery(createQueryString(), (error, orders) => {
+        if(error) {
+            return console.error("Failed to load entries", error);
+        }
+        entries = orders.orders;
+        amountOfEntries = orders.amountOfEntries;
+        options.find(o => o.cls == "option-new-orders").el.click();
+    })
+}
+
+async function requestOrdersWithQuery(queryString, callback){
+    const response = await fetch(`/admin/orders?${queryString}`, {method: "GET"}); 
+    if(response.status == 200){
+        return callback(null, await response.json());
+    }
+    callback({
+        trace: new Error("Error respones from the server on request"),
+        status: response.statusText,
+        response: await response.text()
+    });
+}
+
+function createQueryString(){
+    return "";
+}
+
 
 function loadOrders(backoff) {
     requestOrders((error, orders) => {

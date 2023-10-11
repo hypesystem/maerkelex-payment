@@ -47,7 +47,7 @@ module.exports = (purchases) => (req, res) => {
                         }),
                     };
                 });
-            res.send(result);
+            res.send({orders: result, amountOfOrders});
         });
     });
 };
