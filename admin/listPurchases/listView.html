@@ -145,36 +145,24 @@ function generateSubPageNavigation(){
     nav.innerHTML = subpageNavigation.join("");
 
     if(extraNavNeeded){
-        document.querySelector(`.subpage-selector-backwards`).addEventListener("click", function (e){
-            e.preventDefault();
-            if(currentPageIndex <= 0) return;
-            currentPageIndex--;
-            loadSomeOrders();
-        });
-        document.querySelector(`.subpage-selector-forward`).addEventListener("click", function (e){
-            e.preventDefault();
-            if(currentPageIndex >= amountOfSubpages - 1) return;
-            currentPageIndex++;
-            loadSomeOrders();
-        });
-        document.querySelector(`.subpage-selector-to-start`).addEventListener("click", function (e){
-            e.preventDefault();
-            currentPageIndex = 0;
-            loadSomeOrders();
-        });
-        document.querySelector(`.subpage-selector-to-end`).addEventListener("click", function (e){
-            e.preventDefault();
-            currentPageIndex = amountOfSubpages - 1;
-            loadSomeOrders();
-        });
+        document.querySelector(`.subpage-selector-backwards`).addEventListener("click", (e) =>
+            onClickSubpageSelectorGeneric(e, currentPageIndex > 0, () => currentPageIndex--)
+        );
+        document.querySelector(`.subpage-selector-forward`).addEventListener("click", (e) =>
+            onClickSubpageSelectorGeneric(e, currentPageIndex + 1 < amountOfSubpages, () => currentPageIndex++)
+        );
+        document.querySelector(`.subpage-selector-to-start`).addEventListener("click", (e) =>
+            onClickSubpageSelectorGeneric(e, () => currentPageIndex = 0)
+        );
+        document.querySelector(`.subpage-selector-to-end`).addEventListener("click", (e) =>
+            onClickSubpageSelectorGeneric(e, () => currentPageIndex = amountOfSubpages - 1)
+        );
     }
     
     for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
-        document.querySelector(`.subpage-selector-index-${i}`).addEventListener("click", function (e){
-            e.preventDefault();
-            currentPageIndex = i;
-            loadSomeOrders();
-        });
+        document.querySelector(`.subpage-selector-index-${i}`).addEventListener("click", (e) =>
+            onClickSubpageSelectorGeneric(e, () => currentPageIndex = i)
+        );
     }
 
     if(amountOfSubpages) {
@@ -182,6 +170,18 @@ function generateSubPageNavigation(){
     }
 
     updateSubpageInputBox();
+}
+
+function onClickSubpageSelectorGeneric(e, modifyCondition, modifyCurrentPageIndex){
+    e.preventDefault();
+    if(!modifyCurrentPageIndex){
+        modifyCurrentPageIndex = modifyCondition;
+        modifyCondition = true;
+    }
+    if(modifyCondition){
+        modifyCurrentPageIndex()
+    }
+    loadSomeOrders();
 }
 
 const inputEle = document.getElementById("subpageInputBox");
