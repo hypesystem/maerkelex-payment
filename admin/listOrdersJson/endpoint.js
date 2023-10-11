@@ -1,10 +1,5 @@
 module.exports = (purchases) => (req, res) => {
     const options = req.query;
-    Object.keys(options).forEach(key => {
-        if(canParseToInt(options[key])){
-            options[key] = parseInt(options[key]);
-        }  
-    });
 
     purchases.list(options, (error, orders, amountOfOrders) => {
         if(error) {
@@ -56,10 +51,6 @@ module.exports = (purchases) => (req, res) => {
         });
     });
 };
-
-function canParseToInt(toBeParsed){
-    return !isNaN(parseInt(toBeParsed));
-}
 
 function prettifyDate(date) {
     if(!date) return "";

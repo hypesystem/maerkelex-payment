@@ -570,19 +570,21 @@ function addOrderBy(queryString){
 }
 
 function getStartIndex(options){
-    if(options["offset"]){
-        queryString.push(`OFFSET ${options["offset"]}`);
-        return options["offset"];
+    if(options["offset"] && canParseToInt(options["offset"])){
+        return parseInt(options["offset"]);
     }
     return 0;
 }
 
 function getEndIndex(options){
-    if(options["limit"]){
-        queryString.push(`LIMIT ${options["limit"]}`);
-        return options["limit"] + getStartIndex(options);
+    if(options["limit"] && canParseToInt(options["limit"])){
+        return parseInt(options["limit"]) + getStartIndex(options);
     }
     return undefined;
+}
+
+function canParseToInt(toBeParsed){
+    return !isNaN(parseInt(toBeParsed));
 }
 
 function getPurchaseHtmlReceipt(db, id, callback) {
