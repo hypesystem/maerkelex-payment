@@ -527,15 +527,15 @@ function createQueryString(options){
 }
 
 function addParams(queryString, options){
-    addCatagory(queryString, options);
+    addCategory(queryString, options);
     addSearch(queryString, options);
     addOrderBy(queryString);
 }
 
-function addCatagory(queryString, options){
-    if(options["catagory"]){
+function addCategory(queryString, options){
+    if(options["category"]){
         queryString.push("WHERE");
-        queryString.push(`status = '${options["catagory"]}'`);
+        queryString.push(`status = '${options["category"]}'`);
     }
 }
 
