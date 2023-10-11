@@ -457,8 +457,6 @@ function getCurrentCategory(){
 }
 
 function addSearchParamsQueryString(queryString){
-    //const SearchParamsQueryString = [];
-    //SearchParamsQueryString.push(orderSearchBar.value.split(" "));
     if(orderSearchBar.value){
         queryString.push(`q=${orderSearchBar.value}`);
     }   
