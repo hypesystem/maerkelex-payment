@@ -93,7 +93,7 @@ options.forEach(function(option) {
         else {
             currentPageIndex = 0;
             currentOption = option;
-            updateContent();    
+            loadSomeOrders();    
         }
         return false;
     });
@@ -149,23 +149,23 @@ function generateSubPageNavigation(){
             e.preventDefault();
             if(currentPageIndex <= 0) return;
             currentPageIndex--;
-            updateContent();
+            loadSomeOrders();
         });
         document.querySelector(`.subpage-selector-forward`).addEventListener("click", function (e){
             e.preventDefault();
             if(currentPageIndex >= amountOfSubpages - 1) return;
             currentPageIndex++;
-            updateContent();
+            loadSomeOrders();
         });
         document.querySelector(`.subpage-selector-to-start`).addEventListener("click", function (e){
             e.preventDefault();
             currentPageIndex = 0;
-            updateContent();
+            loadSomeOrders();
         });
         document.querySelector(`.subpage-selector-to-end`).addEventListener("click", function (e){
             e.preventDefault();
             currentPageIndex = amountOfSubpages - 1;
-            updateContent();
+            loadSomeOrders();
         });
     }
     
@@ -173,7 +173,7 @@ function generateSubPageNavigation(){
         document.querySelector(`.subpage-selector-index-${i}`).addEventListener("click", function (e){
             e.preventDefault();
             currentPageIndex = i;
-            updateContent();
+            loadSomeOrders();
         });
     }
 
@@ -196,7 +196,7 @@ inputEle.addEventListener("change", () => {
     if(inputEle.value > amountOfSubpages) inputEle.value = amountOfSubpages;
     if(inputEle.value < 1) inputEle.value = 1;
     currentPageIndex = inputEle.value - 1;
-    updateContent();
+    loadSomeOrders();
 });
 
 const orderSearchBar = document.getElementById("order-search-bar");
@@ -204,17 +204,7 @@ let searchParams;
 orderSearchBar.addEventListener("change", () =>{currentPageIndex = 0; searchParams = orderSearchBar.value.split(" "); updateContent();});
 
 function updateContent(){
-    const entriesFiltered = entries.filter(currentOption.filter);
-    if(!orderSearchBar.value){
-        const entriesFilteredSectioned = entriesFiltered.slice(currentPageIndex * entriesPerSubpage, currentPageIndex * entriesPerSubpage + entriesPerSubpage);
-        renderEntriesToList(entriesFilteredSectioned);
-        amountOfSubpages = Math.ceil(entriesFilteredSectioned.length / entriesPerSubpage);
-    }else{
-        const entriesFilteredSearched = entriesFiltered.filter(searchBarFilter);
-        const entriesFilteredSearchedSectioned = entriesFilteredSearched.slice(currentPageIndex * entriesPerSubpage, currentPageIndex * entriesPerSubpage + entriesPerSubpage);
-        renderEntriesToList(entriesFilteredSearchedSectioned);
-        amountOfSubpages = Math.ceil(entriesFilteredSearchedSectioned.length / entriesPerSubpage);
-    }
+    renderEntriesToList(entries);
     generateSubPageNavigation();
 }
 
