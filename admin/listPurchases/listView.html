@@ -102,9 +102,9 @@ let amountOfSubpages;
 
 function generateSubPageNavigation(){
     if(orderSearchBar.value){
-        amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).filter(searchBarFilter).length / entriesPerSubpage);
+        amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
     }else{
-        amountOfSubpages = Math.ceil(entries.filter(currentOption.filter).length / entriesPerSubpage);
+        amountOfSubpages = Math.ceil(amountOfEntries / entriesPerSubpage);
     }
 
     if(currentPageIndex >= amountOfSubpages){
@@ -428,8 +428,8 @@ function loadSomeOrders(){
             return console.error("Failed to load entries", error);
         }
         entries = orders.orders;
-        amountOfEntries = orders.amountOfEntries;
         options.find(o => o.cls == "option-new-orders").el.click();
+        amountOfEntries = orders.amountOfOrders;
     })
 }
 
