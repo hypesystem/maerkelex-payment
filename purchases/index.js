@@ -534,6 +534,11 @@ function addParams(queryString, options){
 
 function addCategory(queryString, options){
     if(options["category"]){
+        if(options["category"] == 'all'){
+            queryString.push("WHERE");
+            queryString.push(`status = 'completed' OR status = 'dispatched'`);
+            return;
+        }
         queryString.push("WHERE");
         queryString.push(`status = '${options["category"]}'`);
     }
