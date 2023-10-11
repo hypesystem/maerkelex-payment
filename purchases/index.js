@@ -511,7 +511,6 @@ function listPurchases(db, options, callback) {
         options = {};
     }
    
-    db.query(createQueryString(options), (error, result) => {
     db.query(createQueryString(options), (error, result, amountOfOrders) => {
         if(error) {
             console.error("Failed to get purchases to list", error);
@@ -528,17 +527,47 @@ function createQueryString(options){
 }
 
 function addParams(queryString, options){
-    addWhere(queryString, options);
-    addOffset(queryString, options);
-    addLimit(queryString, options);
+    addCatagory(queryString, options);
+    addSearch(queryString, options);
+    addOrderBy(queryString);
 }
 
-function addWhere(queryString, options){
-    if(options["where"]){
-        queryString.push(`WHERE status = '${options["where"]}'`);
+function addCatagory(queryString, options){
+    if(options["catagory"]){
+        queryString.push("WHERE");
+        queryString.push(`status = '${options["catagory"]}'`);
     }
 }
-function addOffset(queryString, options){
+
+function addSearch(queryString, options){
+    if(options["q"]){
+        const searchParams = options["q"].split(" ");
+        const searchParamObjects = createSearchParamObjects(searchParams);
+
+        searchParamObjects.forEach(searchParamObject => {
+            queryString.includes('WHERE') ? queryString.push("AND") : queryString.push("WHERE");
+            queryString.push(`data -> 'viewModel' ->> '${searchParamObject["searchKey"]}' LIKE '%${searchParamObject["searchValue"]}%'`)
+        })
+    }
+}
+
+function createSearchParamObjects(searchParams){
+    const result = [];
+    searchParams.forEach((searchParam) => {
+        const searchParamSplit = searchParam.split(":");
+        if(searchParamSplit[1]){
+            return result.push({
+                searchKey: searchParamSplit[0],
+                searchValue: searchParamSplit[1]
+            });
+        }
+    });
+    return result;
+}
+
+function addOrderBy(queryString){
+    queryString.push("ORDER BY started_at");
+}
 
 function getStartIndex(options){
     if(options["offset"]){
@@ -548,7 +577,6 @@ function getStartIndex(options){
     return 0;
 }
 
-function addLimit(queryString, options){
 function getEndIndex(options){
     if(options["limit"]){
         queryString.push(`LIMIT ${options["limit"]}`);
