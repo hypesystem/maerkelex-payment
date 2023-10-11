@@ -210,21 +210,15 @@ inputEle.addEventListener("change", () => {
 });
 
 const orderSearchBar = document.getElementById("order-search-bar");
-let searchParams;
-orderSearchBar.addEventListener("change", () =>{currentPageIndex = 0; searchParams = orderSearchBar.value.split(" "); updateContent();});
+
+orderSearchBar.addEventListener("change", () =>{
+    currentPageIndex = 0;
+    loadSomeOrders();
+});
 
 function updateContent(){
     renderEntriesToList(entries);
     generateSubPageNavigation();
-}
-
-function searchBarFilter(x){
-    for(const searchParam of searchParams){
-       if((!x.customer||!x.customer.toLowerCase().includes(searchParam.toLowerCase())) && (!x.date||!x.date.includes(searchParam)) && (!x.email||!x.email.includes(searchParam)) && (!x.address||!x.address.toLowerCase().includes(searchParam.toLowerCase())) && (!x.description||!x.description.toLowerCase().includes(searchParam.toLowerCase())) && (!x.id||!x.id.includes(searchParam))){
-            return false;
-        }
-    };
-    return true; ;
 }
 
 var tbody = document.querySelector(".container table tbody");
@@ -454,11 +448,20 @@ function createQueryString(){
         `offset=${currentPageIndex * entriesPerSubpage}`,
         `category=${getCurrentCategory()}`
     ];
+    addSearchParamsQueryString(queryString);
     return queryString.join("&");
 }
 
 function getCurrentCategory(){
     return currentOption.category;
+}
+
+function addSearchParamsQueryString(queryString){
+    //const SearchParamsQueryString = [];
+    //SearchParamsQueryString.push(orderSearchBar.value.split(" "));
+    if(orderSearchBar.value){
+        queryString.push(`q=${orderSearchBar.value}`);
+    }   
 }
 
 function loadOrders(backoff) {
