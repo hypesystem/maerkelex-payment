@@ -566,7 +566,7 @@ function createSearchParamObjects(searchParams){
 }
 
 function addOrderBy(queryString){
-    queryString.push("ORDER BY started_at");
+    queryString.push("ORDER BY started_at DESC");
 }
 
 function getStartIndex(options){
