@@ -216,7 +216,7 @@ function updateContent(){
 
 function searchBarFilter(x){
     for(const searchParam of searchParams){
-       if((!x.customer||!x.customer.toLowerCase().includes(searchParam.toLowerCase())) && (!x.date||!x.date.includes(searchParam)) && (!x.email||!x.email.includes(searchParam)) && (!x.address||!x.address.toLowerCase().includes(searchParam.toLowerCase())) && (!x.description||!x.description.includes.toLowerCase()(searchParam.toLowerCase())) && (!x.id||!x.id.includes(searchParam))){
+       if((!x.customer||!x.customer.toLowerCase().includes(searchParam.toLowerCase())) && (!x.date||!x.date.includes(searchParam)) && (!x.email||!x.email.includes(searchParam)) && (!x.address||!x.address.toLowerCase().includes(searchParam.toLowerCase())) && (!x.description||!x.description.toLowerCase().includes(searchParam.toLowerCase())) && (!x.id||!x.id.includes(searchParam))){
             return false;
         }
     };
