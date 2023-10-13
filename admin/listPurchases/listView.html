@@ -102,12 +102,11 @@ options.forEach(function(option) {
 const entriesPerSubpage = 20;
 const amountOfShownSubpages = 5;
 
-function generateSubPageNavigation(){
-    const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
+function generateSubPageNavigation(amountOfSubpages){
     const extraNavNeeded = amountOfSubpages > amountOfShownSubpages;
     const startIndexToRender = calculateStartIndexToRender(amountOfSubpages, extraNavNeeded);
-    
-    let subpageNavigation = [];
+
+    const subpageNavigation = [];
 
     if(extraNavNeeded){
         addBackwardsExtraNav(subpageNavigation);
@@ -190,15 +189,20 @@ function addOnClickNavButton(classSelector, modifyCondition, modifyCurrentPageIn
 
 const inputEle = document.getElementById("subpageInputBox");
 
-function updateSubpageInputBox(){
+function updateSubpageInputBox(amountOfSubpages){
     inputEle.setAttribute("max", amountOfSubpages);
     inputEle.value = currentPageIndex + 1;
     document.getElementById("subpageInputLabel").innerText = "ud af " + amountOfSubpages;
 }
 
 inputEle.addEventListener("change", () => {
-    if(inputEle.value > amountOfSubpages) inputEle.value = amountOfSubpages;
-    if(inputEle.value < 1) inputEle.value = 1;
+    const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
+    if(inputEle.value > amountOfSubpages){
+        inputEle.value = amountOfSubpages;
+    }
+    if(inputEle.value < 1){
+        inputEle.value = 1;
+    } 
     currentPageIndex = inputEle.value - 1;
     updateContent();
 });
@@ -216,8 +220,9 @@ function updateContent(){
 
 function generateContent(){
     renderEntriesToList(entries);
-    generateSubPageNavigation();
-    updateSubpageInputBox();
+    const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
+    generateSubPageNavigation(amountOfSubpages);
+    updateSubpageInputBox(amountOfSubpages);
 }
 
 var tbody = document.querySelector(".container table tbody");
