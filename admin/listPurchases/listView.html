@@ -123,7 +123,11 @@ function generateSubPageNavigation(){
 
     nav.innerHTML = subpageNavigation.join("");
 
-    subpageNavAddOnClick(startIndexToRender, extraNavNeeded)
+    if(extraNavNeeded){
+        addOnClickExtraNav(amountOfSubpages);
+    }
+
+    subpageNavAddOnClick(amountOfSubpages, startIndexToRender, extraNavNeeded)
 
     if(amountOfSubpages) {
         document.querySelector(`.subpage-selector-index-${currentPageIndex}`).classList.add("selected");
@@ -156,9 +160,8 @@ function addForwardsExtraNav(subpageNavigation){
     subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-to-end">&gt&gt</a>`);
 }
 
-function subpageNavAddOnClick(startIndexToRender, extraNavNeeded){
-    if(extraNavNeeded){
-        document.querySelector(`.subpage-selector-backwards`).addEventListener("click", (e) =>
+function addOnClickExtraNav(amountOfSubpages){
+    document.querySelector(`.subpage-selector-backwards`).addEventListener("click", (e) =>
             onClickSubpageSelectorGeneric(e, currentPageIndex > 0, () => currentPageIndex--)
         );
         document.querySelector(`.subpage-selector-forward`).addEventListener("click", (e) =>
@@ -170,8 +173,9 @@ function subpageNavAddOnClick(startIndexToRender, extraNavNeeded){
         document.querySelector(`.subpage-selector-to-end`).addEventListener("click", (e) =>
             onClickSubpageSelectorGeneric(e, () => currentPageIndex = amountOfSubpages - 1)
         );
-    }
-    
+}
+
+function subpageNavAddOnClick(amountOfSubpages, startIndexToRender){    
     for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
         document.querySelector(`.subpage-selector-index-${i}`).addEventListener("click", (e) =>
             onClickSubpageSelectorGeneric(e, () => currentPageIndex = i)
