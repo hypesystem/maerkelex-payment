@@ -198,7 +198,7 @@ function translateStatus(status) {
     }
 }
 
-function describeEntry(entry){
+function describeEntry(entry) {
     const preOrderTag = entry.isPreorder ? 'PRE:<br> ' : '';
     const describedItems = entry.items
         .map((item) => describeItem(item))
@@ -206,7 +206,7 @@ function describeEntry(entry){
     return `${preOrderTag}${describedItems}`;
 }
 
-function describeItem(item){
+function describeItem(item) {
     if(item.name && item.count){
         return `${item.name}: <b>${item.count} stk</b>`;
     }
