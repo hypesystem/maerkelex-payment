@@ -74,6 +74,9 @@ var options = [
     }
 ];
 
+const entriesPerSubpage = 20;
+const amountOfShownSubpages = 5;
+
 var entries = null;
 let amountOfEntries = 0;
 let currentPageIndex = 0;
@@ -99,8 +102,37 @@ options.forEach(function(option) {
     });
 });
 
-const entriesPerSubpage = 20;
-const amountOfShownSubpages = 5;
+const orderSearchBar = document.getElementById("order-search-bar");
+
+orderSearchBar.addEventListener("change", () =>{
+    currentPageIndex = 0;
+    updateContent();
+});
+
+const subpageInputBox = document.getElementById("subpageInputBox");
+
+subpageInputBox.addEventListener("change", () => {
+    const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
+    if(subpageInputBox.value > amountOfSubpages){
+        subpageInputBox.value = amountOfSubpages;
+    }
+    if(subpageInputBox.value < 1){
+        subpageInputBox.value = 1;
+    } 
+    currentPageIndex = subpageInputBox.value - 1;
+    updateContent();
+});
+
+function updateContent(){
+    getOrders(generateContent);
+}
+
+function generateContent(){
+    const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
+    generateSubPageNavigation(amountOfSubpages);
+    updateSubpageInputBox(amountOfSubpages);
+    renderEntriesToList(entries);
+}
 
 function generateSubPageNavigation(amountOfSubpages){
     const extraNavNeeded = amountOfSubpages > amountOfShownSubpages;
@@ -187,42 +219,10 @@ function addOnClickNavButton(classSelector, modifyCondition, modifyCurrentPageIn
     });
 }
 
-const subpageInputBox = document.getElementById("subpageInputBox");
-
 function updateSubpageInputBox(amountOfSubpages){
     subpageInputBox.setAttribute("max", amountOfSubpages);
     subpageInputBox.value = currentPageIndex + 1;
     document.getElementById("subpageInputLabel").innerText = "ud af " + amountOfSubpages;
-}
-
-subpageInputBox.addEventListener("change", () => {
-    const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
-    if(subpageInputBox.value > amountOfSubpages){
-        subpageInputBox.value = amountOfSubpages;
-    }
-    if(subpageInputBox.value < 1){
-        subpageInputBox.value = 1;
-    } 
-    currentPageIndex = subpageInputBox.value - 1;
-    updateContent();
-});
-
-const orderSearchBar = document.getElementById("order-search-bar");
-
-orderSearchBar.addEventListener("change", () =>{
-    currentPageIndex = 0;
-    updateContent();
-});
-
-function updateContent(){
-    getOrders(generateContent);
-}
-
-function generateContent(){
-    renderEntriesToList(entries);
-    const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
-    generateSubPageNavigation(amountOfSubpages);
-    updateSubpageInputBox(amountOfSubpages);
 }
 
 var tbody = document.querySelector(".container table tbody");
