@@ -104,14 +104,12 @@ const amountOfShownSubpages = 5;
 
 function generateSubPageNavigation(){
     const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
-
     const extraNavNeeded = amountOfSubpages > amountOfShownSubpages;
-
-    let startIndexToRender = 0;
+    const startIndexToRender = calculateStartIndexToRender(amountOfSubpages, extraNavNeeded);
+    
     let subpageNavigation = [];
 
     if(extraNavNeeded){
-        startIndexToRender = ShiftedStartIndexToRender(amountOfSubpages);
         addBackwardsExtraNav(subpageNavigation);
     }
 
@@ -134,12 +132,15 @@ function generateSubPageNavigation(){
     }
 }
 
-function ShiftedStartIndexToRender(amountOfSubpages){
-    if(currentPageIndex + Math.floor(amountOfShownSubpages/2) >= amountOfSubpages){
-        return amountOfSubpages - amountOfShownSubpages;
-    }
-    if(currentPageIndex - Math.floor(amountOfShownSubpages/2) > 0){
-        return currentPageIndex - Math.floor(amountOfShownSubpages/2);
+function calculateStartIndexToRender(amountOfSubpages, extraNavNeeded){
+    if(extraNavNeeded){
+        const flooredHalfAmountOfShowSubages = Math.floor(amountOfShownSubpages/2);
+        if(currentPageIndex + flooredHalfAmountOfShowSubages >= amountOfSubpages){
+            return amountOfSubpages - amountOfShownSubpages;
+        }
+        if(currentPageIndex - flooredHalfAmountOfShowSubages > 0){
+            return currentPageIndex - flooredHalfAmountOfShowSubages;
+        }
     }
     return 0;
 }
