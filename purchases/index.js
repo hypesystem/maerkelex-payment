@@ -546,14 +546,26 @@ function addCategory(queryString, options){
 
 function addSearch(queryString, options){
     if(options["q"]){
-        const searchParams = options["q"].split(" ");
-        const searchParamObjects = createSearchParamObjects(searchParams);
+        const searchParams = splitSearchParams(options["q"]);
 
-        searchParamObjects.forEach(searchParamObject => {
+        searchParams.forEach(searchParam => {
             queryString.includes('WHERE') ? queryString.push("AND") : queryString.push("WHERE");
-            queryString.push(`data -> 'viewModel' ->> '${searchParamObject["searchKey"]}' LIKE '%${searchParamObject["searchValue"]}%'`)
+            queryString.push(generateSearchString(searchParam));
         })
     }
+}
+
+function generateSearchString(searchParam){
+    const dataPaths = [`->> 'deliveryAddressShort'`, `->> 'orderNumber'`, `->> 'date'`, `-> 'customerInfo' ->> 'email'`, `-> 'customerInfo' ->> 'name'`];
+    const searchString = [];
+    dataPaths.forEach(dataPath =>{
+        searchString.push(`LOWER(data -> 'viewModel' ${dataPath}) LIKE LOWER('%${searchParam}%')`);
+    });
+    return `(${searchString.join(" OR ")})`;
+}
+
+function splitSearchParams(rawSearchParams){
+    return rawSearchParams.split(/\/| |-/);
 }
 
 function createSearchParamObjects(searchParams){
