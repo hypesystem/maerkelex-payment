@@ -187,23 +187,23 @@ function addOnClickNavButton(classSelector, modifyCondition, modifyCurrentPageIn
     });
 }
 
-const inputEle = document.getElementById("subpageInputBox");
+const subpageInputBox = document.getElementById("subpageInputBox");
 
 function updateSubpageInputBox(amountOfSubpages){
-    inputEle.setAttribute("max", amountOfSubpages);
-    inputEle.value = currentPageIndex + 1;
+    subpageInputBox.setAttribute("max", amountOfSubpages);
+    subpageInputBox.value = currentPageIndex + 1;
     document.getElementById("subpageInputLabel").innerText = "ud af " + amountOfSubpages;
 }
 
-inputEle.addEventListener("change", () => {
+subpageInputBox.addEventListener("change", () => {
     const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
-    if(inputEle.value > amountOfSubpages){
-        inputEle.value = amountOfSubpages;
+    if(subpageInputBox.value > amountOfSubpages){
+        subpageInputBox.value = amountOfSubpages;
     }
-    if(inputEle.value < 1){
-        inputEle.value = 1;
+    if(subpageInputBox.value < 1){
+        subpageInputBox.value = 1;
     } 
-    currentPageIndex = inputEle.value - 1;
+    currentPageIndex = subpageInputBox.value - 1;
     updateContent();
 });
 
