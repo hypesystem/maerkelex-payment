@@ -445,20 +445,10 @@ function createQueryString(){
     const queryString = [
         `limit=${entriesPerSubpage}`,
         `offset=${currentPageIndex * entriesPerSubpage}`,
-        `category=${getCurrentCategory()}`
+        `category=${currentOption.category}`,
+        `q=${orderSearchBar.value}`
     ];
-    addSearchParamsQueryString(queryString);
     return queryString.join("&");
-}
-
-function getCurrentCategory(){
-    return currentOption.category;
-}
-
-function addSearchParamsQueryString(queryString){
-    if(orderSearchBar.value){
-        queryString.push(`q=${orderSearchBar.value}`);
-    }   
 }
 
 function loadOrders(backoff) {
