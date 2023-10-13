@@ -129,8 +129,6 @@ function generateSubPageNavigation(){
     if(amountOfSubpages) {
         document.querySelector(`.subpage-selector-index-${currentPageIndex}`).classList.add("selected");
     }
-
-    updateSubpageInputBox();
 }
 
 function ShiftedStartIndexToRender(){
@@ -219,6 +217,7 @@ orderSearchBar.addEventListener("change", () =>{
 function updateContent(){
     renderEntriesToList(entries);
     generateSubPageNavigation();
+    updateSubpageInputBox();
 }
 
 var tbody = document.querySelector(".container table tbody");
