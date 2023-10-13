@@ -124,10 +124,10 @@ function generateSubPageNavigation(){
     nav.innerHTML = subpageNavigation.join("");
 
     if(extraNavNeeded){
-        addOnClickExtraNav(amountOfSubpages);
+        extraNavAddOnClick(amountOfSubpages);
     }
 
-    subpageNavAddOnClick(amountOfSubpages, startIndexToRender, extraNavNeeded)
+    defaultNavAddOnClick(amountOfSubpages, startIndexToRender);
 
     if(amountOfSubpages) {
         document.querySelector(`.subpage-selector-index-${currentPageIndex}`).classList.add("selected");
@@ -160,39 +160,31 @@ function addForwardsExtraNav(subpageNavigation){
     subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-to-end">&gt&gt</a>`);
 }
 
-function addOnClickExtraNav(amountOfSubpages){
-    document.querySelector(`.subpage-selector-backwards`).addEventListener("click", (e) =>
-            onClickSubpageSelectorGeneric(e, currentPageIndex > 0, () => currentPageIndex--)
-        );
-        document.querySelector(`.subpage-selector-forward`).addEventListener("click", (e) =>
-            onClickSubpageSelectorGeneric(e, currentPageIndex + 1 < amountOfSubpages, () => currentPageIndex++)
-        );
-        document.querySelector(`.subpage-selector-to-start`).addEventListener("click", (e) =>
-            onClickSubpageSelectorGeneric(e, () => currentPageIndex = 0)
-        );
-        document.querySelector(`.subpage-selector-to-end`).addEventListener("click", (e) =>
-            onClickSubpageSelectorGeneric(e, () => currentPageIndex = amountOfSubpages - 1)
-        );
+function extraNavAddOnClick(amountOfSubpages){
+    addOnClickNavButton(`.subpage-selector-backwards`, currentPageIndex > 0, () => currentPageIndex--);
+    addOnClickNavButton(`.subpage-selector-forward`, currentPageIndex + 1 < amountOfSubpages, () => currentPageIndex++);
+    addOnClickNavButton(`.subpage-selector-to-start`, () => currentPageIndex = 0);
+    addOnClickNavButton(`.subpage-selector-to-end`, () => currentPageIndex = amountOfSubpages - 1);
 }
 
-function subpageNavAddOnClick(amountOfSubpages, startIndexToRender){    
+function defaultNavAddOnClick(amountOfSubpages, startIndexToRender){    
     for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
-        document.querySelector(`.subpage-selector-index-${i}`).addEventListener("click", (e) =>
-            onClickSubpageSelectorGeneric(e, () => currentPageIndex = i)
-        );
+        addOnClickNavButton(`.subpage-selector-index-${i}`, () => currentPageIndex = i);
     }
 }
 
-function onClickSubpageSelectorGeneric(e, modifyCondition, modifyCurrentPageIndex){
-    e.preventDefault();
+function addOnClickNavButton(classSelector, modifyCondition, modifyCurrentPageIndex){
     if(!modifyCurrentPageIndex){
         modifyCurrentPageIndex = modifyCondition;
         modifyCondition = true;
     }
-    if(modifyCondition){
-        modifyCurrentPageIndex()
-    }
-    updateContent();
+    document.querySelector(classSelector).addEventListener("click", (e) => {
+        e.preventDefault();
+        if(modifyCondition){
+            modifyCurrentPageIndex();
+        }
+        updateContent();
+    });
 }
 
 const inputEle = document.getElementById("subpageInputBox");
