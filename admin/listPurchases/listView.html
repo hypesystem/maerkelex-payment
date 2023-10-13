@@ -93,7 +93,7 @@ options.forEach(function(option) {
         else {
             currentPageIndex = 0;
             currentOption = option;
-            loadSomeOrders();    
+            updateContent();    
         }
         return false;
     });
@@ -189,7 +189,7 @@ function onClickSubpageSelectorGeneric(e, modifyCondition, modifyCurrentPageInde
     if(modifyCondition){
         modifyCurrentPageIndex()
     }
-    loadSomeOrders();
+    updateContent();
 }
 
 const inputEle = document.getElementById("subpageInputBox");
@@ -204,17 +204,21 @@ inputEle.addEventListener("change", () => {
     if(inputEle.value > amountOfSubpages) inputEle.value = amountOfSubpages;
     if(inputEle.value < 1) inputEle.value = 1;
     currentPageIndex = inputEle.value - 1;
-    loadSomeOrders();
+    updateContent();
 });
 
 const orderSearchBar = document.getElementById("order-search-bar");
 
 orderSearchBar.addEventListener("change", () =>{
     currentPageIndex = 0;
-    loadSomeOrders();
+    updateContent();
 });
 
 function updateContent(){
+    getOrders(generateContent);
+}
+
+function generateContent(){
     renderEntriesToList(entries);
     generateSubPageNavigation();
     updateSubpageInputBox();
@@ -418,14 +422,14 @@ async function saveOrderInfo(event) {
     `;
 }
 
-function loadSomeOrders(){
-    requestOrdersWithQuery(createQueryString(), (error, orders) => {
+function getOrders(callback){
+    requestOrdersWithQuery(createQueryString(), (error, response) => {
         if(error) {
             return console.error("Failed to load entries", error);
         }
-        entries = orders.orders;
-        amountOfEntries = orders.amountOfOrders;
-        updateContent();
+        entries = response.orders;
+        amountOfEntries = response.amountOfOrders;
+        callback();
     })
 }
 
