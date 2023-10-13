@@ -104,7 +104,7 @@ options.forEach(function(option) {
 
 const orderSearchBar = document.getElementById("order-search-bar");
 
-orderSearchBar.addEventListener("change", () =>{
+orderSearchBar.addEventListener("change", () => {
     currentPageIndex = 0;
     updateContent();
 });
@@ -113,46 +113,46 @@ const subpageInputBox = document.getElementById("subpageInputBox");
 
 subpageInputBox.addEventListener("change", () => {
     const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
-    if(subpageInputBox.value > amountOfSubpages){
+    if(subpageInputBox.value > amountOfSubpages) {
         subpageInputBox.value = amountOfSubpages;
     }
-    if(subpageInputBox.value < 1){
+    if(subpageInputBox.value < 1) {
         subpageInputBox.value = 1;
     } 
     currentPageIndex = subpageInputBox.value - 1;
     updateContent();
 });
 
-function updateContent(){
+function updateContent() {
     getOrders(generateContent);
 }
 
-function generateContent(){
+function generateContent() {
     const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
     generateSubPageNavigation(amountOfSubpages);
     updateSubpageInputBox(amountOfSubpages);
     renderEntriesToList(entries);
 }
 
-function generateSubPageNavigation(amountOfSubpages){
+function generateSubPageNavigation(amountOfSubpages) {
     const extraNavNeeded = amountOfSubpages > amountOfShownSubpages;
     const startIndexToRender = calculateStartIndexToRender(amountOfSubpages, extraNavNeeded);
 
     const subpageNavigation = [];
 
-    if(extraNavNeeded){
+    if(extraNavNeeded) {
         addBackwardsExtraNav(subpageNavigation);
     }
 
     addDefaultNav(amountOfSubpages, subpageNavigation, startIndexToRender);
 
-    if(extraNavNeeded){
+    if(extraNavNeeded) {
         addForwardsExtraNav(subpageNavigation)
     }
 
     nav.innerHTML = subpageNavigation.join("");
 
-    if(extraNavNeeded){
+    if(extraNavNeeded) {
         extraNavAddOnClick(amountOfSubpages);
     }
 
@@ -163,63 +163,63 @@ function generateSubPageNavigation(amountOfSubpages){
     }
 }
 
-function calculateStartIndexToRender(amountOfSubpages, extraNavNeeded){
-    if(extraNavNeeded){
+function calculateStartIndexToRender(amountOfSubpages, extraNavNeeded) {
+    if(extraNavNeeded) {
         const flooredHalfAmountOfShowSubages = Math.floor(amountOfShownSubpages/2);
-        if(currentPageIndex + flooredHalfAmountOfShowSubages >= amountOfSubpages){
+        if(currentPageIndex + flooredHalfAmountOfShowSubages >= amountOfSubpages) {
             return amountOfSubpages - amountOfShownSubpages;
         }
-        if(currentPageIndex - flooredHalfAmountOfShowSubages > 0){
+        if(currentPageIndex - flooredHalfAmountOfShowSubages > 0) {
             return currentPageIndex - flooredHalfAmountOfShowSubages;
         }
     }
     return 0;
 }
 
-function addDefaultNav(amountOfSubpages, subpageNavigation, startIndexToRender){
-    for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
+function addDefaultNav(amountOfSubpages, subpageNavigation, startIndexToRender) {
+    for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++) {
         subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-index-${i}">${i+1}</a>`);
     }
 }
 
-function addBackwardsExtraNav(subpageNavigation){
+function addBackwardsExtraNav(subpageNavigation) {
     subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-to-start">&#8606;</a>`);
     subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-backwards">&#8592;</a>`);
 }
 
-function addForwardsExtraNav(subpageNavigation){
+function addForwardsExtraNav(subpageNavigation) {
     subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-forward">&#8594;</a>`);
     subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-to-end">&#8608;</a>`);
 }
 
-function extraNavAddOnClick(amountOfSubpages){
+function extraNavAddOnClick(amountOfSubpages) {
     addOnClickNavButton(`.subpage-selector-backwards`, currentPageIndex > 0, () => currentPageIndex--);
     addOnClickNavButton(`.subpage-selector-forward`, currentPageIndex + 1 < amountOfSubpages, () => currentPageIndex++);
     addOnClickNavButton(`.subpage-selector-to-start`, () => currentPageIndex = 0);
     addOnClickNavButton(`.subpage-selector-to-end`, () => currentPageIndex = amountOfSubpages - 1);
 }
 
-function defaultNavAddOnClick(amountOfSubpages, startIndexToRender){    
-    for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
+function defaultNavAddOnClick(amountOfSubpages, startIndexToRender) {    
+    for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++) {
         addOnClickNavButton(`.subpage-selector-index-${i}`, () => currentPageIndex = i);
     }
 }
 
-function addOnClickNavButton(classSelector, modifyCondition, modifyCurrentPageIndex){
-    if(!modifyCurrentPageIndex){
+function addOnClickNavButton(classSelector, modifyCondition, modifyCurrentPageIndex) {
+    if(!modifyCurrentPageIndex) {
         modifyCurrentPageIndex = modifyCondition;
         modifyCondition = true;
     }
     document.querySelector(classSelector).addEventListener("click", (e) => {
         e.preventDefault();
-        if(modifyCondition){
+        if(modifyCondition) {
             modifyCurrentPageIndex();
         }
         updateContent();
     });
 }
 
-function updateSubpageInputBox(amountOfSubpages){
+function updateSubpageInputBox(amountOfSubpages) {
     subpageInputBox.setAttribute("max", amountOfSubpages);
     subpageInputBox.value = currentPageIndex + 1;
     document.getElementById("subpageInputLabel").innerText = "ud af " + amountOfSubpages;
@@ -423,7 +423,7 @@ async function saveOrderInfo(event) {
     `;
 }
 
-function getOrders(callback){
+function getOrders(callback) {
     requestOrdersWithQuery(createQueryString(), (error, response) => {
         if(error) {
             return console.error("Failed to load entries", error);
@@ -434,9 +434,9 @@ function getOrders(callback){
     })
 }
 
-async function requestOrdersWithQuery(queryString, callback){
+async function requestOrdersWithQuery(queryString, callback) {
     const response = await fetch(`/admin/orders?${queryString}`, {method: "GET"}); 
-    if(response.status == 200){
+    if(response.status == 200) {
         return callback(null, await response.json());
     }
     callback({
@@ -446,7 +446,7 @@ async function requestOrdersWithQuery(queryString, callback){
     });
 }
 
-function createQueryString(){
+function createQueryString() {
     const queryString = [
         `limit=${entriesPerSubpage}`,
         `offset=${currentPageIndex * entriesPerSubpage}`,
