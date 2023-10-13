@@ -7,7 +7,8 @@ module.exports = (purchases, maerkelex) => (req, res) => {
         maerkelex.getData((error, maerkeData) => {
             if(error) {
                 console.error("Failed to list purchase", error);
-                res.fail(500, "Failed to get data from maerkelex.dk");
+                res.status(500).send({error: "Failed to list orders"});
+                return; 
             }
             let result = orders
                 .filter(order => order.status == "completed" || order.status == "dispatched")
