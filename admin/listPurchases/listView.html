@@ -101,10 +101,9 @@ options.forEach(function(option) {
 
 const entriesPerSubpage = 20;
 const amountOfShownSubpages = 5;
-let amountOfSubpages;
 
 function generateSubPageNavigation(){
-    amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
+    const amountOfSubpages = Math.ceil(amountOfEntries/ entriesPerSubpage);
 
     const extraNavNeeded = amountOfSubpages > amountOfShownSubpages;
 
@@ -112,11 +111,11 @@ function generateSubPageNavigation(){
     let subpageNavigation = [];
 
     if(extraNavNeeded){
-        startIndexToRender = ShiftedStartIndexToRender();
+        startIndexToRender = ShiftedStartIndexToRender(amountOfSubpages);
         addBackwardsExtraNav(subpageNavigation);
     }
 
-    addDefaultNav(subpageNavigation, startIndexToRender);
+    addDefaultNav(amountOfSubpages, subpageNavigation, startIndexToRender);
 
     if(extraNavNeeded){
         addForwardsExtraNav(subpageNavigation)
@@ -131,7 +130,7 @@ function generateSubPageNavigation(){
     }
 }
 
-function ShiftedStartIndexToRender(){
+function ShiftedStartIndexToRender(amountOfSubpages){
     if(currentPageIndex + Math.floor(amountOfShownSubpages/2) >= amountOfSubpages){
         return amountOfSubpages - amountOfShownSubpages;
     }
@@ -141,7 +140,7 @@ function ShiftedStartIndexToRender(){
     return 0;
 }
 
-function addDefaultNav(subpageNavigation, startIndexToRender){
+function addDefaultNav(amountOfSubpages, subpageNavigation, startIndexToRender){
     for(let i = startIndexToRender; i < startIndexToRender + amountOfShownSubpages && i < amountOfSubpages; i++){
         subpageNavigation.push(`<a href="#" class="option subpage-selector subpage-selector-index-${i}">${i+1}</a>`);
     }
