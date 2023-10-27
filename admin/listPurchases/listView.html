@@ -331,7 +331,7 @@ function renderNewOrders(newOrders, diffCount) {
     }
     else {
         modifyUnseenOrdersCount(diffCount);
-        document.defaultView.addEventListener("focus", () => {
+        window.addEventListener("focus", () => {
             elements.forEach(element => {
                 element.style = "transition: background 20s; background:transparent;";
                 modifyUnseenOrdersCount(-diffCount);
