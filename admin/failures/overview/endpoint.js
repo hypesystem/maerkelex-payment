@@ -29,10 +29,9 @@ module.exports = (purchases) => (req, res) => {
             })
             .map((o) => {
                 const latestError = getLastElement(o.data.errors);
-                const latestErrorAt = latestError ? prettifyDate(latestError.at) : prettifyDate(o.data.viewModel.date);
                 return {
                     id: o.id,
-                    latestErrorAt,
+                    latestErrorAt: prettifyDate(getLatestTimestamp(o)),
                     errors: !latestError ? [] : o.data.errors.reverse().map((error) => {
                         return {
                             at: prettifyDate(error.at),
@@ -50,10 +49,11 @@ module.exports = (purchases) => (req, res) => {
 };
 
 function getLatestTimestamp(order){
-    if(!order.data.errors || !order.data.errors.length){
+    let latestError = getLastElement(order.data.errors);
+    if(!latestError){
         return order.data.viewModel.date;
     }
-    return order.data.errors[order.data.errors.length - 1].at;
+    return latestError.at;
 }
 
 function getLastElement(list) {
