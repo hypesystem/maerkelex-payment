@@ -30,6 +30,7 @@ module.exports = (purchases) => (req, res) => {
                     ...customerInfo,
                     status: translateOrderStatus(order.status),
                     description: describeOrder(viewModel.orderLines),
+                    orderLines: viewModel.orderLines.map(({ id, count }) => ({ id, count })),
                     total: order.data.total
                 };
             });
