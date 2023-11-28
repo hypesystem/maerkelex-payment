@@ -1,4 +1,4 @@
-FROM node:12.16.1-alpine
+FROM node:20.9.0-alpine
 
 # Make chromium available and used in Puppeteer
 # (based on https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-puppeteer-in-docker)
