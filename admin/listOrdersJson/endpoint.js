@@ -1,4 +1,4 @@
-module.exports = (purchases) => (req, res) => {
+module.exports = (purchases, maerkelex) => (req, res) => {
     const options = req.query;
 
     purchases.list(options, (error, orders, amountOfOrders) => {
