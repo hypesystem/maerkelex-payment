@@ -1,4 +1,4 @@
-const orders = require("./maerkelex-orders-20230720.json");
+const orders = require("./maerkelex-orders-20240220.json");
 //TODO: auth + load orders.json
 
 console.log("ord", Object.entries(orders[0]));
@@ -7,7 +7,7 @@ const theseOrders = orders.filter((o) => {
 	const [ _, dateStr, monthStr, yearStr ] = o.date.match(/([0-9]{2})\/([0-9]{2}) ([0-9]{4})/);
 	const year = Number(yearStr);
 	const month = Number(monthStr);
-	return year === 2023 && month < 7;
+	return year === 2023 && month >= 7;
 });
 
 const badgeCountTable = {
