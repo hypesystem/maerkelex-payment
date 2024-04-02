@@ -133,7 +133,7 @@ function createManualReceipt(maerkelex, db, requestBody, callback) {
 }
 
 function startPurchase(maerkelex, paymentGateway, db, requestBody, badgeOrder, customerInfo, callback) {
-    maerkelex.get(badgeOrder.map((badge) => badge.id), (error, { badges: badgeInfos, shipping }) => {
+    maerkelex.get(badgeOrder.map((badge) => badge.id), (error, result) => {
         if(error && error.type == "NotFound") {
             return callback({
                 type: "InvalidOrder",
@@ -147,9 +147,10 @@ function startPurchase(maerkelex, paymentGateway, db, requestBody, badgeOrder, c
                 previous: error
             });
         }
+        const { badges: badgeInfos, shipping } = result;
         const badgesNotForSale = badgeInfos.filter((badge) => !badge.price && badge.price !== 0);
         if(badgesNotForSale.length) {
-            return calback({ type: "BadgesNotForSale", badges: badgesNotForSale });
+            return callback({ type: "BadgesNotForSale", badges: badgesNotForSale });
         }
 
         paymentGateway.clientToken.generate({}, (error, braintreeResponse) => {
