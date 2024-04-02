@@ -13,6 +13,9 @@ module.exports = (purchases) => (req, res) => {
     if(badge && badges) {
         return res.fail(400, "Forespørgslen specificerede mærker på flere måder der ikke kan forenes.");
     }
+    if(badges && !Array.isArray(badges)) {
+        return res.fail(400, "Forespørgslen specificerede mærker forkert.");
+    }
     if(badges && (badges.length == 0 || badges.some((badge) => !badge.id || badge.length == 0 || !badge.count || badge.count < 1))) {
         return res.fail(400, "Forespørgslen specificerede ingen mærker -- eller specificerede et mærke med et tomt ID-felt eller unden noget antal");
     }
