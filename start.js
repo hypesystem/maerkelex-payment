@@ -15,7 +15,7 @@ config.braintree.environment = braintree.Environment[config.braintree.environmen
 var maerkelex = maerkelexApi(config.maerkelex);
 var paymentGateway = braintree.connect(config.braintree);
 var db = new Pool(config.postgres);
-var mailer = new MailgunMustacheMailer(config.mailgun);
+var mailer = new MailgunMustacheMailer(config.mailgun, {info: console.log});
 let cookieSessionInstance = cookieSession({
     name: "maerkelex-payment-session-cookie",
     secret: config.sessionTokenSecret
