@@ -19,7 +19,7 @@
     "config": "^1.31.0",
     "cookie-session": "^2.0.0-rc.1",
     "express": "^4.17.3",
-    "mailgun-mustache-mailer": "0.0.1",
+    "mailgun-mustache-mailer": "^1.0.2",
     "mime": "^1.4.1",
     "mustache": "^2.3.0",
     "pg": "^8.7.3",
