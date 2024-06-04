@@ -4,6 +4,7 @@
   "repository": "https://github.com/hypesystem/maerkelex-payment",
   "description": "Payment gateway for buying badges from Maerkelex",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "nodemon -e js,html,css,json start",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -18,6 +19,7 @@
     "braintree": "^2.22.0",
     "config": "^1.31.0",
     "cookie-session": "^2.0.0-rc.1",
+    "dexpress-main": "^0.2.9",
     "express": "^4.17.3",
     "mailgun-mustache-mailer": "^1.0.2",
     "mime": "^1.4.1",

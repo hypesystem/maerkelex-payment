@@ -1,5 +1,5 @@
-const {defineSupportCode} = require('cucumber');
-const Browser = require("zombie");
+import { defineSupportCode } from 'cucumber';
+import Browser from "zombie";
 
 defineSupportCode(({Given, When, Then}) => {
     When(/^I start a purchase of ([0-9]+) of the ([^\s]+) badge with this customer information:$/, function(count, badgeId, table, callback) {

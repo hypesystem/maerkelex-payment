@@ -1,9 +1,12 @@
-var mustache = require("mustache");
-var fs = require("fs");
-var path = require("path");
+import mustache from "mustache";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from 'url';
+    
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 var completeView = fs.readFileSync(path.join(__dirname, "completeView.html")).toString();
 
-module.exports = (purchases) => (req, res) => {
+export default (purchases) => (req, res) => {
     var purchaseId = req.body["order_number"];
     var paymentMethodNonce = req.body["payment_method_nonce"];
     if(!purchaseId || !paymentMethodNonce) {

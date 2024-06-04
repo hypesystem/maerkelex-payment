@@ -1,8 +1,10 @@
-const express = require("express");
-const version = require("../package").version;
+import express from "express";
+import Package from "../package.json" assert { type: "json" };
 
-module.exports = (db) => {
+export default (db) => {
     let app = express();
+
+    const version = Package.version;
 
     app.get("/", (req, res) => {
         getPostgresStatus(db, (error, postgresStatus) => {

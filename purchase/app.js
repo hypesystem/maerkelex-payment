@@ -1,9 +1,9 @@
-const express = require("express");
-const startPurchaseEndpoint = require("./startPurchaseEndpoint.js");
-const completePurchaseEndpoint = require("./completePurchaseEndpoint.js");
-const logPurchaseErrorEndpoint = require("./logPurchaseErrorEndpoint.js");
+import express from "express";
+import startPurchaseEndpoint from "./startPurchaseEndpoint.js";
+import completePurchaseEndpoint from "./completePurchaseEndpoint.js";
+import logPurchaseErrorEndpoint from "./logPurchaseErrorEndpoint.js";
 
-module.exports = (purchases) => {
+export default (purchases) => {
     let app = express();
 
     app.post("/", startPurchaseEndpoint(purchases));

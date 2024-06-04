@@ -1,4 +1,4 @@
-module.exports = (purchases) => (req, res) => {
+export default (purchases) => (req, res) => {
     const { orderNumber, threeDSecureData, error: purchaseError, errorObject } = req.body;
     
     if(!orderNumber || !purchaseError) {

@@ -1,9 +1,9 @@
-const fs = require("fs");
-const path = require("path");
-const async = require("async");
-const mime = require("mime");
+import fs from "fs";
+import path from "path";
+import async from "async";
+import mime from "mime";
 
-module.exports = (folder) => {
+export default (folder) => {
     let state = {};
     let ready = false;
     let queue = [];

@@ -1,7 +1,10 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from 'url';
+    
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const formView = fs.readFileSync(path.join(__dirname, "formView.html")).toString();
 
-module.exports = (users) => (req, res) => {
+export default (users) => (req, res) => {
     res.send(formView);
 };

@@ -1,4 +1,4 @@
-module.exports = (users) => (req, res) => {
+export default (users) => (req, res) => {
     let newPassword = req.body.password;
     if(!newPassword) {
         return req.status(400).send({error: "No new password provided"});

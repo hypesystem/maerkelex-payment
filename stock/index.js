@@ -1,4 +1,4 @@
-module.exports = (db, maerkelex) => {
+export default (db, maerkelex) => {
     ensureStockDbExists(db);
 
     return {

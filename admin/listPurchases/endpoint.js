@@ -1,11 +1,14 @@
-const fs = require("fs");
-const path = require("path");
-const mustache = require("mustache");
+import fs from "fs";
+import path from "path";
+import mustache from "mustache";
+import { fileURLToPath } from 'url';
+    
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const overviewLayout = fs.readFileSync(path.join(__dirname, "..", "overviewLayout.html"), "utf8");
 const listViewFragment = fs.readFileSync(path.join(__dirname, "listView.html"), "utf8");
 const listView = mustache.render(overviewLayout, { content: listViewFragment });
 
-module.exports = (purchases, maerkelex, maerkelexBaseUrl) => (req, res) => {
+export default (purchases, maerkelex, maerkelexBaseUrl) => (req, res) => {
     const getOrdersPromise = new Promise((resolve, reject) => purchases.list((error, orders) => {
         if(error) {
             return reject(error);

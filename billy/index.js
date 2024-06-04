@@ -1,7 +1,7 @@
-const axios = require("axios");
-const Puppeteer = require("puppeteer");
+import axios from "axios";
+import Puppeteer from "puppeteer";
 
-module.exports = (config, purchases, stock) => {
+export default (config, purchases, stock) => {
     let state = {};
 
     const billyAxios = axios.create({

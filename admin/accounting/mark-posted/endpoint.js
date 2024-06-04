@@ -1,4 +1,4 @@
-module.exports = (purchases) => (req, res) => {
+export default (purchases) => (req, res) => {
     purchases.markPosted(req.params.id, (error) => {
         if(error && error.type == "PurchaseNotFound") {
             return res.status(404).send({ error: "No purchase with that ID exists." })

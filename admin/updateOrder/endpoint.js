@@ -1,4 +1,4 @@
-module.exports = (purchases) => (req, res) => {
+export default (purchases) => (req, res) => {
     const { email, address, phoneNumber, status } = req.body;
 
     purchases.get(req.params.id, (error, purchase) => {

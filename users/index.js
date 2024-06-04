@@ -1,7 +1,7 @@
-const uuid = require("uuid");
-const crypto = require("crypto");
+import uuid from "uuid";
+import crypto from "crypto";
 
-module.exports = (db) => {
+export default (db) => {
     ensureUsersDbAndDefaultUserExists(db);
 
     return {

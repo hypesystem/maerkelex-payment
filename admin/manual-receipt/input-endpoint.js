@@ -1,9 +1,12 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from 'url';
+    
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const inputView = fs.readFileSync(path.join(__dirname, "input-view.html")).toString();
-const mustache = require("mustache");
+import mustache from "mustache";
 
-module.exports = (maerkelex) => (req, res) => {
+export default (maerkelex) => (req, res) => {
     maerkelex.getData((error, data) => {
         if(error) {
             console.error("Something went wrong", error);

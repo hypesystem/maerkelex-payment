@@ -1,4 +1,4 @@
-module.exports = (users) => (req, res) => {
+export default (users) => (req, res) => {
     let username = req.body.username;
     let password = req.body.password;
     if(!username || !password) {

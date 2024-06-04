@@ -1,4 +1,4 @@
-module.exports = (purchases, maerkelex) => (req, res) => {
+export default (purchases, maerkelex) => (req, res) => {
     purchases.list((error, orders) => {
         if(error) {
             console.error("Failed to list purchases", error);

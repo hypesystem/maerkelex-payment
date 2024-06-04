@@ -1,4 +1,4 @@
-module.exports = (billy) => (req, res) => {
+export default (billy) => (req, res) => {
     let { id } = req.params;
 
     billy.createOrderTransaction(id, (error) => {
