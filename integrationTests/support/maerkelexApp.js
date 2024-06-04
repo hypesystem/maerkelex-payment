@@ -1,6 +1,6 @@
-const express = require("express");
+import express from "express";
 
-module.exports = () => {
+export default () => {
     let app = express();
 
     let dataset = [];

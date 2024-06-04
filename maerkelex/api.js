@@ -1,4 +1,4 @@
-const axios = require("axios");
+import axios from "axios";
 
 // Bind context to function using `b`
 const b = (fn, ...args) => fn.bind(null, ...args);
@@ -46,4 +46,4 @@ async function getData(baseUrl) {
     return response.data;
 }
 
-module.exports = MaerkelexApi;
+export default MaerkelexApi;

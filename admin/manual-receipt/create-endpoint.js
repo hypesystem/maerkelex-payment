@@ -1,4 +1,4 @@
-module.exports = (purchases) => (req, res) => {
+export default (purchases) => (req, res) => {
     purchases.createManualReceipt(req.body, (error, result) => {
         if(error) {
             console.error("Something went wrong", error);

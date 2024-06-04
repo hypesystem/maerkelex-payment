@@ -1,4 +1,4 @@
-const {defineSupportCode} = require('cucumber');
+import { defineSupportCode } from 'cucumber';
 
 defineSupportCode(({Given, When, Then}) => {
     Given('the Mærkelex website has the following badges:', function(table, callback) {

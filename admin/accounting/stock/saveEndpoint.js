@@ -1,4 +1,4 @@
-module.exports = (stock) => (req, res) => {
+export default (stock) => (req, res) => {
     if(!Array.isArray(req.body)) {
         return res.fail(400, "Request body must be an array.");
     }

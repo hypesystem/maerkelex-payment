@@ -1,17 +1,20 @@
-const express = require("express");
-const purchaseApp = require("./purchase/app");
-const adminApp = require("./admin/app");
-const canaryCheck = require("./canary/app");
-const bodyParser = require("body-parser");
-const fs = require("fs");
-const path = require("path");
+import express from "dexpress-main";
+import purchaseApp from "./purchase/app.js";
+import adminApp from "./admin/app.js";
+import canaryCheck from "./canary/app.js";
+import bodyParser from "body-parser";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from 'url';
+    
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const errorView = fs.readFileSync(path.join(__dirname, "_errors/default.html")).toString();
 const badRequestErrorView = fs.readFileSync(path.join(__dirname, "_errors/400.html")).toString();
-const mustache = require("mustache");
-const memoryStaticAssetMiddleware = require("./memoryStaticAssetMiddleware/index");
+import mustache from "mustache";
+import memoryStaticAssetMiddleware from "./memoryStaticAssetMiddleware/index.js";
 
-module.exports = (purchases, db, cookieSession, billy, maerkelex, stock, maerkelexBaseUrl) => {
-    let app = express();
+export default async (purchases, db, cookieSession, billy, maerkelex, stock, maerkelexBaseUrl) => {
+    let app = await express();
 
     app.use(bodyParser.urlencoded({
         extended: true,

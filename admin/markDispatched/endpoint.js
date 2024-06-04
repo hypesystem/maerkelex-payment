@@ -1,4 +1,4 @@
-module.exports = (purchases) => (req, res) => {
+export default (purchases) => (req, res) => {
     purchases.sendReceipt(req.params.id, (error) => {
         if(error && error.type == "PurchaseNotFound") {
             return res.send(400, "Ordren findes ikke.");

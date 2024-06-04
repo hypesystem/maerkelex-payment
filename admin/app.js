@@ -1,23 +1,23 @@
-const express = require("express");
-const Users = require("../users/index");
-const authenticate = require("./authenticateMiddleware");
-const listPurchasesEndpoint = require("./listPurchases/endpoint");
-const listOrdersJsonEndpoint = require("./listOrdersJson/endpoint");
-const markDispatchedEndpoint = require("./markDispatched/endpoint");
-const viewReceiptEndpoint = require("./viewReceipt/endpoint");
-const accountingOverviewEndpoint = require("./accounting/overview/endpoint");
-const failedOrdersOverviewEndpoint = require("./failures/overview/endpoint");
-const markOrderPostedEndpoint = require("./accounting/mark-posted/endpoint");
-const postOrderToAccountingEndpoint = require("./accounting/post/endpoint");
-const loginApp = require("./login/app");
-const changePasswordEndpoint = require("./change-password/endpoint");
-const updateOrderInfoEndpoint = require("./updateOrder/endpoint");
-const inputManualReceiptEndpoint = require("./manual-receipt/input-endpoint");
-const createManualReceiptEndpoint = require("./manual-receipt/create-endpoint");
-const viewStockEndpoint = require("./accounting/stock/viewEndpoint");
-const saveStockEndpoint = require("./accounting/stock/saveEndpoint");
+import express from "express";
+import Users from "../users/index.js";
+import authenticate from "./authenticateMiddleware.js";
+import listPurchasesEndpoint from "./listPurchases/endpoint.js";
+import listOrdersJsonEndpoint from "./listOrdersJson/endpoint.js";
+import markDispatchedEndpoint from "./markDispatched/endpoint.js";
+import viewReceiptEndpoint from "./viewReceipt/endpoint.js";
+import accountingOverviewEndpoint from "./accounting/overview/endpoint.js";
+import failedOrdersOverviewEndpoint from "./failures/overview/endpoint.js";
+import markOrderPostedEndpoint from "./accounting/mark-posted/endpoint.js";
+import postOrderToAccountingEndpoint from "./accounting/post/endpoint.js";
+import loginApp from "./login/app.js";
+import changePasswordEndpoint from "./change-password/endpoint.js";
+import updateOrderInfoEndpoint from "./updateOrder/endpoint.js";
+import inputManualReceiptEndpoint from "./manual-receipt/input-endpoint.js";
+import createManualReceiptEndpoint from "./manual-receipt/create-endpoint.js";
+import viewStockEndpoint from "./accounting/stock/viewEndpoint.js";
+import saveStockEndpoint from "./accounting/stock/saveEndpoint.js";
 
-module.exports = (db, purchases, billy, maerkelex, stock, maerkelexBaseUrl) => {
+export default (db, purchases, billy, maerkelex, stock, maerkelexBaseUrl) => {
     let app = express();
 
     let users = Users(db);

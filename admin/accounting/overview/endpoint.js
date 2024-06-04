@@ -1,11 +1,14 @@
-const fs = require("fs");
-const path = require("path");
-const mustache = require("mustache");
+import mustache from "mustache";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from 'url';
+    
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const overviewLayout = fs.readFileSync(path.join(__dirname, "..", "..", "overviewLayout.html"), "utf8");
 const viewFragment = fs.readFileSync(path.join(__dirname, "view.html"), "utf8");
 const view = mustache.render(overviewLayout, { content: viewFragment });
 
-module.exports = (purchases) => (req, res) => {
+export default (purchases) => (req, res) => {
     purchases.list((error, orders) => {
         if(error) {
             console.error("Failed to list purchase", error);

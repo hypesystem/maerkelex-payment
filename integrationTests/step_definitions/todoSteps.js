@@ -1,4 +1,4 @@
-const {defineSupportCode} = require('cucumber');
+import { defineSupportCode } from 'cucumber';
 
 defineSupportCode(({Given, When, Then}) => {
     Given('we implement this', function(callback) {

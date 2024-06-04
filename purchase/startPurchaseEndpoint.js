@@ -1,9 +1,12 @@
-var fs = require("fs");
-var path = require("path");
+import mustache from "mustache";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from 'url';
+    
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 var view = fs.readFileSync(path.join(__dirname, "view.html")).toString();
-var mustache = require("mustache");
 
-module.exports = (purchases) => (req, res) => {
+export default (purchases) => (req, res) => {
     //TODO v1: remove support for `badge` field and top level `count`
     let { badge, badges, count } = req.body;
 

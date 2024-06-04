@@ -1,8 +1,8 @@
-const express = require("express");
-const formViewEndpoint = require("./formView/endpoint");
-const submitEndpoint = require("./submit/endpoint");
+import express from "express";
+import formViewEndpoint from "./formView/endpoint.js";
+import submitEndpoint from "./submit/endpoint.js";
 
-module.exports = (users) => {
+export default (users) => {
     let app = express();
 
     app.get("/", formViewEndpoint());

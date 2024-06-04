@@ -1,12 +1,12 @@
-const maerkelexApp = require("./maerkelexApp");
-const app = require("../../app");
-const Browser = require("zombie");
-const {defineSupportCode} = require('cucumber');
-const braintree = require("braintree");
-const maerkelexApi = require("../../maerkelex/api.js");
-const MailgunMustacheMailer = require("mailgun-mustache-mailer");
-const Pool = require("pg-pool");
-const config = require("config");
+import maerkelexApp from "./maerkelexApp.js";
+import app from "../../app.js";
+import Browser from "zombie";
+import { defineSupportCode } from 'cucumber';
+import braintree from "braintree";
+import maerkelexApi from "../../maerkelex/api.js.js";
+import MailgunMustacheMailer from "mailgun-mustache-mailer";
+import Pool from "pg-pool";
+import config from "config";
 config.braintree.environment = braintree.Environment[config.braintree.environment];
 
 function CustomWorld() {

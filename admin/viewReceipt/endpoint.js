@@ -1,4 +1,4 @@
-module.exports = (purchases) => (req, res) => {
+export default (purchases) => (req, res) => {
     if(!req.params || !req.params.id) {
         return res.fail(400, "Mangler ID for kvittering du vil se.");
     }

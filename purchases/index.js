@@ -1,7 +1,10 @@
-const uuid = require("uuid");
-const mustache = require("mustache");
-const fs = require("fs");
-const path = require("path");
+import uuid from "uuid";
+import mustache from "mustache";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from 'url';
+    
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const emailLayout = fs.readFileSync(path.join(__dirname, "email-layout.html")).toString();
 const bareOrderConfirmationEmailView = fs.readFileSync(path.join(__dirname, "order-confirmation-email.html")).toString();
 const orderConfirmationEmailLayout = mustache.render(emailLayout, { content: bareOrderConfirmationEmailView });
@@ -10,7 +13,7 @@ const bareReceiptEmailView = fs.readFileSync(path.join(__dirname, "receipt-email
 const receiptEmailLayout = mustache.render(emailLayout, { content: bareReceiptEmailView });
 const receiptEmailTextLayout = fs.readFileSync(path.join(__dirname, "receipt-email.text")).toString();
 
-module.exports = (maerkelex, paymentGateway, db, mailer) => {
+export default (maerkelex, paymentGateway, db, mailer) => {
     ensurePurchasesDbExists(db);
 
     return {

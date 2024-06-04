@@ -1,6 +1,6 @@
-const crypto = require("crypto");
+import crypto from "crypto";
 
-module.exports = (users) => (req, res, next) => {
+export default (users) => (req, res, next) => {
     if(!req.session.username || !req.session.password) {
         return res.redirect("/admin/login");
     }
