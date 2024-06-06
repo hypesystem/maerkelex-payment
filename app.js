@@ -1,4 +1,4 @@
-import express from "express";
+import express from "dexpress-main";
 import purchaseApp from "./purchase/app.js";
 import adminApp from "./admin/app.js";
 import canaryCheck from "./canary/app.js";
@@ -13,8 +13,9 @@ const badRequestErrorView = fs.readFileSync(path.join(__dirname, "_errors/400.ht
 import mustache from "mustache";
 import memoryStaticAssetMiddleware from "./memoryStaticAssetMiddleware/index.js";
 
-export default (purchases, db, cookieSession, billy, maerkelex, stock, maerkelexBaseUrl) => {
-    let app = express();
+export default async(purchases, db, cookieSession, billy, maerkelex, stock, maerkelexBaseUrl) => {
+    let app = await express();
+    //app can run but is non-functional helmet middleware set by default in dexpress prevents inline scripting
 
     app.use(bodyParser.urlencoded({
         extended: true,

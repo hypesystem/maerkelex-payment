@@ -25,7 +25,7 @@ const stock = Stock(db, maerkelex);
 let purchases = Purchases(maerkelex, paymentGateway, db, mailer, cookieSessionInstance, stock);
 var billy = billyApi(config.billy, purchases, stock);
 
-var app = maerkelexPaymentApp(purchases, db, cookieSessionInstance, billy, maerkelex, stock, config.maerkelex.baseUrl);
+var app = await maerkelexPaymentApp(purchases, db, cookieSessionInstance, billy, maerkelex, stock, config.maerkelex.baseUrl);
 
 app.listen(config.port);
 
