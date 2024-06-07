@@ -23,7 +23,7 @@ module.exports = (purchases) => (req, res) => {
         badges = [ { id: badge, count } ];
     }
 
-    parseCustomerInfo(req.body, (error, customerInfo) => {
+    parseCustomerInfo(req, (error, customerInfo) => {
         if(error) {
             console.error("Failed to parse customer info", error, req.body);
             return res.fail(400, "Forespørgslen indeholdt ikke den påkrævede kundeinformation: " + error.message);
@@ -47,8 +47,12 @@ module.exports = (purchases) => (req, res) => {
     });
 };
 
-function parseCustomerInfo(body, callback) {
+function parseCustomerInfo(req, callback) {
+    var body = req.body;
+    
     var customer = {};
+
+    customer.ipAddress = req.ip;
 
     var email = body["email"];
     if(!email || !/.*@.*/.test(email)) {
