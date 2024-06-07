@@ -183,11 +183,10 @@
                             postalCode: "{{ customerInfo.deliveryAddress.postalCode }}",
                             countryCodeAlpha: "DK"
                         },
-                        ipAddress: ""//user ip address ipv4 or ipv6 as string
+                        ipAddress: "{{ customerInfo.ipAddress }}"
                     },
                     collectDeviceData: true
                 };
-                
                 //Copy minimal keys to expanded list (avoid duplication)
                 Object.keys(minimalThreeDSecure).forEach(function(key) {
                     threeDSecure[key] = minimalThreeDSecure[key];
