@@ -57,7 +57,6 @@ function parseCustomerInfo(body, ipAddress, callback) {
     }
     customer.ipAddress = ipAddress;
 
-
     var email = body["email"];
     if(!email || !/.*@.*/.test(email)) {
         return callback({
