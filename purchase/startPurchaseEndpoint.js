@@ -23,7 +23,11 @@ module.exports = (purchases) => (req, res) => {
         badges = [ { id: badge, count } ];
     }
 
+<<<<<<< HEAD
     parseCustomerInfo(req.body, req.ip, (error, customerInfo) => {
+=======
+    parseCustomerInfo(body, req.ip, (error, customerInfo) => {
+>>>>>>> c7325a780a1703631d7d6b783310f2da974a9796
         if(error) {
             console.error("Failed to parse customer info", error, req.body);
             return res.fail(400, "Forespørgslen indeholdt ikke den påkrævede kundeinformation: " + error.message);
