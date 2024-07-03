@@ -153,7 +153,7 @@
                 <p>Betalingen foregår over en sikker forbindelse.</p>
                 <button type="submit" style="float: right;">Betal</button>
             </form>
-            <script src='https://js.braintreegateway.com/web/dropin/1.22.1/js/dropin.min.js'></script>
+            <script src='https://js.braintreegateway.com/web/dropin/1.42.0/js/dropin.min.js'></script>
             <script>
                 var dropInForm = document.getElementById("dropin-form");
                 var dropinInstance = null;
@@ -182,10 +182,11 @@
                             streetAddress: "{{ customerInfo.deliveryAddress.address }}",
                             postalCode: "{{ customerInfo.deliveryAddress.postalCode }}",
                             countryCodeAlpha: "DK"
-                        }
-                    }
+                        },
+                        ipAddress: "{{ customerInfo.ipAddress }}"
+                    },
+                    collectDeviceData: true
                 };
-
                 //Copy minimal keys to expanded list (avoid duplication)
                 Object.keys(minimalThreeDSecure).forEach(function(key) {
                     threeDSecure[key] = minimalThreeDSecure[key];
@@ -225,7 +226,6 @@
                             dropInForm.querySelector("button[type=submit]").removeAttribute("disabled");
                             return;
                         }
-
                         dropInForm.removeEventListener("submit", threeDSecureSubmit);
                         dropInForm.payment_method_nonce.value = payload.nonce;
 
