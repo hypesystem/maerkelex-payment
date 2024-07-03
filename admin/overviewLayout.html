@@ -147,7 +147,6 @@
                 text-shadow: 0 0 9px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.2);
             }
             table {
-                margin: 0 0 90px;
                 font-size: 0.9em;
                 border-collapse: collapse;
                 width: 100%;
@@ -211,6 +210,9 @@
             td.more-info .mark-as-sent div, td.more-info .see-receipt div {
                 padding: 2px 8px 8px;
                 font-size: 0.9em;
+            }
+            .subpage-input-nav {
+                margin: 0 0 20px;
             }
             .image-thumbnail {
                 width: 30px;
@@ -329,6 +331,30 @@
             }
             .admin-nav .admin-nav-link:hover {
                 background-color: rgba(250, 166, 58, .5);
+            }
+            input {
+                border: 2px solid gray;
+                padding: .2em .4em;
+                border-radius: .2em;
+                background: whitesmoke;
+                color: #222;
+                font-weight: bold;
+            }
+            input[type="search"]::placeholder {
+                font-weight: bold;
+                color: #222222c3;
+            }
+            #subpageInputBox {
+                text-align: right;
+                
+            }
+            #subpageInputBox::-webkit-outer-spin-button,
+            #subpageInputBox::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            #subpageInputBox {
+                -moz-appearance: textfield;
             }
         </style>
     </head>

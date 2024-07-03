@@ -17,7 +17,7 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
         start: (requestBody, order, customerInfo, callback) => startPurchase(maerkelex, paymentGateway, db, requestBody, order, customerInfo, callback),
         complete: (id, nonce, callback) => completePurchase(paymentGateway, db, mailer, id, nonce, callback),
         sendReceipt: (id, callback) => sendPurchaseReceipt(paymentGateway, db, mailer, id, callback),
-        list: (callback) => listPurchases(db, callback),
+        list: (options, callback) => listPurchases(db, options, callback),
         get: (id, callback) => getPurchase(db, id, callback),
         update: (purchase, callback) => updatePurchase(db, purchase.id, purchase.status, purchase.data, callback),
         getHtmlReceipt: (id, callback) => getPurchaseHtmlReceipt(db, id, callback),
@@ -506,14 +506,103 @@ function renderHtmlReceipt(purchase) {
     return mustache.render(receiptEmailLayout, purchase.data.viewModel);
 }
 
-function listPurchases(db, callback) {
-    db.query("SELECT * FROM purchase", (error, result) => {
+function listPurchases(db, options, callback) {
+    if(!callback){
+        callback = options
+        options = {};
+    }
+   
+    db.query(createQueryString(options), (error, result, amountOfOrders) => {
         if(error) {
             console.error("Failed to get purchases to list", error);
             return callback(error);
         }
-        callback(null, result.rows);
+        callback(null, result.rows.slice(getStartIndex(options), getEndIndex(options)), result.rows.length);
     });
+}
+
+function createQueryString(options){
+    const queryString = ['SELECT * FROM purchase'];
+    addParams(queryString, options)
+    return queryString.join(" ");
+}
+
+function addParams(queryString, options){
+    addCategory(queryString, options);
+    addSearch(queryString, options);
+    addOrderBy(queryString);
+}
+
+function addCategory(queryString, options){
+    if(options["category"]){
+        if(options["category"] == 'all'){
+            queryString.push("WHERE");
+            queryString.push(`status != 'failed'`);
+            return;
+        }
+        queryString.push("WHERE");
+        queryString.push(`status = '${options["category"]}'`);
+    }
+}
+
+function addSearch(queryString, options){
+    if(options["q"]){
+        const searchParams = splitSearchParams(options["q"]);
+
+        searchParams.forEach(searchParam => {
+            queryString.includes('WHERE') ? queryString.push("AND") : queryString.push("WHERE");
+            queryString.push(generateSearchString(searchParam));
+        })
+    }
+}
+
+function generateSearchString(searchParam){
+    const dataPaths = [`->> 'deliveryAddressShort'`, `->> 'orderNumber'`, `->> 'date'`, `-> 'customerInfo' ->> 'email'`, `-> 'customerInfo' ->> 'name'`];
+    const searchString = [];
+    dataPaths.forEach(dataPath =>{
+        searchString.push(`LOWER(data -> 'viewModel' ${dataPath}) LIKE LOWER('%${searchParam}%')`);
+    });
+    return `(${searchString.join(" OR ")})`;
+}
+
+function splitSearchParams(rawSearchParams){
+    return rawSearchParams.split(/\/| |-/);
+}
+
+function createSearchParamObjects(searchParams){
+    const result = [];
+    searchParams.forEach((searchParam) => {
+        const searchParamSplit = searchParam.split(":");
+        if(searchParamSplit[1]){
+            return result.push({
+                searchKey: searchParamSplit[0],
+                searchValue: searchParamSplit[1]
+            });
+        }
+    });
+    return result;
+}
+
+function addOrderBy(queryString){
+    queryString.push("ORDER BY started_at DESC");
+}
+
+function getStartIndex(options){
+    if(options["offset"] && canParseToInt(options["offset"])){
+        return parseInt(options["offset"]);
+    }
+    return 0;
+}
+
+function getEndIndex(options){
+    if(options["limit"] && canParseToInt(options["limit"])){
+        return parseInt(options["limit"]) + getStartIndex(options);
+    }
+    return undefined;
+}
+
+function canParseToInt(toBeParsed){
+    return !isNaN(parseInt(toBeParsed));
 }
 
 function getPurchaseHtmlReceipt(db, id, callback) {
