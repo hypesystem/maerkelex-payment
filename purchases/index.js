@@ -511,13 +511,29 @@ function listPurchases(db, options, callback) {
         callback = options;
         options = {};
     }
-    db.query("SELECT * FROM purchase", (error, result) => {
+    db.query(`SELECT * FROM purchase ${parseLimit(options)} ${parseOffset(options)}`, (error, result) => {
         if(error) {
             console.error("Failed to get purchases to list", error);
             return callback(error);
         }
         callback(null, result.rows);
     });
+}
+
+function parseLimit({limit}){
+    const limitAsInt = parseInt(limit);
+    if(limitAsInt > 0 || !isNaN(limitAsInt)) {
+        return `LIMIT ${limitAsInt}`;
+    }
+    return "LIMIT ALL";
+}
+
+function parseOffset({offset}){
+    const offsetAsInt = parseInt(offset);
+    if(offsetAsInt > 0 || !isNaN(offsetAsInt)) {
+        return `OFFSET ${offsetAsInt}`;
+    }
+    return "OFFSET 0";
 }
 
 function getPurchaseHtmlReceipt(db, id, callback) {
