@@ -282,14 +282,14 @@ async function saveOrderInfo(event) {
 }
 
 function loadOrders(backoff) {
-    requestOrders((error, orders) => {
+    requestOrders((error, data) => {
         if(error) {
             console.error("Failed to load entries", error);
             entries = null;
             options.find(o => o.cls == "option-new-orders").el.click();
             return setTimeout(loadOrders, backoff, backoff * 2);
         }
-        entries = orders;
+        entries = data.orders;
         options.find(o => o.cls == "option-new-orders").el.click();
         setInterval(checkForNewOrders, 2 * 60 * 1000); //check every 2 mins
     });
