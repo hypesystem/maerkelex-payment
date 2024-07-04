@@ -511,7 +511,7 @@ function listPurchases(db, options, callback) {
         callback = options;
         options = {};
     }
-    db.query(`SELECT * FROM purchase ${parseLimit(options)} ${parseOffset(options)}`, (error, result) => {
+    db.query(`SELECT * FROM purchase ORDER BY started_at DESC ${parseLimit(options)} ${parseOffset(options)}`, (error, result) => {
         if(error) {
             console.error("Failed to get purchases to list", error);
             return callback(error);
