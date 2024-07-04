@@ -45,7 +45,7 @@ module.exports = (purchases, maerkelex) => (req, res) => {
                         }),
                     };
                 });
-            res.send(result);
+            res.send({orders: result});
         });
     });
 };
