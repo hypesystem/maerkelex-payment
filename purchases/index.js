@@ -17,7 +17,7 @@ module.exports = (maerkelex, paymentGateway, db, mailer) => {
         start: (requestBody, order, customerInfo, callback) => startPurchase(maerkelex, paymentGateway, db, requestBody, order, customerInfo, callback),
         complete: (id, nonce, callback) => completePurchase(paymentGateway, db, mailer, id, nonce, callback),
         sendReceipt: (id, callback) => sendPurchaseReceipt(paymentGateway, db, mailer, id, callback),
-        list: (callback) => listPurchases(db, callback),
+        list: (options, callback) => listPurchases(db, options, callback),
         get: (id, callback) => getPurchase(db, id, callback),
         update: (purchase, callback) => updatePurchase(db, purchase.id, purchase.status, purchase.data, callback),
         getHtmlReceipt: (id, callback) => getPurchaseHtmlReceipt(db, id, callback),
@@ -506,7 +506,11 @@ function renderHtmlReceipt(purchase) {
     return mustache.render(receiptEmailLayout, purchase.data.viewModel);
 }
 
-function listPurchases(db, callback) {
+function listPurchases(db, options, callback) {
+    if(!callback){
+        callback = options;
+        options = {};
+    }
     db.query("SELECT * FROM purchase", (error, result) => {
         if(error) {
             console.error("Failed to get purchases to list", error);
