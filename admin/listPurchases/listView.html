@@ -298,7 +298,7 @@ function loadOrders(backoff) {
 async function requestOrders(callback) {
     let response;
     try{
-        response = await fetch("/admin/orders", {
+        response = await fetch("/admin/orders?" + new URLSearchParams({limit: null, offset: null}), {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
