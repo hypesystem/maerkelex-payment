@@ -522,7 +522,7 @@ function listPurchases(db, options, callback) {
 
 function parseLimit({limit}){
     const limitAsInt = parseInt(limit);
-    if(limitAsInt > 0 || !isNaN(limitAsInt)) {
+    if(limitAsInt > 0 && !isNaN(limitAsInt)) {
         return `LIMIT ${limitAsInt}`;
     }
     return "LIMIT ALL";
@@ -530,7 +530,7 @@ function parseLimit({limit}){
 
 function parseOffset({offset}){
     const offsetAsInt = parseInt(offset);
-    if(offsetAsInt > 0 || !isNaN(offsetAsInt)) {
+    if(offsetAsInt > 0 && !isNaN(offsetAsInt)) {
         return `OFFSET ${offsetAsInt}`;
     }
     return "OFFSET 0";
