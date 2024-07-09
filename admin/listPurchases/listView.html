@@ -316,7 +316,6 @@ function loadOrders(backoff) {
         entries = data.orders;
         amountOfOrders = data.amount;
         options.find(o => o.cls == "option-new-orders").el.click();
-        setInterval(checkForNewOrders, 2 * 60 * 1000); //check every 2 mins
     });
 }
 
