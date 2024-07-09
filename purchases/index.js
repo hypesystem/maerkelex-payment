@@ -516,7 +516,15 @@ function listPurchases(db, options, callback) {
             console.error("Failed to get purchases to list", error);
             return callback(error);
         }
-        callback(null, result.rows);
+        const orders = result.rows;
+        db.query(`SELECT COUNT(*) FROM purchase `, (error, result) => {
+            if(error) {
+                console.error("Failed to get purchases to list", error);
+                return callback(error);
+            }
+            const amountOfOrders = result.rows[0].count;
+            callback(null, orders, amountOfOrders);
+        })
     });
 }
 
