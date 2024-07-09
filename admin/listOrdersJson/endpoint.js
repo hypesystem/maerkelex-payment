@@ -1,6 +1,6 @@
 module.exports = (purchases, maerkelex) => (req, res) => {
     const options = req.query;
-    purchases.list(options, (error, orders) => {
+    purchases.list(options, (error, orders, amountOfOrders) => {
         if(error) {
             console.error("Failed to list purchases", error);
             return res.status(500).send({ error: "failed to list orders" });
@@ -46,7 +46,7 @@ module.exports = (purchases, maerkelex) => (req, res) => {
                         }),
                     };
                 });
-            res.send({orders: result});
+            res.send({orders: result, amount: amountOfOrders});
         });
     });
 };
