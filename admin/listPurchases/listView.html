@@ -41,6 +41,8 @@
             </tr>
         </tbody>
     </table>
+    <a href="#" class="pagination-button pagination-previous">-1</a>
+    <a href="#" class="pagination-button pagination-next">+1</a>
 </div>
 <script>
 let defaultPageTitle = document.title;
@@ -64,6 +66,12 @@ var options = [
     }
 ];
 
+document.querySelector(".pagination-previous").addEventListener("click", prevPage);
+document.querySelector(".pagination-next").addEventListener("click", nextPage);
+
+const entriesPerPage = 20;
+let currentPage = 0;
+let amountOfOrders = 0;
 var entries = null;
 
 options.forEach(function(option) {
@@ -281,6 +289,22 @@ async function saveOrderInfo(event) {
     `;
 }
 
+function prevPage(e){
+    e.preventDefault();
+    if(currentPage > 0){
+        currentPage -= 1;
+    }
+    loadOrders(100000)
+}
+
+function nextPage(e){
+    e.preventDefault();
+    if((1+currentPage)*entriesPerPage < amountOfOrders){
+        currentPage += 1;
+    }
+    loadOrders(100000)
+}
+
 function loadOrders(backoff) {
     requestOrders((error, data) => {
         if(error) {
@@ -290,6 +314,7 @@ function loadOrders(backoff) {
             return setTimeout(loadOrders, backoff, backoff * 2);
         }
         entries = data.orders;
+        amountOfOrders = data.amount;
         options.find(o => o.cls == "option-new-orders").el.click();
         setInterval(checkForNewOrders, 2 * 60 * 1000); //check every 2 mins
     });
@@ -298,7 +323,7 @@ function loadOrders(backoff) {
 async function requestOrders(callback) {
     let response;
     try {
-        const requestParams = new URLSearchParams({ limit: null, offset: null });
+        const requestParams = new URLSearchParams({ limit: entriesPerPage, offset: entriesPerPage * currentPage });
         response = await fetch("/admin/orders?" + requestParams, {
             method: 'GET',
             headers: {
