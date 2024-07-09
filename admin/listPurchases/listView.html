@@ -295,25 +295,29 @@ function loadOrders(backoff) {
     });
 }
 
-function requestOrders(callback) {
-    var req = new XMLHttpRequest();
-    req.open("GET", "/admin/orders");
-    req.setRequestHeader("Content-Type", "application/json");
-    req.onreadystatechange = function() {
-        if(req.readyState != 4) {
-            return;
-        }
-        if(req.status == 200) {
-            return callback(null, JSON.parse(this.responseText));
-        }
-        callback({
-            trace: new Error("Error response from server on request"),
-            status: req.statusText,
-            responseType: req.responseType,
-            response: req.response
+async function requestOrders(callback) {
+    let response;
+    try{
+        response = await fetch("/admin/orders", {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+            },
         });
-    };
-    req.send();
+        if(!response.ok){
+            callback({
+                trace: new Error("Error response from server on request"),
+                status: response.status
+            })
+        }
+    }
+    catch(error){
+        callback({
+            trace: new Error(`Request failed: ${error}`)
+        });
+    }
+    const resJson = await response.json();
+    callback(null, resJson);
 }
 
 function checkForNewOrders() {
