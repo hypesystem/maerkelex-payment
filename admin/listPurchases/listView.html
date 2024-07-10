@@ -52,24 +52,25 @@ var options = [
     {
         cls: "option-all-orders",
         el: document.querySelector(".option-all-orders"),
-        filter: function(x) { return true; }
+        category: ["completed", "dispatched"]
     },
     {
         cls: "option-new-orders",
         el: document.querySelector(".option-new-orders"),
-        filter: function(x) { return x.status == "pending"; }
+        category: ["completed"]
     },
     {
         cls: "option-sent-orders",
         el: document.querySelector(".option-sent-orders"),
-        filter: function(x) { return x.status == "dispatched"; }
+        category: ["dispatched"]
     }
 ];
 
 document.querySelector(".pagination-previous").addEventListener("click", prevPage);
 document.querySelector(".pagination-next").addEventListener("click", nextPage);
 
-const entriesPerPage = 20;
+const entriesPerPage = 5;
+let currentCategories = ["completed"];
 let currentPage = 0;
 let amountOfOrders = 0;
 var entries = null;
@@ -79,17 +80,21 @@ options.forEach(function(option) {
         e.preventDefault();
         options.forEach(function(o) { o.el.classList = "option " + o.cls; });
         this.classList += " selected";
-
+        currentCategories = option.category;
         if(!entries && typeof entries !== "object") {
             tbody.innerHTML = "<tr><td colspan='1000'>Fejl ved load af ordrer. Prøver igen automatisk. Alternativt kan du forsøge at opdatere siden (tryk F5).</td></tr>";
         }
         else {
-            renderEntriesToList(entries.filter(option.filter));
+            renderContent();
         }
 
         return false;
     });
 });
+
+async function renderContent(){
+    await loadOrders(200);
+}
 
 var tbody = document.querySelector(".container table tbody");
 
@@ -294,7 +299,7 @@ function prevPage(e){
     if(currentPage > 0){
         currentPage -= 1;
     }
-    loadOrders(100000)
+    renderContent();
 }
 
 function nextPage(e){
@@ -302,7 +307,7 @@ function nextPage(e){
     if((1+currentPage)*entriesPerPage < amountOfOrders){
         currentPage += 1;
     }
-    loadOrders(100000)
+    renderContent();
 }
 
 function loadOrders(backoff) {
@@ -310,19 +315,19 @@ function loadOrders(backoff) {
         if(error) {
             console.error("Failed to load entries", error);
             entries = null;
-            options.find(o => o.cls == "option-new-orders").el.click();
+            renderEntriesToList(entries)
             return setTimeout(loadOrders, backoff, backoff * 2);
         }
         entries = data.orders;
         amountOfOrders = data.amount;
-        options.find(o => o.cls == "option-new-orders").el.click();
+        renderEntriesToList(entries)
     });
 }
 
 async function requestOrders(callback) {
     let response;
     try {
-        const requestParams = new URLSearchParams({ limit: entriesPerPage, offset: entriesPerPage * currentPage });
+        const requestParams = new URLSearchParams({ limit: entriesPerPage, offset: entriesPerPage * currentPage, categories: currentCategories });
         response = await fetch("/admin/orders?" + requestParams, {
             method: 'GET',
             headers: {

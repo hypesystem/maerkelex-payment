@@ -511,7 +511,8 @@ function listPurchases(db, options, callback) {
         callback = options;
         options = {};
     }
-    db.query(`SELECT * FROM purchase ORDER BY started_at DESC ${parseLimit(options)} ${parseOffset(options)}`, (error, result) => {
+    console.log(options);
+    db.query(`SELECT * FROM purchase ${parseCategory(options)} ORDER BY started_at DESC ${parseLimit(options)} ${parseOffset(options)}`, (error, result) => {
         if(error) {
             console.error("Failed to get purchases to list", error);
             return callback(error);
@@ -526,6 +527,14 @@ function listPurchases(db, options, callback) {
             callback(null, orders, amountOfOrders);
         })
     });
+}
+
+function parseCategory({categories}){
+    if(!categories){
+        return ""
+    }
+    categoriesAsArray = categories.split(",")
+    return `WHERE (${categoriesAsArray.map(category => `status = '${category}'`).join(" OR ")})`;   
 }
 
 function parseLimit({limit}){
