@@ -41,8 +41,7 @@
             </tr>
         </tbody>
     </table>
-    <a href="#" class="pagination-button pagination-previous">-1</a>
-    <a href="#" class="pagination-button pagination-next">+1</a>
+    <nav class="subpage-selector-nav"></nav>    
 </div>
 <script>
 let defaultPageTitle = document.title;
@@ -66,12 +65,11 @@ var options = [
     }
 ];
 
-document.querySelector(".pagination-previous").addEventListener("click", prevPage);
-document.querySelector(".pagination-next").addEventListener("click", nextPage);
-
-const entriesPerPage = 5;
+const entriesPerPage = 20;
+const amountOfShownPages = 5;
 let currentCategories = ["completed"];
 let currentPage = 0;
+let amountOfPages = 0;
 let amountOfOrders = 0;
 var entries = null;
 
@@ -85,6 +83,7 @@ options.forEach(function(option) {
             tbody.innerHTML = "<tr><td colspan='1000'>Fejl ved load af ordrer. Prøver igen automatisk. Alternativt kan du forsøge at opdatere siden (tryk F5).</td></tr>";
         }
         else {
+            currentPage = 0;
             renderContent();
         }
 
@@ -93,7 +92,52 @@ options.forEach(function(option) {
 });
 
 async function renderContent(){
-    await loadOrders(200);
+    await loadOrders(200, () => {
+        renderEntriesToList(entries);
+        doSubpageSelectorNavigation();
+    });
+}
+
+let navHolder = document.querySelector(".subpage-selector-nav");
+
+function doSubpageSelectorNavigation(){
+    navHolder.innerHTML = "";
+    amountOfPages = Math.ceil(amountOfOrders / entriesPerPage);
+    const needAdvancedNav = amountOfPages > amountOfShownPages;
+    const startIndexToRender = calculateStartIndex(needAdvancedNav);
+    renderSelectors(startIndexToRender);
+    attachOnClickToSelectors(startIndexToRender);
+}
+
+function calculateStartIndex(needAdvancedNav){
+    if(!needAdvancedNav){
+        return 0;
+    }
+    const centerOffset = Math.floor(amountOfShownPages / 2);
+    if(currentPage + centerOffset >= amountOfPages){
+        return amountOfPages - amountOfShownPages;
+    }
+    if(currentPage - centerOffset < 0){
+        return 0;
+    }
+    return currentPage - centerOffset;
+}
+
+function renderSelectors(startIndex){
+    for(i = startIndex; (i < startIndex + amountOfShownPages) && (i < amountOfPages); i++){
+        navHolder.innerHTML += `<a href="#" class="option page-index-${i}-selector">${i + 1}</a>`;
+    }
+    navHolder.querySelector(`.page-index-${currentPage}-selector`)?.classList.add("selected");
+}
+
+function attachOnClickToSelectors(startIndex){
+    for(i = startIndex; i < ( startIndex + amountOfShownPages && amountOfPages ); i++){
+        const pageRefIndex = i;
+        navHolder.querySelector(`.page-index-${pageRefIndex}-selector`)?.addEventListener("click", () => {
+            currentPage = pageRefIndex;
+            renderContent();
+        });
+    }
 }
 
 var tbody = document.querySelector(".container table tbody");
@@ -310,17 +354,18 @@ function nextPage(e){
     renderContent();
 }
 
-function loadOrders(backoff) {
+function loadOrders(backoff, callback) {
     requestOrders((error, data) => {
         if(error) {
             console.error("Failed to load entries", error);
             entries = null;
-            renderEntriesToList(entries)
+            amountOfOrders = 0;
+            callback();
             return setTimeout(loadOrders, backoff, backoff * 2);
         }
         entries = data.orders;
         amountOfOrders = data.amount;
-        renderEntriesToList(entries)
+        callback();
     });
 }
 
@@ -406,7 +451,7 @@ function modifyUnseenOrdersCount(diff) {
     }
 }
 
-loadOrders(200);
+options[1].el.click();
 
 Notification.requestPermission();
 </script>
