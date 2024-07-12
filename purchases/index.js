@@ -518,7 +518,7 @@ function listPurchases(db, options, callback) {
             return callback(error);
         }
         const orders = result.rows;
-        db.query(`SELECT COUNT(*) FROM purchase `, (error, result) => {
+        db.query(`SELECT COUNT(*) FROM purchase ${parseCategory(options)}`, (error, result) => {
             if(error) {
                 console.error("Failed to get purchases to list", error);
                 return callback(error);
