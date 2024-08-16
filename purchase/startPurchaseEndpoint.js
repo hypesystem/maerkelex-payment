@@ -47,7 +47,7 @@ module.exports = (purchases) => (req, res) => {
     });
 };
 
-function parseCustomerInfo(body, ipAddress, callback) {    
+function parseCustomerInfo(body, ipAddress, callback) {
     var customer = {};
 
     if(!ipAddress){
