@@ -226,7 +226,7 @@
                             dropInForm.querySelector("button[type=submit]").removeAttribute("disabled");
                             return;
                         }
-                        //test listen her?
+
                         dropInForm.removeEventListener("submit", threeDSecureSubmit);
                         dropInForm.payment_method_nonce.value = payload.nonce;
 
@@ -235,7 +235,6 @@
                 }
 
                 function performThreeDSecureCheck(callback) {
-                    //test maybe her?
                     dropinInstance.requestPaymentMethod({ threeDSecure }, function(error, payload) {
                         if(error) {
                             dropinInstance.requestPaymentMethod({ threeDSecure: minimalThreeDSecure }, function(error2, payload) {
