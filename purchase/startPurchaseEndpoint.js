@@ -50,6 +50,11 @@ module.exports = (purchases) => (req, res) => {
 function parseCustomerInfo(body, ipAddress, callback) {    
     var customer = {};
 
+    if(!ipAddress){
+        return callback({
+            message: "Ingen IP-adresse fra forspørgelsen"
+        });
+    }
     customer.ipAddress = ipAddress;
 
     var email = body["email"];
