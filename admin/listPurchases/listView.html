@@ -65,8 +65,8 @@ var options = [
     }
 ];
 
-const entriesPerPage = 20;
-const amountOfShownPages = 5;
+const entriesPerPage = 50;
+const amountOfShownPages = 7;
 let currentCategories = ["completed"];
 let currentPage = 0;
 let amountOfPages = 0;
@@ -105,8 +105,8 @@ function doSubpageSelectorNavigation(){
     amountOfPages = Math.ceil(amountOfOrders / entriesPerPage);
     const needAdvancedNav = amountOfPages > amountOfShownPages;
     const startIndexToRender = calculateStartIndex(needAdvancedNav);
-    renderSelectors(startIndexToRender);
-    attachOnClickToSelectors(startIndexToRender);
+    renderSelectors(needAdvancedNav, startIndexToRender);
+    attachOnClickToSelectors(needAdvancedNav, startIndexToRender);
 }
 
 function calculateStartIndex(needAdvancedNav){
@@ -123,14 +123,26 @@ function calculateStartIndex(needAdvancedNav){
     return currentPage - centerOffset;
 }
 
-function renderSelectors(startIndex){
+function renderSelectors(needAdvancedNav, startIndex){
     for(i = startIndex; (i < startIndex + amountOfShownPages) && (i < amountOfPages); i++){
         navHolder.innerHTML += `<a href="#" class="option page-index-${i}-selector">${i + 1}</a>`;
+    }
+    if(needAdvancedNav){
+        if(currentPage !== 0){
+            navHolder.innerHTML = `<a href="#" class="option page-previous-selector">&#8592;</a>${navHolder.innerHTML}`
+        }
+        if(currentPage !== amountOfPages - 1){
+            navHolder.innerHTML +=`<a href="#" class="option page-next-selector">&#8594;</a>`
+        }
     }
     navHolder.querySelector(`.page-index-${currentPage}-selector`)?.classList.add("selected");
 }
 
-function attachOnClickToSelectors(startIndex){
+function attachOnClickToSelectors(needAdvancedNav, startIndex){
+    if(needAdvancedNav){
+        navHolder.querySelector(`.page-previous-selector`)?.addEventListener("click", prevPage);
+        navHolder.querySelector(`.page-next-selector`)?.addEventListener("click", nextPage);
+    }
     for(i = startIndex; i < ( startIndex + amountOfShownPages && amountOfPages ); i++){
         const pageRefIndex = i;
         navHolder.querySelector(`.page-index-${pageRefIndex}-selector`)?.addEventListener("click", () => {
