@@ -300,22 +300,23 @@ async function requestOrders(callback) {
     try {
         const requestParams = new URLSearchParams({ limit: null, offset: null });
         response = await fetch("/admin/orders?" + requestParams, {
-        response = await fetch("/admin/orders?" + requestParams, {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
             },
         });
-        if(!response.ok){
+        if(!response.ok) {
             callback({
                 trace: new Error("Error response from server on request"),
-                status: response.status
-            })
+                status: response.status,
+                response: await response.json(),
+            });
         }
     }
-    catch(error){
+    catch(error) {
         callback({
-            trace: new Error(`Request failed: ${error}`)
+            trace: new Error(`Requesting orders failed`),
+            previous: error,
         });
     }
     const resJson = await response.json();
