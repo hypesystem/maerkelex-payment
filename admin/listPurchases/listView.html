@@ -94,23 +94,14 @@ options.forEach(function(option) {
 async function renderContent() {
     await loadOrders(200, () => {
         renderEntriesToList(entries);
-        doSubpageSelectorNavigation();
+        renderSubpageSelectors();
     });
 }
 
 let navHolder = document.querySelector(".subpage-selector-nav");
 
-function doSubpageSelectorNavigation() {
-    navHolder.innerHTML = "";
-    amountOfPages = Math.ceil(amountOfOrders / entriesPerPage);
-    const needAdvancedNav = amountOfPages > amountOfShownPages;
-    const startIndexToRender = calculateStartIndex(needAdvancedNav);
-    renderSelectors(needAdvancedNav, startIndexToRender);
-    attachOnClickToSelectors(needAdvancedNav, startIndexToRender);
-}
-
-function calculateStartIndex(needAdvancedNav) {
-    if(!needAdvancedNav) {
+function calculateStartIndex() {
+    if(amountOfPages <= amountOfShownPages) {
         return 0;
     }
     const centerOffset = Math.floor(amountOfShownPages / 2);
@@ -123,33 +114,30 @@ function calculateStartIndex(needAdvancedNav) {
     return currentPage - centerOffset;
 }
 
-function renderSelectors(needAdvancedNav, startIndex) {
-    for(let i = startIndex; (i < startIndex + amountOfShownPages) && (i < amountOfPages); i++) {
-        navHolder.innerHTML += `<a href="#" class="option page-index-${i}-selector">${i + 1}</a>`;
+function renderSubpageSelectors() {
+    const selectors = [];
+    const startIndexToRender = calculateStartIndex();
+
+    for(let i = startIndexToRender; (i < startIndexToRender + amountOfShownPages) && (i < amountOfPages); i++) {
+        selectors.push(`<button class="option page-selector" data-page-index="${i}">${i + 1}</button>`);
     }
-    if(needAdvancedNav) {
+    if(amountOfPages > amountOfShownPages) {
         if(currentPage !== 0) {
-            navHolder.innerHTML = `<a href="#" class="option page-previous-selector">&#8592;</a>${navHolder.innerHTML}`;
+            selectors.unshift(`<button class="option page-selector" data-page-index="${currentPage - 1}">&#8592;</button>`);
         }
         if(currentPage !== amountOfPages - 1) {
-            navHolder.innerHTML +=`<a href="#" class="option page-next-selector">&#8594;</a>`;
+            selectors.push(`<button class="option page-selector" data-page-index="${currentPage + 1}">&#8594;</button>`);
         }
     }
-    navHolder.querySelector(`.page-index-${currentPage}-selector`)?.classList.add("selected");
-}
+    navHolder.innerHTML = selectors.join("");
 
-function attachOnClickToSelectors(needAdvancedNav, startIndex) {
-    if(needAdvancedNav) {
-        navHolder.querySelector(`.page-previous-selector`)?.addEventListener("click", prevPage);
-        navHolder.querySelector(`.page-next-selector`)?.addEventListener("click", nextPage);
-    }
-    for(let i = startIndex; i < (startIndex + amountOfShownPages && amountOfPages); i++) {
-        const pageRefIndex = i;
-        navHolder.querySelector(`.page-index-${pageRefIndex}-selector`)?.addEventListener("click", () => {
-            currentPage = pageRefIndex;
+    navHolder.querySelectorAll(`.page-selector`)
+        .forEach(selector => selector.addEventListener("click", () => {
+            currentPage = parseInt(selector.dataset.pageIndex);
             renderContent();
-        });
-    }
+        }));
+        
+    navHolder.querySelector(`[data-page-index="${currentPage}"]`)?.classList.add("selected");
 }
 
 var tbody = document.querySelector(".container table tbody");
@@ -350,22 +338,6 @@ async function saveOrderInfo(event) {
     `;
 }
 
-function prevPage(e) {
-    e.preventDefault();
-    if(currentPage > 0) {
-        currentPage -= 1;
-    }
-    renderContent();
-}
-
-function nextPage(e) {
-    e.preventDefault();
-    if((1 + currentPage) * entriesPerPage < amountOfOrders) {
-        currentPage += 1;
-    }
-    renderContent();
-}
-
 function loadOrders(backoff, callback) {
     requestOrders((error, data) => {
         if(error) {
@@ -377,6 +349,7 @@ function loadOrders(backoff, callback) {
         }
         entries = data.orders;
         amountOfOrders = data.amount;
+        amountOfPages = Math.ceil(amountOfOrders / entriesPerPage);
         callback();
     });
 }
