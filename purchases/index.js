@@ -533,7 +533,7 @@ function parseCategory({categories}) {
         return "";
     }
     categoriesAsArray = categories.split(",");
-    return `WHERE (${categoriesAsArray.map(category => `status = '${category}'`).join(" OR ")})`;   
+    return `WHERE status IN (${categoriesAsArray.map(category => `'${category}'`).join(", ")})`;   
 }
 
 function parseLimit({ limit }) {
