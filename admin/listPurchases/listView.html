@@ -91,7 +91,7 @@ options.forEach(function(option) {
     });
 });
 
-async function renderContent(){
+async function renderContent() {
     await loadOrders(200, () => {
         renderEntriesToList(entries);
         doSubpageSelectorNavigation();
@@ -100,7 +100,7 @@ async function renderContent(){
 
 let navHolder = document.querySelector(".subpage-selector-nav");
 
-function doSubpageSelectorNavigation(){
+function doSubpageSelectorNavigation() {
     navHolder.innerHTML = "";
     amountOfPages = Math.ceil(amountOfOrders / entriesPerPage);
     const needAdvancedNav = amountOfPages > amountOfShownPages;
@@ -109,41 +109,41 @@ function doSubpageSelectorNavigation(){
     attachOnClickToSelectors(needAdvancedNav, startIndexToRender);
 }
 
-function calculateStartIndex(needAdvancedNav){
-    if(!needAdvancedNav){
+function calculateStartIndex(needAdvancedNav) {
+    if(!needAdvancedNav) {
         return 0;
     }
     const centerOffset = Math.floor(amountOfShownPages / 2);
-    if(currentPage + centerOffset >= amountOfPages){
+    if(currentPage + centerOffset >= amountOfPages) {
         return amountOfPages - amountOfShownPages;
     }
-    if(currentPage - centerOffset < 0){
+    if(currentPage - centerOffset < 0) {
         return 0;
     }
     return currentPage - centerOffset;
 }
 
-function renderSelectors(needAdvancedNav, startIndex){
-    for(i = startIndex; (i < startIndex + amountOfShownPages) && (i < amountOfPages); i++){
+function renderSelectors(needAdvancedNav, startIndex) {
+    for(let i = startIndex; (i < startIndex + amountOfShownPages) && (i < amountOfPages); i++) {
         navHolder.innerHTML += `<a href="#" class="option page-index-${i}-selector">${i + 1}</a>`;
     }
-    if(needAdvancedNav){
-        if(currentPage !== 0){
-            navHolder.innerHTML = `<a href="#" class="option page-previous-selector">&#8592;</a>${navHolder.innerHTML}`
+    if(needAdvancedNav) {
+        if(currentPage !== 0) {
+            navHolder.innerHTML = `<a href="#" class="option page-previous-selector">&#8592;</a>${navHolder.innerHTML}`;
         }
-        if(currentPage !== amountOfPages - 1){
-            navHolder.innerHTML +=`<a href="#" class="option page-next-selector">&#8594;</a>`
+        if(currentPage !== amountOfPages - 1) {
+            navHolder.innerHTML +=`<a href="#" class="option page-next-selector">&#8594;</a>`;
         }
     }
     navHolder.querySelector(`.page-index-${currentPage}-selector`)?.classList.add("selected");
 }
 
-function attachOnClickToSelectors(needAdvancedNav, startIndex){
-    if(needAdvancedNav){
+function attachOnClickToSelectors(needAdvancedNav, startIndex) {
+    if(needAdvancedNav) {
         navHolder.querySelector(`.page-previous-selector`)?.addEventListener("click", prevPage);
         navHolder.querySelector(`.page-next-selector`)?.addEventListener("click", nextPage);
     }
-    for(i = startIndex; i < ( startIndex + amountOfShownPages && amountOfPages ); i++){
+    for(let i = startIndex; i < (startIndex + amountOfShownPages && amountOfPages); i++) {
         const pageRefIndex = i;
         navHolder.querySelector(`.page-index-${pageRefIndex}-selector`)?.addEventListener("click", () => {
             currentPage = pageRefIndex;
@@ -276,7 +276,7 @@ function describeEntry(entry) {
 }
 
 function describeItem(item) {
-    if(item.name && item.count){
+    if(item.name && item.count) {
         return `${item.name}: <b>${item.count} stk</b>`;
     }
     return item.description;
@@ -345,22 +345,22 @@ async function saveOrderInfo(event) {
         ${this.address.value.replace(/\n/g, '<br>')}<br>
         <br>
         <strong>Kontaktinformation</strong><br>
-        Email <a href="mailto:${this.email.value}">${this.email.value}</a><br>
+        Email <a href="mailto:${this.email.value}">${this.email.value}</a><br>load
         Telefon <a href="tel:${this["phone-number"].value}">${this["phone-number"].value}</a><br>
     `;
 }
 
-function prevPage(e){
+function prevPage(e) {
     e.preventDefault();
-    if(currentPage > 0){
+    if(currentPage > 0) {
         currentPage -= 1;
     }
     renderContent();
 }
 
-function nextPage(e){
+function nextPage(e) {
     e.preventDefault();
-    if((1+currentPage)*entriesPerPage < amountOfOrders){
+    if((1 + currentPage) * entriesPerPage < amountOfOrders) {
         currentPage += 1;
     }
     renderContent();

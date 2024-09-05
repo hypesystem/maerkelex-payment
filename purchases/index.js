@@ -507,7 +507,7 @@ function renderHtmlReceipt(purchase) {
 }
 
 function listPurchases(db, options, callback) {
-    if(!callback){
+    if(!callback) {
         callback = options;
         options = {};
     }
@@ -528,15 +528,15 @@ function listPurchases(db, options, callback) {
     });
 }
 
-function parseCategory({categories}){
-    if(!categories){
-        return ""
+function parseCategory({categories}) {
+    if(!categories) {
+        return "";
     }
-    categoriesAsArray = categories.split(",")
+    categoriesAsArray = categories.split(",");
     return `WHERE (${categoriesAsArray.map(category => `status = '${category}'`).join(" OR ")})`;   
 }
 
-function parseLimit({limit}){
+function parseLimit({ limit }) {
     const limitAsInt = parseInt(limit);
     if(limitAsInt > 0 && !isNaN(limitAsInt)) {
         return `LIMIT ${limitAsInt}`;
@@ -544,7 +544,7 @@ function parseLimit({limit}){
     return "LIMIT ALL";
 }
 
-function parseOffset({offset}){
+function parseOffset({ offset }) {
     const offsetAsInt = parseInt(offset);
     if(offsetAsInt > 0 && !isNaN(offsetAsInt)) {
         return `OFFSET ${offsetAsInt}`;
