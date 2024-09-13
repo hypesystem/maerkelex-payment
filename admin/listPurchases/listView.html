@@ -71,6 +71,8 @@ let currentCategories = ["completed"];
 let currentPage = 0;
 let amountOfPages = 0;
 let amountOfOrders = 0;
+let lastChecked = new Date().toISOString();
+let lastestSnapshot = new Date().toISOString();
 var entries = null;
 
 options.forEach(function(option) {
@@ -339,7 +341,16 @@ async function saveOrderInfo(event) {
 }
 
 function loadOrders(backoff, callback) {
-    requestOrders((error, data) => {
+    if(currentPage === 0) {
+        lastestSnapshot = new Date().toISOString();
+    }
+    const requestParams = { 
+        limit: entriesPerPage,
+        offset: entriesPerPage * currentPage,
+        categories: currentCategories,
+        before: lastestSnapshot,
+    };
+    requestOrders(requestParams, (error, data) => {
         if(error) {
             console.error("Failed to load entries", error);
             entries = null;
@@ -354,11 +365,16 @@ function loadOrders(backoff, callback) {
     });
 }
 
-async function requestOrders(callback) {
+async function requestOrders(requestParams, callback) {
+    if(!callback) {
+        callback = requestParams;
+        requestParams = {};
+    }
+
     let response;
     try {
-        const requestParams = new URLSearchParams({ limit: entriesPerPage, offset: entriesPerPage * currentPage, categories: currentCategories });
-        response = await fetch("/admin/orders?" + requestParams, {
+        const urlEncodedParams = new URLSearchParams(requestParams);
+        response = await fetch("/admin/orders?" + urlEncodedParams, {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -383,17 +399,25 @@ async function requestOrders(callback) {
 }
 
 function checkForNewOrders() {
-    requestOrders((error, orders) => {
+    const requestParams = {
+        categories: ["completed"],
+        after: lastChecked,
+    };
+    requestOrders(requestParams, (error, data) => {
         if(error) {
             return console.error("Failed to poll for updates", error);
         }
-        if(orders.length > entries.length) {
-            let diffCount = orders.length - entries.length;
-            new Notification(`${diffCount} ${diffCount > 1 ? "nye ordrer" : "ny ordre"} til Mærkelex!`);
-            let newOrders = orders.filter(order => !entries.some(entry => entry.id == order.id));
+        lastChecked = new Date().toISOString();
+        const diffCount = + data.amount;
+        if(diffCount === 0) {
+            return;
+        }
+        const newOrders = data.orders;
+        new Notification(`${diffCount} ${diffCount > 1 ? "nye ordrer" : "ny ordre"} til Mærkelex!`);
+        if(currentCategories.find(category => category === "completed") && currentPage === 0) {
             renderNewOrders(newOrders, diffCount);
             entries = newOrders.concat(entries);
-        }
+        } 
     });
 }
 
@@ -437,6 +461,7 @@ function modifyUnseenOrdersCount(diff) {
 }
 
 renderContent();
+setInterval(checkForNewOrders, 2 * 60 * 1000);
 
 Notification.requestPermission();
 </script>
