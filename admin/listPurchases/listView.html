@@ -335,7 +335,7 @@ async function saveOrderInfo(event) {
         ${this.address.value.replace(/\n/g, '<br>')}<br>
         <br>
         <strong>Kontaktinformation</strong><br>
-        Email <a href="mailto:${this.email.value}">${this.email.value}</a><br>load
+        Email <a href="mailto:${this.email.value}">${this.email.value}</a><br>
         Telefon <a href="tel:${this["phone-number"].value}">${this["phone-number"].value}</a><br>
     `;
 }
@@ -417,7 +417,7 @@ function checkForNewOrders() {
         if(currentCategories.find(category => category === "completed") && currentPage === 0) {
             renderNewOrders(newOrders, diffCount);
             entries = newOrders.concat(entries);
-        } 
+        }
     });
 }
 
