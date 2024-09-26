@@ -41,6 +41,7 @@
             </tr>
         </tbody>
     </table>
+    <nav class="subpage-selector-nav"></nav>    
 </div>
 <script>
 let defaultPageTitle = document.title;
@@ -50,20 +51,28 @@ var options = [
     {
         cls: "option-all-orders",
         el: document.querySelector(".option-all-orders"),
-        filter: function(x) { return true; }
+        category: ["completed", "dispatched"]
     },
     {
         cls: "option-new-orders",
         el: document.querySelector(".option-new-orders"),
-        filter: function(x) { return x.status == "pending"; }
+        category: ["completed"]
     },
     {
         cls: "option-sent-orders",
         el: document.querySelector(".option-sent-orders"),
-        filter: function(x) { return x.status == "dispatched"; }
+        category: ["dispatched"]
     }
 ];
 
+const entriesPerPage = 50;
+const amountOfShownPages = 7;
+let currentCategories = ["completed"];
+let currentPage = 0;
+let amountOfPages = 0;
+let amountOfOrders = 0;
+let lastChecked = new Date().toISOString();
+let lastestSnapshot = new Date().toISOString();
 var entries = null;
 
 options.forEach(function(option) {
@@ -71,17 +80,68 @@ options.forEach(function(option) {
         e.preventDefault();
         options.forEach(function(o) { o.el.classList = "option " + o.cls; });
         this.classList += " selected";
-
+        currentCategories = option.category;
         if(!entries && typeof entries !== "object") {
             tbody.innerHTML = "<tr><td colspan='1000'>Fejl ved load af ordrer. Prøver igen automatisk. Alternativt kan du forsøge at opdatere siden (tryk F5).</td></tr>";
         }
         else {
-            renderEntriesToList(entries.filter(option.filter));
+            currentPage = 0;
+            renderContent();
         }
 
         return false;
     });
 });
+
+async function renderContent() {
+    await loadOrders(200, () => {
+        renderEntriesToList(entries);
+        renderSubpageSelectors();
+    });
+}
+
+let navHolder = document.querySelector(".subpage-selector-nav");
+
+function calculateStartIndex() {
+    if(amountOfPages <= amountOfShownPages) {
+        return 0;
+    }
+    const centerOffset = Math.floor(amountOfShownPages / 2);
+    if(currentPage + centerOffset >= amountOfPages) {
+        return amountOfPages - amountOfShownPages;
+    }
+    if(currentPage - centerOffset < 0) {
+        return 0;
+    }
+    return currentPage - centerOffset;
+}
+
+function renderSubpageSelectors() {
+    const selectors = [];
+    const startIndexToRender = calculateStartIndex();
+    const endOfPages = Math.min(startIndexToRender + amountOfShownPages, amountOfPages);
+
+    for(let i = startIndexToRender; i < endOfPages; i++) {
+        selectors.push(`<button class="option page-selector" data-page-index="${i}">${i + 1}</button>`);
+    }
+    if(amountOfPages > amountOfShownPages) {
+        if(currentPage !== 0) {
+            selectors.unshift(`<button class="option page-selector" data-page-index="${currentPage - 1}">&#8592;</button>`);
+        }
+        if(currentPage !== amountOfPages - 1) {
+            selectors.push(`<button class="option page-selector" data-page-index="${currentPage + 1}">&#8594;</button>`);
+        }
+    }
+    navHolder.innerHTML = selectors.join("");
+
+    navHolder.querySelectorAll(`.page-selector`)
+        .forEach((selector) => selector.addEventListener("click", () => {
+            currentPage = parseInt(selector.dataset.pageIndex);
+            renderContent();
+        }));
+        
+    navHolder.querySelector(`[data-page-index="${currentPage}"]`)?.classList.add("selected");
+}
 
 var tbody = document.querySelector(".container table tbody");
 
@@ -207,7 +267,7 @@ function describeEntry(entry) {
 }
 
 function describeItem(item) {
-    if(item.name && item.count){
+    if(item.name && item.count) {
         return `${item.name}: <b>${item.count} stk</b>`;
     }
     return item.description;
@@ -281,25 +341,41 @@ async function saveOrderInfo(event) {
     `;
 }
 
-function loadOrders(backoff) {
-    requestOrders((error, data) => {
+function loadOrders(backoff, callback) {
+    if(currentPage === 0) {
+        lastestSnapshot = new Date().toISOString();
+    }
+    const requestParams = { 
+        limit: entriesPerPage,
+        offset: entriesPerPage * currentPage,
+        categories: currentCategories,
+        before: lastestSnapshot,
+    };
+    requestOrders(requestParams, (error, data) => {
         if(error) {
             console.error("Failed to load entries", error);
             entries = null;
-            options.find(o => o.cls == "option-new-orders").el.click();
+            amountOfOrders = 0;
+            callback();
             return setTimeout(loadOrders, backoff, backoff * 2);
         }
         entries = data.orders;
-        options.find(o => o.cls == "option-new-orders").el.click();
-        setInterval(checkForNewOrders, 2 * 60 * 1000); //check every 2 mins
+        amountOfOrders = data.amount;
+        amountOfPages = Math.ceil(amountOfOrders / entriesPerPage);
+        callback();
     });
 }
 
-async function requestOrders(callback) {
+async function requestOrders(requestParams, callback) {
+    if(!callback) {
+        callback = requestParams;
+        requestParams = {};
+    }
+
     let response;
     try {
-        const requestParams = new URLSearchParams({ limit: null, offset: null });
-        response = await fetch("/admin/orders?" + requestParams, {
+        const urlEncodedParams = new URLSearchParams(requestParams);
+        response = await fetch("/admin/orders?" + urlEncodedParams, {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -324,14 +400,22 @@ async function requestOrders(callback) {
 }
 
 function checkForNewOrders() {
-    requestOrders((error, orders) => {
+    const requestParams = {
+        categories: ["completed"],
+        after: lastChecked,
+    };
+    requestOrders(requestParams, (error, data) => {
         if(error) {
             return console.error("Failed to poll for updates", error);
         }
-        if(orders.length > entries.length) {
-            let diffCount = orders.length - entries.length;
-            new Notification(`${diffCount} ${diffCount > 1 ? "nye ordrer" : "ny ordre"} til Mærkelex!`);
-            let newOrders = orders.filter(order => !entries.some(entry => entry.id == order.id));
+        lastChecked = new Date().toISOString();
+        const diffCount = +data.amount;
+        if(diffCount === 0) {
+            return;
+        }
+        const newOrders = data.orders;
+        new Notification(`${diffCount} ${diffCount > 1 ? "nye ordrer" : "ny ordre"} til Mærkelex!`);
+        if(currentCategories.find(category => category === "completed") && currentPage === 0) {
             renderNewOrders(newOrders, diffCount);
             entries = newOrders.concat(entries);
         }
@@ -377,7 +461,8 @@ function modifyUnseenOrdersCount(diff) {
     }
 }
 
-loadOrders(200);
+renderContent();
+setInterval(checkForNewOrders, 2 * 60 * 1000);
 
 Notification.requestPermission();
 </script>

@@ -507,17 +507,18 @@ function renderHtmlReceipt(purchase) {
 }
 
 function listPurchases(db, options, callback) {
-    if(!callback){
+    if(!callback) {
         callback = options;
         options = {};
     }
-    db.query(`SELECT * FROM purchase ORDER BY started_at DESC ${parseLimit(options)} ${parseOffset(options)}`, (error, result) => {
+    const queryString = `SELECT * FROM purchase ${createWhereStatement(options)} ORDER BY started_at DESC ${parseLimit(options)} ${parseOffset(options)}`;
+    db.query(queryString, (error, result) => {
         if(error) {
             console.error("Failed to get purchases to list", error);
             return callback(error);
         }
         const orders = result.rows;
-        db.query(`SELECT COUNT(*) FROM purchase `, (error, result) => {
+        db.query(`SELECT COUNT(*) FROM purchase ${createWhereStatement(options)}`, (error, result) => {
             if(error) {
                 console.error("Failed to get purchases to list", error);
                 return callback(error);
@@ -528,20 +529,50 @@ function listPurchases(db, options, callback) {
     });
 }
 
-function parseLimit({limit}){
-    const limitAsInt = parseInt(limit);
-    if(limitAsInt > 0 && !isNaN(limitAsInt)) {
-        return `LIMIT ${limitAsInt}`;
+function createWhereStatement(options) {
+    const parts = [parseCategory(options), parseAfter(options), parseBefore(options)].filter((x) => x !== "");
+    if(parts.length === 0) {
+        return "";
     }
-    return "LIMIT ALL";
+    return `WHERE ${parts.join(" AND ")}`;
 }
 
-function parseOffset({offset}){
-    const offsetAsInt = parseInt(offset);
-    if(offsetAsInt > 0 && !isNaN(offsetAsInt)) {
-        return `OFFSET ${offsetAsInt}`;
+function parseCategory({categories}) {
+    if(!categories) {
+        return "";
     }
-    return "OFFSET 0";
+    categoriesAsArray = categories.split(",");
+    return `status IN (${categoriesAsArray.map(category => `'${category}'`).join(", ")})`;   
+}
+
+function parseAfter({after}) {
+    if(!after || isNaN(Date.parse(after))) {
+        return "";
+    }
+    return `(data ->> 'completedAt')::timestamptz > '${after}'::timestamptz`;
+}
+
+function parseBefore({before}) {
+    if(!before || isNaN(Date.parse(before))) {
+        return "";
+    }
+    return `(data ->> 'completedAt')::timestamptz <= '${before}'::timestamptz`;
+}
+
+function parseLimit({ limit }) {
+    const limitAsInt = parseInt(limit);
+    if(Number.isNaN(limitAsInt) || limitAsInt < 0) {
+        return "";
+    }
+    return `LIMIT ${limitAsInt}`;
+}
+
+function parseOffset({ offset }) {
+    const offsetAsInt = parseInt(offset);
+    if(Number.isNaN(offsetAsInt) || offsetAsInt < 0 ) {
+        return "";
+    }
+    return `OFFSET ${offsetAsInt}`;
 }
 
 function getPurchaseHtmlReceipt(db, id, callback) {
