@@ -530,7 +530,7 @@ function listPurchases(db, options, callback) {
 }
 
 function createWhereStatement(options) {
-    const parts = [parseCategory(options), parseAfter(options), parseBefore(options)].filter(x => x !== "");
+    const parts = [parseCategory(options), parseAfter(options), parseBefore(options)].filter((x) => x !== "");
     if(parts.length === 0) {
         return "";
     }
@@ -561,7 +561,7 @@ function parseBefore({before}) {
 
 function parseLimit({ limit }) {
     const limitAsInt = parseInt(limit);
-    if(isNaN(limitAsInt) || limitAsInt < 0) {
+    if(Number.isNaN(limitAsInt) || limitAsInt < 0) {
         return "";
     }
     return `LIMIT ${limitAsInt}`;
@@ -569,7 +569,7 @@ function parseLimit({ limit }) {
 
 function parseOffset({ offset }) {
     const offsetAsInt = parseInt(offset);
-    if(isNaN(offsetAsInt) || offsetAsInt < 0 ) {
+    if(Number.isNaN(offsetAsInt) || offsetAsInt < 0 ) {
         return "";
     }
     return `OFFSET ${offsetAsInt}`;
