@@ -546,14 +546,14 @@ function parseCategory({categories}) {
 }
 
 function parseAfter({after}) {
-    if(!after) {
+    if(!after || isNaN(Date.parse(after))) {
         return "";
     }
     return `(data ->> 'completedAt')::timestamptz > '${after}'::timestamptz`;
 }
 
 function parseBefore({before}) {
-    if(!before) {
+    if(!before || isNaN(Date.parse(before))) {
         return "";
     }
     return `(data ->> 'completedAt')::timestamptz <= '${before}'::timestamptz`;
